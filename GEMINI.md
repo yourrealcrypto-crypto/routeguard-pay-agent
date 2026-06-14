@@ -1,0 +1,1 @@
+Read and follow all instructions in AGENTS.md before inspecting or modifying the project.
