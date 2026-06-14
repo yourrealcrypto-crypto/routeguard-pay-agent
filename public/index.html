@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteGuard Pay Agent — Dispatch Console</title>
+    <style>
+      /* ---- Design tokens: "freight dispatch console" --------------------- *
+       * Palette: deep slate panel, signal amber accent, status greens/reds.
+       * Type: Space Grotesk-ish system stack for display; ui-monospace for
+       * all machine evidence (ids, hashes, tinybars) so proofs read as data. */
+      :root {
+        --bg: #0e1217;
+        --panel: #161c24;
+        --panel-2: #1d242e;
+        --line: #2a323d;
+        --ink: #e7edf3;
+        --ink-dim: #9aa7b5;
+        --ink-faint: #6b7785;
+        --amber: #f2a900;
+        --amber-soft: #3a2f12;
+        --green: #4ade80;
+        --green-soft: #10241a;
+        --red: #f87171;
+        --red-soft: #2a1517;
+        --blue: #60a5fa;
+        --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
+        --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --radius: 10px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(1200px 600px at 70% -10%, #18222e 0%, transparent 60%),
+          var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: var(--blue); }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 28px 20px 80px; }
+
+      /* ---- Header / thesis ---------------------------------------------- */
+      header { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 24px; }
+      .brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+      .logo {
+        font-weight: 700; font-size: 22px; letter-spacing: -0.02em;
+        display: inline-flex; align-items: center; gap: 9px;
+      }
+      .logo .dot { width: 11px; height: 11px; border-radius: 3px; background: var(--amber);
+        box-shadow: 0 0 16px var(--amber); }
+      .net-badge {
+        font-family: var(--mono); font-size: 11px; color: var(--amber);
+        border: 1px solid var(--amber-soft); background: var(--amber-soft);
+        padding: 3px 8px; border-radius: 6px; letter-spacing: 0.04em;
+      }
+      .thesis { margin-top: 12px; font-size: 17px; color: var(--ink); }
+      .thesis b { color: var(--amber); font-weight: 600; }
+      .sub { color: var(--ink-dim); font-size: 13.5px; margin-top: 6px; max-width: 70ch; }
+
+      /* ---- Layout grid --------------------------------------------------- */
+      .cols { display: grid; grid-template-columns: 320px 1fr; gap: 18px; align-items: start; }
+      @media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
+
+      .card {
+        background: var(--panel); border: 1px solid var(--line);
+        border-radius: var(--radius); padding: 16px;
+      }
+      .card h2 {
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+        color: var(--ink-faint); margin: 0 0 12px; font-weight: 600;
+      }
+
+      /* ---- Scenario buttons ---------------------------------------------- */
+      .scenarios { display: flex; flex-direction: column; gap: 8px; }
+      .scn {
+        text-align: left; cursor: pointer; color: var(--ink);
+        background: var(--panel-2); border: 1px solid var(--line);
+        border-radius: 8px; padding: 10px 12px; transition: border-color .15s, transform .05s;
+      }
+      .scn:hover { border-color: var(--amber); }
+      .scn:active { transform: translateY(1px); }
+      .scn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+      .scn .t { font-weight: 600; font-size: 13.5px; }
+      .scn .d { color: var(--ink-dim); font-size: 11.5px; margin-top: 3px; }
+      .scn .exp { color: var(--ink-faint); font-family: var(--mono); font-size: 10.5px; margin-top: 5px; }
+
+      .controls { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+      .row { display: flex; gap: 8px; align-items: center; }
+      .toggle { font-size: 12px; color: var(--ink-dim); display: flex; align-items: center; gap: 7px; }
+      button.ghost {
+        background: transparent; border: 1px solid var(--line); color: var(--ink-dim);
+        border-radius: 7px; padding: 7px 11px; cursor: pointer; font-size: 12px;
+      }
+      button.ghost:hover { border-color: var(--ink-faint); color: var(--ink); }
+
+      /* ---- Stage / timeline --------------------------------------------- */
+      .stage { min-height: 220px; }
+      .empty { color: var(--ink-faint); font-size: 13px; padding: 26px 8px; text-align: center; }
+      .verdict {
+        display: inline-flex; align-items: center; gap: 8px; font-weight: 700;
+        font-size: 14px; padding: 6px 12px; border-radius: 8px; font-family: var(--mono);
+      }
+      .v-allow { color: var(--green); background: var(--green-soft); }
+      .v-block { color: var(--red); background: var(--red-soft); }
+      .v-appr { color: var(--amber); background: var(--amber-soft); }
+      .v-none { color: var(--ink-dim); background: var(--panel-2); }
+
+      .blk { margin-top: 14px; }
+      .blk .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-faint); margin-bottom: 7px; }
+      .rationale { font-size: 13px; color: var(--ink-dim); background: var(--panel-2);
+        border-left: 2px solid var(--amber); padding: 9px 11px; border-radius: 0 6px 6px 0; }
+
+      /* ---- Policy gate (the signature element) -------------------------- */
+      .gate { display: flex; flex-direction: column; gap: 7px; }
+      .chk { border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: var(--panel-2); }
+      .chk-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .chk-name { font-weight: 600; font-size: 13px; }
+      .pill { font-family: var(--mono); font-size: 10.5px; padding: 2px 7px; border-radius: 5px; white-space: nowrap; }
+      .p-pass { color: var(--green); background: var(--green-soft); }
+      .p-block { color: var(--red); background: var(--red-soft); }
+      .p-appr { color: var(--amber); background: var(--amber-soft); }
+      .chk-msg { font-size: 12px; color: var(--ink-dim); margin-top: 4px; }
+      .ev { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); margin-top: 5px; word-break: break-word; }
+      .ev b { color: var(--ink-dim); font-weight: 500; }
+
+      /* ---- Timeline ------------------------------------------------------ */
+      .tl { display: flex; flex-direction: column; gap: 0; margin-top: 6px; }
+      .tl-step { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; }
+      .tl-step .ic { width: 16px; height: 16px; border-radius: 50%; flex: none; margin-top: 2px;
+        border: 2px solid var(--line); background: var(--panel); }
+      .tl-step.done .ic { border-color: var(--green); background: var(--green-soft); }
+      .tl-step .x { font-size: 12.5px; }
+      .tl-step .x small { color: var(--ink-faint); font-family: var(--mono); font-size: 10.5px; }
+
+      /* ---- Report -------------------------------------------------------- */
+      .score { display: flex; align-items: baseline; gap: 10px; }
+      .score .n { font-size: 40px; font-weight: 700; letter-spacing: -0.03em; }
+      .score .band { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 6px; }
+      .factors { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+      .factor { font-size: 12px; }
+      .factor .bar { height: 6px; border-radius: 3px; background: var(--panel-2); margin-top: 3px; overflow: hidden; }
+      .factor .bar i { display: block; height: 100%; background: var(--amber); }
+      .factor .ft { display: flex; justify-content: space-between; }
+      .factor .ft b { font-weight: 600; }
+      .factor .ft span { font-family: var(--mono); color: var(--ink-dim); }
+      .controls-list { margin: 10px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--ink-dim); }
+      .controls-list li { margin: 3px 0; }
+
+      /* ---- Proof drawer -------------------------------------------------- */
+      .proof { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+      @media (max-width: 560px) { .proof { grid-template-columns: 1fr; } }
+      .pf { border-top: 1px solid var(--line); padding-top: 7px; }
+      .pf .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+      .pf .v { font-family: var(--mono); font-size: 12px; color: var(--ink); word-break: break-all; display: flex; align-items: center; gap: 6px; }
+      .copy { cursor: pointer; border: none; background: transparent; color: var(--ink-faint); font-family: var(--mono); font-size: 11px; padding: 1px 4px; border-radius: 4px; }
+      .copy:hover { color: var(--amber); background: var(--amber-soft); }
+      .audit-line { font-family: var(--mono); font-size: 11px; color: var(--ink-dim); display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+      .audit-line .st-ANCHORED { color: var(--green); }
+      .audit-line .st-SKIPPED_SIMULATION { color: var(--ink-faint); }
+      .audit-line .st-FAILED { color: var(--red); }
+
+      .approve-card { background: var(--amber-soft); border: 1px solid var(--amber); border-radius: 8px; padding: 12px; margin-top: 12px; }
+      .approve-card .ttl { font-weight: 700; color: var(--amber); font-size: 13px; }
+      .approve-card .ds { font-size: 12px; color: var(--ink-dim); margin: 5px 0 10px; }
+      button.primary { background: var(--amber); color: #1a1300; border: none; font-weight: 700; border-radius: 7px; padding: 9px 16px; cursor: pointer; font-size: 13px; }
+      button.primary:hover { filter: brightness(1.08); }
+      button.primary:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+      .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--ink-faint); border-top-color: var(--amber); border-radius: 50%; animation: spin .7s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .muted { color: var(--ink-faint); font-size: 11.5px; }
+      footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--ink-faint); }
+      .src-tag { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <span class="logo"><span class="dot"></span>RouteGuard Pay Agent</span>
+          <span class="net-badge" id="netBadge">HEDERA TESTNET</span>
+        </div>
+        <div class="thesis">The LLM proposes. <b>Policy decides.</b> Hedera proves.</div>
+        <div class="sub">
+          A procurement agent buys a Premium RouteRisk report with HBAR — but a payment
+          only executes when deterministic Hedera Agent Kit policies approve the vendor,
+          shipment context, service, spend caps, daily budget, and approval threshold.
+          Every decision is anchored to the Hedera Consensus Service.
+        </div>
+      </header>
+
+      <div class="cols">
+        <!-- left rail -->
+        <div>
+          <div class="card">
+            <h2>Judge sandbox</h2>
+            <div class="scenarios" id="scenarios"></div>
+            <div class="controls">
+              <label class="toggle">
+                <input type="checkbox" id="liveToggle" />
+                Use real testnet payment (if configured)
+              </label>
+              <div class="row">
+                <button class="ghost" id="resetBtn">Reset demo state</button>
+                <span class="muted" id="modeNote">simulation</span>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:14px;">
+            <h2>Service catalog</h2>
+            <div id="catalog" class="muted">loading…</div>
+          </div>
+        </div>
+
+        <!-- stage -->
+        <div class="card stage" id="stage">
+          <h2>Execution</h2>
+          <div class="empty" id="emptyState">
+            Select a scenario on the left to run the agent. Each run shows the policy gate
+            with per-check evidence, the execution timeline, the report, and Hedera proof.
+          </div>
+          <div id="result" style="display:none;"></div>
+        </div>
+      </div>
+
+      <footer>
+        <span>Synthetic data · testnet only · HBAR has no settlement role here · demo decision-support, not advice.</span>
+        <a id="feedbackLink" href="#" target="_blank" rel="noopener">Submit feedback ↗</a>
+      </footer>
+    </div>
+
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
+      const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+      const tinybars = (t) => (t / 1e8).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 }) + " HBAR";
+
+      let HEALTH = {};
+
+      async function boot() {
+        HEALTH = await (await fetch("/api/health")).json();
+        $("#feedbackLink").href = await fetchFeedback();
+        if (!HEALTH.livePaymentsEnabled) {
+          $("#liveToggle").disabled = true;
+          $("#liveToggle").parentElement.title = "Operator/vendor accounts not configured on the server.";
+        }
+        renderCatalog(await (await fetch("/api/catalog")).json());
+        renderScenarios(await (await fetch("/api/scenarios")).json());
+      }
+      async function fetchFeedback() {
+        // feedback URL is embedded server-side; fall back to the kit issues page
+        return "https://github.com/hashgraph/hedera-agent-kit/issues/new?title=RouteGuard%20Pay%20Agent%20feedback";
+      }
+
+      function renderCatalog(c) {
+        $("#catalog").innerHTML = "";
+        const rows = [
+          ["vendor", c.vendorId],
+          ["account", c.vendorAccountId],
+          ["sku", c.sku],
+          ["price", tinybars(c.priceTinybars)],
+          ["network", c.network],
+        ];
+        const tbl = el("div");
+        rows.forEach(([k, v]) => {
+          const r = el("div", "pf");
+          r.appendChild(el("div", "k", k));
+          r.appendChild(el("div", "v", esc(v)));
+          tbl.appendChild(r);
+        });
+        $("#catalog").appendChild(tbl);
+      }
+
+      function renderScenarios(list) {
+        const box = $("#scenarios");
+        box.innerHTML = "";
+        list.forEach((s) => {
+          const b = el("button", "scn");
+          b.setAttribute("aria-label", s.label);
+          b.appendChild(el("div", "t", esc(s.label)));
+          b.appendChild(el("div", "d", esc(s.description)));
+          b.appendChild(el("div", "exp", "→ " + esc(s.expectation)));
+          b.onclick = () => run(s);
+          box.appendChild(b);
+        });
+      }
+
+      $("#liveToggle").addEventListener("change", (e) => {
+        $("#modeNote").textContent = e.target.checked ? "REAL testnet payment" : "simulation";
+      });
+      $("#resetBtn").addEventListener("click", async () => {
+        await fetch("/api/sandbox/reset", { method: "POST" });
+        $("#result").style.display = "none";
+        $("#emptyState").style.display = "block";
+      });
+
+      async function run(scn) {
+        const mode = $("#liveToggle").checked ? "AUTONOMOUS_TESTNET" : "SIMULATION";
+        showLoading(scn.label);
+        try {
+          const res = await fetch("/api/agent/run", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ shipmentId: scn.shipmentId, scenarioId: scn.id, executionMode: mode }),
+          });
+          render(await res.json(), scn);
+        } catch (e) {
+          renderError(String(e));
+        }
+      }
+
+      function showLoading(label) {
+        $("#emptyState").style.display = "none";
+        const r = $("#result");
+        r.style.display = "block";
+        r.innerHTML = `<div class="row"><span class="spinner"></span> <span class="muted">running “${esc(label)}” through the agent…</span></div>`;
+      }
+      function renderError(msg) {
+        $("#result").innerHTML = `<div class="verdict v-block">ERROR</div><div class="chk-msg">${esc(msg)}</div>`;
+      }
+
+      function verdictBadge(kind) {
+        const map = {
+          COMPLETED: ["v-allow", "ALLOW → EXECUTED"],
+          BLOCKED: ["v-block", "BLOCKED"],
+          APPROVAL_REQUIRED: ["v-appr", "APPROVAL REQUIRED"],
+          NO_PURCHASE: ["v-none", "NO PURCHASE"],
+          FAILED: ["v-block", "FAILED"],
+        };
+        const [c, t] = map[kind] || ["v-none", kind];
+        return `<span class="verdict ${c}">${t}</span>`;
+      }
+
+      function pill(outcome) {
+        if (outcome === "PASS") return `<span class="pill p-pass">PASS</span>`;
+        if (outcome === "BLOCK") return `<span class="pill p-block">BLOCK</span>`;
+        return `<span class="pill p-appr">APPROVAL</span>`;
+      }
+
+      function renderGate(decision) {
+        if (!decision) return "";
+        const checks = decision.checks
+          .map((c) => {
+            const ev = Object.entries(c.evidence || {})
+              .map(([k, v]) => `<b>${esc(k)}</b>=${esc(typeof v === "object" ? JSON.stringify(v) : v)}`)
+              .join("  ·  ");
+            return `<div class="chk">
+              <div class="chk-top"><span class="chk-name">${esc(c.name)}</span>${pill(c.outcome)}</div>
+              <div class="chk-msg">${esc(c.publicMessage)}</div>
+              ${ev ? `<div class="ev">${ev}</div>` : ""}
+            </div>`;
+          })
+          .join("");
+        return `<div class="blk"><div class="lbl">Policy gate · v${decision.policyVersion} · hash ${esc(decision.canonicalHash.slice(0, 16))}…</div><div class="gate">${checks}</div></div>`;
+      }
+
+      function renderTimeline(steps) {
+        const items = steps
+          .map(
+            (s) => `<div class="tl-step ${s.done ? "done" : ""}"><span class="ic"></span><span class="x">${esc(s.label)} ${s.meta ? `<small>${esc(s.meta)}</small>` : ""}</span></div>`,
+          )
+          .join("");
+        return `<div class="blk"><div class="lbl">Execution timeline</div><div class="tl">${items}</div></div>`;
+      }
+
+      function pf(k, v, copy) {
+        return `<div class="pf"><div class="k">${esc(k)}</div><div class="v">${esc(v)}${copy ? `<button class="copy" data-copy="${esc(v)}">copy</button>` : ""}</div></div>`;
+      }
+
+      function renderProof(payment, report, audit) {
+        const explorer = payment.explorerUrl && payment.explorerUrl.startsWith("http")
+          ? `<a href="${esc(payment.explorerUrl)}" target="_blank" rel="noopener">view on HashScan ↗</a>`
+          : "simulation (no on-chain tx)";
+        const auditLines = (audit || [])
+          .map(
+            (a) => `<div class="audit-line"><span class="st-${a.hcsStatus}">●</span> ${esc(a.eventType)} <span class="muted">${esc(a.hcsStatus)}${a.hcsSequenceNumber ? " · seq#" + a.hcsSequenceNumber : ""}</span></div>`,
+          )
+          .join("");
+        return `<div class="blk"><div class="lbl">Hedera proof</div>
+          <div class="proof">
+            ${pf("network", payment.network)}
+            ${pf("mode", payment.mode)}
+            ${pf("amount", tinybars(payment.amountTinybars))}
+            ${pf("vendor", payment.vendorAccountId, true)}
+            ${pf("transaction id", payment.transactionId, true)}
+            ${pf("memo", payment.memo, true)}
+            ${pf("report hash", report.reportHash, true)}
+            <div class="pf"><div class="k">explorer</div><div class="v">${explorer}</div></div>
+          </div>
+          <div style="margin-top:10px;"><div class="k" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint)">Audit trail (HCS)</div>${auditLines}</div>
+        </div>`;
+      }
+
+      function renderReport(report) {
+        const bandColor = { low: "p-pass", moderate: "p-appr", high: "p-appr", critical: "p-block" }[report.riskBand] || "p-none";
+        const maxC = Math.max(...report.factors.map((f) => f.contribution), 1);
+        const factors = report.factors
+          .map(
+            (f) => `<div class="factor"><div class="ft"><b>${esc(f.label)}</b><span>+${f.contribution}</span></div><div class="bar"><i style="width:${Math.round((f.contribution / maxC) * 100)}%"></i></div></div>`,
+          )
+          .join("");
+        const controls = report.recommendedControls.map((c) => `<li>${esc(c)}</li>`).join("");
+        return `<div class="blk"><div class="lbl">Premium RouteRisk report</div>
+          <div class="score"><span class="n">${report.riskScore}</span><span class="muted">/ 100</span><span class="pill ${bandColor}">${esc(report.riskBand.toUpperCase())}</span></div>
+          <div class="factors">${factors}</div>
+          <ul class="controls-list">${controls}</ul>
+        </div>`;
+      }
+
+      let LAST = null;
+      function render(data, scn) {
+        LAST = data;
+        const r = $("#result");
+        r.style.display = "block";
+        let html = `<div class="row" style="justify-content:space-between"><div>${verdictBadge(data.kind)}</div><div class="src-tag">${esc(scn.label)}</div></div>`;
+
+        if (data.rationale) html += `<div class="blk"><div class="lbl">Agent rationale</div><div class="rationale">${esc(data.rationale)}</div></div>`;
+        if (data.kind === "NO_PURCHASE") html += `<div class="blk"><div class="rationale">${esc(data.explanation)}</div></div><div class="muted" style="margin-top:8px">intent source: ${esc(data.intentSource)}</div>`;
+
+        if (data.decision) html += renderGate(data.decision);
+
+        if (data.kind === "BLOCKED") {
+          html += renderTimeline([
+            { label: "Shipment loaded", done: true },
+            { label: "Free risk assessed", done: true },
+            { label: "Purchase proposed", done: true },
+            { label: "Policies evaluated → BLOCK", done: true, meta: "no payment built" },
+          ]);
+        }
+
+        if (data.kind === "APPROVAL_REQUIRED") {
+          html += `<div class="approve-card">
+            <div class="ttl">Human approval required</div>
+            <div class="ds">${esc(data.expectedBenefit || "This purchase exceeds the auto-approval threshold.")}</div>
+            <button class="primary" id="approveBtn">Approve &amp; execute 0.05 HBAR</button>
+          </div>`;
+        }
+
+        if (data.kind === "COMPLETED") {
+          html += renderTimeline([
+            { label: "Shipment loaded", done: true },
+            { label: "Free risk assessed", done: true },
+            { label: "Purchase proposed", done: true },
+            { label: "Policies evaluated → ALLOW", done: true },
+            { label: "Budget reserved", done: true },
+            { label: "Transfer built + integrity-checked", done: true },
+            { label: "Payment confirmed", done: true, meta: data.payment.mode },
+            { label: "Report unlocked", done: true },
+            { label: "HCS audit anchored", done: true },
+          ]);
+          html += renderReport(data.report);
+          html += renderProof(data.payment, data.report, data.auditTrail);
+        }
+
+        if (data.kind === "FAILED") {
+          html += `<div class="blk"><div class="chk-msg"><b>${esc(data.errorCode)}</b> — ${esc(data.message)}</div></div>`;
+        }
+
+        r.innerHTML = html;
+
+        if (data.kind === "APPROVAL_REQUIRED") {
+          $("#approveBtn").onclick = () => approve(data.proposalId);
+        }
+        bindCopy();
+      }
+
+      async function approve(proposalId) {
+        const mode = $("#liveToggle").checked ? "AUTONOMOUS_TESTNET" : "SIMULATION";
+        $("#approveBtn").outerHTML = `<div class="row"><span class="spinner"></span> <span class="muted">executing approved purchase…</span></div>`;
+        const res = await fetch("/api/approvals/" + proposalId, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ executionMode: mode }),
+        });
+        const data = await res.json();
+        render(data, { label: "Approved purchase" });
+      }
+
+      function bindCopy() {
+        document.querySelectorAll(".copy").forEach((b) => {
+          b.onclick = () => {
+            navigator.clipboard?.writeText(b.dataset.copy);
+            const o = b.textContent;
+            b.textContent = "copied";
+            setTimeout(() => (b.textContent = o), 1000);
+          };
+        });
+      }
+
+      boot();
+    </script>
+  </body>
+</html>
