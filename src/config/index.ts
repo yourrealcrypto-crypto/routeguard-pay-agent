@@ -29,6 +29,10 @@ const RawEnvSchema = z.object({
     .default("https://testnet.mirrornode.hedera.com"),
 
   // Safety switches. Live payments are OFF unless explicitly enabled.
+  ENABLE_HEDERA_TX: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
   LIVE_TESTNET_PAYMENTS_ENABLED: z
     .enum(["true", "false"])
     .default("false")
@@ -79,12 +83,26 @@ if (env.AUTO_APPROVE_AT_OR_BELOW_TINYBARS > env.MAX_PER_PURCHASE_TINYBARS) {
   process.exit(1);
 }
 
-/** True only when an operator key + vendor account are present AND the kill switch is on. */
-export const liveHederaConfigured: boolean =
-  env.LIVE_TESTNET_PAYMENTS_ENABLED &&
-  Boolean(env.HEDERA_OPERATOR_ID) &&
-  Boolean(env.HEDERA_OPERATOR_KEY) &&
-  Boolean(env.HEDERA_VENDOR_ACCOUNT_ID);
+interface LiveHederaConfigInput {
+  ENABLE_HEDERA_TX: boolean;
+  LIVE_TESTNET_PAYMENTS_ENABLED: boolean;
+  HEDERA_OPERATOR_ID?: string;
+  HEDERA_OPERATOR_KEY?: string;
+  HEDERA_VENDOR_ACCOUNT_ID?: string;
+}
+
+/** True only when both switches are on and every required account value is present. */
+export function isLiveHederaConfigured(env: LiveHederaConfigInput): boolean {
+  return (
+    env.ENABLE_HEDERA_TX &&
+    env.LIVE_TESTNET_PAYMENTS_ENABLED &&
+    Boolean(env.HEDERA_OPERATOR_ID) &&
+    Boolean(env.HEDERA_OPERATOR_KEY) &&
+    Boolean(env.HEDERA_VENDOR_ACCOUNT_ID)
+  );
+}
+
+export const liveHederaConfigured = isLiveHederaConfigured(env);
 
 /** True when an HCS topic is configured and live mode can write to it. */
 export const hcsConfigured: boolean =
