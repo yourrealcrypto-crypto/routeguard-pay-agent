@@ -185,10 +185,10 @@
         </div>
         <div class="thesis">The LLM proposes. <b>Policy decides.</b> Hedera proves.</div>
         <div class="sub">
-          A procurement agent buys a Premium RouteRisk report with HBAR — but a payment
-          only executes when deterministic Hedera Agent Kit policies approve the vendor,
+          A procurement agent buys a Premium RouteRisk report through simulation or configured testnet HBAR — but execution
+          proceeds only when deterministic Hedera Agent Kit policies approve the vendor,
           shipment context, service, spend caps, daily budget, and approval threshold.
-          Every decision is anchored to the Hedera Consensus Service.
+          Simulation uses local audit hashes; configured real-testnet runs can anchor audit events to HCS.
         </div>
       </header>
 
@@ -366,6 +366,20 @@
         return `<div class="blk"><div class="lbl">Execution timeline</div><div class="tl">${items}</div></div>`;
       }
 
+      function auditTimelineStep(audit) {
+        const statuses = (audit || []).map((a) => a.hcsStatus);
+        if (statuses.length > 0 && statuses.every((status) => status === "ANCHORED")) {
+          return { label: "HCS audit anchored", done: true };
+        }
+        if (statuses.includes("ANCHORED")) {
+          return { label: "HCS audit partially anchored", done: true };
+        }
+        if (statuses.includes("FAILED")) {
+          return { label: "HCS audit anchoring failed", done: true, meta: "payment unaffected" };
+        }
+        return { label: "Audit hashed locally", done: true, meta: "no HCS write" };
+      }
+
       function pf(k, v, copy) {
         return `<div class="pf"><div class="k">${esc(k)}</div><div class="v">${esc(v)}${copy ? `<button class="copy" data-copy="${esc(v)}">copy</button>` : ""}</div></div>`;
       }
@@ -449,7 +463,7 @@
             { label: "Transfer built + integrity-checked", done: true },
             { label: "Payment confirmed", done: true, meta: data.payment.mode },
             { label: "Report unlocked", done: true },
-            { label: "HCS audit anchored", done: true },
+            auditTimelineStep(data.auditTrail),
           ]);
           html += renderReport(data.report);
           html += renderProof(data.payment, data.report, data.auditTrail);

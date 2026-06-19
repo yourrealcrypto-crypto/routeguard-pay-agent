@@ -2,7 +2,7 @@
 
 > **The LLM proposes. Policy decides. Hedera proves.**
 
-RouteGuard Pay Agent is a policy-gated procurement agent. It lets an AI agent buy a **Premium RouteRisk report** with **HBAR on Hedera testnet** — but a payment executes **only** when deterministic [Hedera Agent Kit](https://docs.hedera.com/hedera/open-source-solutions/ai-studio-on-hedera/hedera-ai-agent-kit/hooks-and-polices) hooks and policies approve the vendor, shipment context, service category, per-purchase cap, daily budget, and approval threshold. Every decision is anchored to the **Hedera Consensus Service (HCS)**.
+RouteGuard Pay Agent is a policy-gated procurement agent. It lets an AI agent buy a **Premium RouteRisk report** through a simulated payment or an explicitly enabled **HBAR payment on Hedera testnet** — but execution proceeds **only** when deterministic [Hedera Agent Kit](https://docs.hedera.com/hedera/open-source-solutions/ai-studio-on-hedera/hedera-ai-agent-kit/hooks-and-polices) hooks and policies approve the vendor, shipment context, service category, per-purchase cap, daily budget, and approval threshold. Simulation produces local audit hashes; configured real-testnet runs can anchor audit events to the **Hedera Consensus Service (HCS)**.
 
 Built for the **Hedera Week 5 Policy Agent** bounty.
 
@@ -17,8 +17,8 @@ Businesses will not give an autonomous agent an open wallet. An LLM that can be 
 RouteGuard separates three concerns and makes the boundary between them visible:
 
 1. **The LLM proposes** a purchase and a rationale. It may request only one SKU. It can never choose a vendor account, an amount, a network, an approval, or a payment status.
-2. **Deterministic policies decide.** Eight policy checks run in pure TypeScript and aggregate to `ALLOW_AUTONOMOUS`, `REQUIRE_APPROVAL`, or `BLOCK`. One block blocks the purchase; approval can never override a hard cap.
-3. **Hedera proves.** The approved HBAR transfer is submitted on testnet, independently verified against the mirror node, and the lifecycle is anchored to an HCS topic.
+2. **Deterministic policies decide.** Seven proposal-time policy checks aggregate to `ALLOW_AUTONOMOUS`, `REQUIRE_APPROVAL`, or `BLOCK`, then one execution-time transaction-integrity policy checks the built transfer before submission. One block blocks the purchase; approval can never override a hard cap.
+3. **Hedera proves in real testnet mode.** The approved, capped HBAR transfer is submitted on testnet and independently verified against the mirror node. Audit events are anchored to HCS when `HCS_AUDIT_TOPIC_ID` and operator credentials are configured; simulation performs neither the transfer nor the HCS write.
 
 The model creates intent. The policy layer grants authority. Hedera records the consequence.
 
@@ -51,10 +51,10 @@ AgentService (orchestration)
             │
             └─ execute_route_risk_purchase  (BaseTool, transactional)
                    ├─ [postCoreActionHook] TransactionIntegrityPolicy  ← blocks bad transfers
-                   ├─ HBAR transfer (simulation | testnet)
-                   ├─ Mirror-node verification (independent)
+                   ├─ Payment (synthetic simulation id | capped testnet transfer)
+                   ├─ Mirror-node verification (real testnet only)
                    ├─ Premium report unlock (single-use redemption)
-                   └─ HCS audit anchor
+                   └─ Audit (local hash | configured HCS anchor)
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full lifecycle and [docs/POLICY_MODEL.md](docs/POLICY_MODEL.md) for every policy.
@@ -82,8 +82,8 @@ This is the core of the bounty alignment, and it is **real, not decorative**:
 3. See the agent propose the premium report (with its rationale).
 4. See **every policy check and its evidence** — not just a green/red badge.
 5. Continue automatically, or tap **Approve** when the scenario requires it.
-6. See the HBAR payment (simulation or testnet) and the report unlock.
-7. Inspect the **Hedera proof**: transaction id, vendor, amount, memo, explorer link, report hash, and the HCS audit trail.
+6. See the simulated payment or real testnet HBAR payment and the report unlock.
+7. Inspect the proof bundle: transaction id, vendor, amount, memo, report hash, and whether audit events were locally hashed or anchored to HCS.
 
 ### Judge sandbox scenarios
 
@@ -111,12 +111,17 @@ npm run dev               # opens the Judge Sandbox at http://localhost:3000
 
 Everything above works with **no credentials** in simulation mode.
 
+### Execution modes
+
+- **Simulation (default):** creates a clearly labelled synthetic payment id and local audit hashes. It moves no HBAR, performs no mirror-node verification, and writes nothing to HCS.
+- **Real Hedera testnet:** submits the policy-approved capped HBAR transfer and verifies it independently through the mirror node. When `HCS_AUDIT_TOPIC_ID` and operator credentials are configured, audit events are also anchored to HCS; otherwise they remain local hashes.
+
 ### Enable real Hedera testnet payments
 
 1. Create a testnet account at [portal.hedera.com](https://portal.hedera.com) and fund it.
 2. Create a second account to act as the vendor.
-3. Put both in `.env`, set `LIVE_TESTNET_PAYMENTS_ENABLED=true`.
-4. Create the HCS audit topic and copy the printed id into `.env`:
+3. Put both in `.env`, set `ENABLE_HEDERA_TX=true` and `LIVE_TESTNET_PAYMENTS_ENABLED=true`.
+4. To enable real HCS audit anchoring, create an HCS audit topic and copy the printed id into `.env`:
    ```bash
    npm run create:hcs-topic
    ```
@@ -133,7 +138,7 @@ Everything above works with **no credentials** in simulation mode.
 | Script | What it does |
 |---|---|
 | `npm run dev` / `start` | Run the server + Judge Sandbox |
-| `npm run demo` | Headless run of all 7 scenarios (simulation) |
+| `npm run demo` | Headless run of all 6 scenarios (simulation) |
 | `npm run agent` | Natural-language CLI against a shipment |
 | `npm run test` | Vitest unit + integration suite |
 | `npm run typecheck` | `tsc --noEmit` against the real API |
