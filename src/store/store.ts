@@ -4,6 +4,7 @@ import {
   type PaymentProof,
   type PremiumReport,
   type AuditAnchor,
+  type ApprovalRecord,
   type ProposalStatus,
 } from "../domain/index.js";
 
@@ -36,6 +37,19 @@ export interface BudgetReservation {
   state: "RESERVED" | "COMMITTED" | "RELEASED";
 }
 
+export interface ApprovalBinding {
+  proposalId: string;
+  shipmentId: string;
+  vendorId: string;
+  vendorAccountId: string;
+  sku: string;
+  amountTinybars: number;
+  policyHash: string;
+  proposalHash: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
 class Store {
   proposals = new Map<string, PurchaseProposal>();
   decisions = new Map<string, PolicyDecisionResult>();
@@ -43,7 +57,8 @@ class Store {
   reservations = new Map<string, BudgetReservation>();
   /** transactionId → proposalId, makes a payment single-use at the vendor. */
   redemptions = new Map<string, string>();
-  approvals = new Set<string>();
+  approvalBindings = new Map<string, ApprovalBinding>();
+  approvals = new Map<string, ApprovalRecord>();
 
   private utcDate(): string {
     return new Date().toISOString().slice(0, 10);
@@ -116,12 +131,37 @@ class Store {
     return true;
   }
 
+  recordApproval(record: ApprovalRecord): boolean {
+    if (this.approvals.has(record.proposalId)) return false;
+    this.approvals.set(record.proposalId, record);
+    return true;
+  }
+
+  beginApprovalUse(proposalId: string): boolean {
+    const approval = this.approvals.get(proposalId);
+    if (!approval || approval.status !== "APPROVED") return false;
+    approval.status = "IN_USE";
+    return true;
+  }
+
+  finishApprovalUse(proposalId: string): void {
+    const approval = this.approvals.get(proposalId);
+    if (!approval || approval.status !== "IN_USE") return;
+    approval.status = "USED";
+    approval.usedAt = new Date().toISOString();
+  }
+
+  isApprovalAuthorizedForExecution(proposalId: string): boolean {
+    return this.approvals.get(proposalId)?.status === "IN_USE";
+  }
+
   reset(): void {
     this.proposals.clear();
     this.decisions.clear();
     this.purchases.clear();
     this.reservations.clear();
     this.redemptions.clear();
+    this.approvalBindings.clear();
     this.approvals.clear();
   }
 }

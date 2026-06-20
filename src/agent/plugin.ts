@@ -91,7 +91,6 @@ export class RouteGuardOrchestrator {
   }
 
   recordApproval(proposalId: string): void {
-    store.approvals.add(proposalId);
     const p = store.proposals.get(proposalId);
     if (p && p.status === "APPROVAL_REQUIRED") p.status = "HUMAN_APPROVED";
   }

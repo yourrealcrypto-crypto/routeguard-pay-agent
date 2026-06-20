@@ -38,6 +38,21 @@ const RawEnvSchema = z.object({
     .default("false")
     .transform((v) => v === "true"),
 
+  // Approval identity. No authentication adapter is installed by default.
+  APPROVAL_AUTH_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
+  APPROVER_EMAILS: z
+    .string()
+    .default("")
+    .transform((v) =>
+      v
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+
   // Policy values, in tinybars (1 HBAR = 100_000_000 tinybars).
   CATALOG_PRICE_TINYBARS: z.coerce.number().int().positive().default(5_000_000),
   MAX_PER_PURCHASE_TINYBARS: z.coerce
@@ -111,12 +126,15 @@ export const hcsConfigured: boolean =
   Boolean(env.HEDERA_OPERATOR_KEY);
 
 export const llmConfigured: boolean = Boolean(env.LLM_API_KEY);
+export const approvalAuthConfigured: boolean =
+  env.APPROVAL_AUTH_ENABLED && env.APPROVER_EMAILS.length > 0;
 
 export const config = {
   ...env,
   liveHederaConfigured,
   hcsConfigured,
   llmConfigured,
+  approvalAuthConfigured,
   /** Vendor identity is server-controlled; the model can never supply it. */
   vendor: {
     vendorId: "route-risk-labs" as const,

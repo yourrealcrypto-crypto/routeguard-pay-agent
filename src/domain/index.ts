@@ -95,6 +95,7 @@ export const ProposalStatus = z.enum([
   "AUTO_APPROVED",
   "APPROVAL_REQUIRED",
   "HUMAN_APPROVED",
+  "REJECTED",
   "BLOCKED",
   "EXECUTING",
   "PAYMENT_CONFIRMED",
@@ -119,6 +120,23 @@ export const PurchaseProposalSchema = z.object({
   createdAt: z.string().datetime(),
 });
 export type PurchaseProposal = z.infer<typeof PurchaseProposalSchema>;
+
+export type ApprovalMode =
+  | "SIMULATED_DEMO"
+  | "AUTHENTICATED_LIVE_TESTNET";
+export type ApprovalStatus = "APPROVED" | "IN_USE" | "USED" | "REJECTED";
+
+export interface ApprovalRecord {
+  proposalId: string;
+  proposalHash: string;
+  policyHash: string;
+  mode: ApprovalMode;
+  status: ApprovalStatus;
+  approverLabel: string;
+  approvedAt: string | null;
+  rejectedAt: string | null;
+  usedAt: string | null;
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Policy results                                                            */
@@ -220,6 +238,7 @@ export const AuditEventType = z.enum([
   "POLICY_APPROVAL_REQUIRED",
   "POLICY_BLOCKED",
   "HUMAN_APPROVED",
+  "HUMAN_REJECTED",
   "PAYMENT_SUBMITTED",
   "PAYMENT_CONFIRMED",
   "API_ACCESS_GRANTED",
@@ -262,6 +281,12 @@ export const RGError = {
   MODEL_OUTPUT_INVALID: "RG_MODEL_OUTPUT_INVALID",
   RATE_LIMITED: "RG_RATE_LIMITED",
   LIVE_PAYMENTS_DISABLED: "RG_LIVE_PAYMENTS_DISABLED",
+  APPROVER_AUTH_REQUIRED: "RG_APPROVER_AUTH_REQUIRED",
+  APPROVAL_INVALID: "RG_APPROVAL_INVALID",
+  APPROVAL_EXPIRED: "RG_APPROVAL_EXPIRED",
+  APPROVAL_BINDING_MISMATCH: "RG_APPROVAL_BINDING_MISMATCH",
+  APPROVAL_REPLAYED: "RG_APPROVAL_REPLAYED",
+  APPROVAL_REJECTED: "RG_APPROVAL_REJECTED",
 } as const;
 export type RGErrorCode = (typeof RGError)[keyof typeof RGError];
 

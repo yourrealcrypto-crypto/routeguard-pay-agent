@@ -1,7 +1,13 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { config, liveHederaConfigured, hcsConfigured, llmConfigured } from "../config/index.js";
+import {
+  config,
+  liveHederaConfigured,
+  hcsConfigured,
+  llmConfigured,
+  approvalAuthConfigured,
+} from "../config/index.js";
 import { AgentService } from "./agent-service.js";
 import { getClient } from "../hedera/client.js";
 import { SHIPMENTS, SCENARIOS, type ExecutionMode } from "../store/fixtures.js";
@@ -54,6 +60,7 @@ app.get("/api/health", (_req, res) => {
     hederaNetwork: "testnet",
     hcsConfigured,
     livePaymentsEnabled: liveHederaConfigured,
+    approvalAuthConfigured,
     llmConfigured,
     version: "1.0.0",
   });
@@ -109,11 +116,28 @@ app.post("/api/approvals/:proposalId", liveRateLimit, async (req, res) => {
   try {
     const proposalId = req.params.proposalId ?? "";
     const mode: ExecutionMode =
-      req.body?.executionMode === "AUTONOMOUS_TESTNET" && liveHederaConfigured
+      req.body?.executionMode === "AUTONOMOUS_TESTNET"
         ? "AUTONOMOUS_TESTNET"
         : "SIMULATION";
     const svc = serviceCache.get(proposalId) ?? makeService();
+    // No auth middleware exists yet, so no verified approver context is supplied.
+    // AgentService therefore refuses every live-testnet approval at this boundary.
     const result = await svc.approveAndExecute(proposalId, mode);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ kind: "FAILED", errorCode: "RG_HEDERA_SUBMISSION_FAILED", message: String(err) });
+  }
+});
+
+app.post("/api/approvals/:proposalId/reject", liveRateLimit, async (req, res) => {
+  try {
+    const proposalId = req.params.proposalId ?? "";
+    const mode: ExecutionMode =
+      req.body?.executionMode === "AUTONOMOUS_TESTNET"
+        ? "AUTONOMOUS_TESTNET"
+        : "SIMULATION";
+    const svc = serviceCache.get(proposalId) ?? makeService();
+    const result = await svc.rejectProposal(proposalId, mode);
     res.json(result);
   } catch (err) {
     res.status(500).json({ kind: "FAILED", errorCode: "RG_HEDERA_SUBMISSION_FAILED", message: String(err) });
@@ -125,8 +149,9 @@ app.get("/api/purchases/:proposalId", (req, res) => {
   const proposal = store.proposals.get(proposalId);
   const purchase = store.purchases.get(proposalId);
   const decision = store.decisions.get(proposalId);
+  const approval = store.approvals.get(proposalId);
   if (!proposal) return res.status(404).json({ error: "not found" });
-  res.json({ proposal, decision, purchase });
+  res.json({ proposal, decision, purchase, approval });
 });
 
 app.post("/api/sandbox/reset", (_req, res) => {

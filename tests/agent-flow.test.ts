@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { AgentService } from "../src/server/agent-service.js";
+import {
+  AgentService,
+  type ApprovalSecurityOptions,
+} from "../src/server/agent-service.js";
 import { store } from "../src/store/store.js";
 
 /**
@@ -8,8 +11,13 @@ import { store } from "../src/store/store.js";
  * idempotency / replay / budget invariants the spec requires.
  */
 
-function svc() {
-  return new AgentService({} as never);
+function svc(
+  approvalSecurity: ApprovalSecurityOptions = {
+    authEnabled: false,
+    approverEmails: [],
+  },
+) {
+  return new AgentService({} as never, approvalSecurity);
 }
 
 describe("agent flow — scenarios", () => {
@@ -69,7 +77,7 @@ describe("agent flow — scenarios", () => {
 describe("approval flow", () => {
   beforeEach(() => store.reset());
 
-  it("strict scenario requires approval then completes", async () => {
+  it("simulation approval works and is marked as an unauthenticated demo", async () => {
     const s = svc();
     const r = await s.run({
       shipmentId: "RG-1001",
@@ -82,7 +90,125 @@ describe("approval flow", () => {
       expect(store.purchases.get(r.proposalId)?.payment).toBeUndefined();
       const after = await s.approveAndExecute(r.proposalId, "SIMULATION");
       expect(after.kind).toBe("COMPLETED");
+      if (after.kind === "COMPLETED") {
+        expect(after.approval?.mode).toBe("SIMULATED_DEMO");
+        expect(after.approval?.status).toBe("USED");
+        expect(after.approval?.approverLabel).toContain("unauthenticated");
+        expect(after.approval?.approvedAt).toBeTruthy();
+      }
     }
+  });
+
+  it("rejects live-testnet approval when approver authentication is not configured", async () => {
+    const s = svc({ authEnabled: false, approverEmails: [] });
+    const r = await s.run({
+      shipmentId: "RG-1001",
+      scenarioId: "approval-required",
+      executionMode: "SIMULATION",
+    });
+    expect(r.kind).toBe("APPROVAL_REQUIRED");
+    if (r.kind !== "APPROVAL_REQUIRED") return;
+
+    const after = await s.approveAndExecute(
+      r.proposalId,
+      "AUTONOMOUS_TESTNET",
+    );
+    expect(after.kind).toBe("FAILED");
+    if (after.kind === "FAILED") {
+      expect(after.errorCode).toBe("RG_APPROVER_AUTH_REQUIRED");
+    }
+    expect(store.approvals.has(r.proposalId)).toBe(false);
+  });
+
+  it("does not approve an unknown proposal", async () => {
+    const after = await svc().approveAndExecute(
+      "00000000-0000-4000-8000-000000000000",
+      "SIMULATION",
+    );
+    expect(after.kind).toBe("FAILED");
+    if (after.kind === "FAILED") {
+      expect(after.errorCode).toBe("RG_APPROVAL_INVALID");
+    }
+  });
+
+  it("refuses approval when immutable proposal details were modified", async () => {
+    const s = svc();
+    const r = await s.run({
+      shipmentId: "RG-1001",
+      scenarioId: "approval-required",
+      executionMode: "SIMULATION",
+    });
+    expect(r.kind).toBe("APPROVAL_REQUIRED");
+    if (r.kind !== "APPROVAL_REQUIRED") return;
+    const proposal = store.proposals.get(r.proposalId)!;
+    proposal.rationale = proposal.rationale + " modified";
+
+    const after = await s.approveAndExecute(r.proposalId, "SIMULATION");
+    expect(after.kind).toBe("FAILED");
+    if (after.kind === "FAILED") {
+      expect(after.errorCode).toBe("RG_APPROVAL_BINDING_MISMATCH");
+    }
+  });
+
+  it("does not approve an expired proposal", async () => {
+    const s = svc();
+    const r = await s.run({
+      shipmentId: "RG-1001",
+      scenarioId: "approval-required",
+      executionMode: "SIMULATION",
+    });
+    expect(r.kind).toBe("APPROVAL_REQUIRED");
+    if (r.kind !== "APPROVAL_REQUIRED") return;
+    store.approvalBindings.get(r.proposalId)!.expiresAt = new Date(0).toISOString();
+
+    const after = await s.approveAndExecute(r.proposalId, "SIMULATION");
+    expect(after.kind).toBe("FAILED");
+    if (after.kind === "FAILED") {
+      expect(after.errorCode).toBe("RG_APPROVAL_EXPIRED");
+    }
+  });
+
+  it("does not replay an approval after it has been used", async () => {
+    const s = svc();
+    const r = await s.run({
+      shipmentId: "RG-1001",
+      scenarioId: "approval-required",
+      executionMode: "SIMULATION",
+    });
+    expect(r.kind).toBe("APPROVAL_REQUIRED");
+    if (r.kind !== "APPROVAL_REQUIRED") return;
+
+    const first = await s.approveAndExecute(r.proposalId, "SIMULATION");
+    expect(first.kind).toBe("COMPLETED");
+    const firstTransaction =
+      first.kind === "COMPLETED" ? first.payment.transactionId : null;
+    const replay = await s.approveAndExecute(r.proposalId, "SIMULATION");
+    expect(replay.kind).toBe("FAILED");
+    if (replay.kind === "FAILED") {
+      expect(replay.errorCode).toBe("RG_APPROVAL_REPLAYED");
+    }
+    expect(store.purchases.get(r.proposalId)?.transactionId).toBe(
+      firstTransaction,
+    );
+  });
+
+  it("records a simulation rejection without authorizing payment", async () => {
+    const s = svc();
+    const r = await s.run({
+      shipmentId: "RG-1001",
+      scenarioId: "approval-required",
+      executionMode: "SIMULATION",
+    });
+    expect(r.kind).toBe("APPROVAL_REQUIRED");
+    if (r.kind !== "APPROVAL_REQUIRED") return;
+
+    const after = await s.rejectProposal(r.proposalId, "SIMULATION");
+    expect(after.kind).toBe("REJECTED");
+    if (after.kind === "REJECTED") {
+      expect(after.approval.mode).toBe("SIMULATED_DEMO");
+      expect(after.approval.status).toBe("REJECTED");
+    }
+    expect(store.purchases.has(r.proposalId)).toBe(false);
   });
 });
 

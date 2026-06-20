@@ -99,7 +99,7 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
         RGError.MODEL_OUTPUT_INVALID,
         `Unknown proposal ${params.proposalId}.`,
       );
-    if (proposal.status === "BLOCKED")
+    if (proposal.status === "BLOCKED" || proposal.status === "REJECTED")
       throw new RouteGuardError(
         RGError.POLICY_SHIPMENT_INELIGIBLE,
         "Proposal is blocked and cannot be executed.",
@@ -117,7 +117,7 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
       vendorAccountId: catalogItem.vendorAccountId,
       memo,
       profile: proposal.policyProfile,
-      humanApproved: store.approvals.has(proposal.id),
+      humanApproved: store.isApprovalAuthorizedForExecution(proposal.id),
       policyHash:
         store.decisions.get(proposal.id)?.canonicalHash ?? "unknown",
     };
