@@ -6,6 +6,9 @@ import {
   type AuditAnchor,
   type ApprovalRecord,
   type ProposalStatus,
+  type MirrorNodeConfirmation,
+  type SubmittedTransactionEvidence,
+  type VerificationResult,
 } from "../domain/index.js";
 
 /**
@@ -23,11 +26,16 @@ export interface PurchaseRecord {
   amountTinybars: number;
   memo: string;
   transactionId: string | null;
+  executionMode: "SIMULATION" | "AUTONOMOUS_TESTNET";
   state: ProposalStatus;
   errorCode: string | null;
   payment?: PaymentProof;
+  submittedTransaction?: SubmittedTransactionEvidence;
+  mirrorNodeConfirmation: MirrorNodeConfirmation;
+  mirrorFailureReason: string | null;
   report?: PremiumReport;
   auditTrail: AuditAnchor[];
+  verification: VerificationResult;
 }
 
 export interface BudgetReservation {

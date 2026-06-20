@@ -795,15 +795,14 @@
       }
 
       function verificationState(data, selectedMode, livePaymentsEnabled) {
-        const payment = data?.payment;
-        if (payment?.mode === "SIMULATION") return { key: "simulation", badge: "SIMULATION EVIDENCE" };
-        const realTransaction = payment?.mode === "AUTONOMOUS_TESTNET" && Boolean(payment.transactionId) && !String(payment.transactionId).startsWith("SIM-");
-        const mirrorConfirmed = realTransaction && payment.result === "SUCCESS" && Boolean(payment.consensusTimestamp);
-        const audit = Array.isArray(data?.auditTrail) ? data.auditTrail : [];
-        if (data?.verificationStatus === "FAILED" || (data?.kind === "FAILED" && /MIRROR|VERIF/i.test(data.errorCode || ""))) return { key: "failed", badge: "VERIFICATION FAILED" };
-        if (realTransaction && (!mirrorConfirmed || audit.some((item) => item.hcsStatus === "PENDING"))) return { key: "pending", badge: "VERIFICATION PENDING" };
-        if (mirrorConfirmed && audit.length > 0 && audit.every((item) => item.hcsStatus === "ANCHORED")) return { key: "verified", badge: "VERIFIED ON HEDERA" };
-        if (mirrorConfirmed) return { key: "partial", badge: "PARTIALLY VERIFIED" };
+        const backend = {
+          SIMULATION_EVIDENCE: { key: "simulation", badge: "SIMULATION EVIDENCE" },
+          VERIFICATION_PENDING: { key: "pending", badge: "VERIFICATION PENDING" },
+          VERIFIED_ON_HEDERA: { key: "verified", badge: "VERIFIED ON HEDERA" },
+          PARTIALLY_VERIFIED: { key: "partial", badge: "PARTIALLY VERIFIED" },
+          VERIFICATION_FAILED: { key: "failed", badge: "VERIFICATION FAILED" },
+        }[data?.verification?.status];
+        if (backend) return backend;
         if (selectedMode === "AUTONOMOUS_TESTNET" && livePaymentsEnabled) return { key: "ready", badge: "TESTNET READY" };
         return { key: "simulation", badge: "SIMULATION EVIDENCE" };
       }
@@ -1203,36 +1202,36 @@
       function renderVerification(data) {
         const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
         const state = verificationState(data, mode, HEALTH.livePaymentsEnabled);
+        const verification = data?.verification;
         const copy = {
           simulation: ["Not written to Hedera", "No real HBAR transfer", "Local policy and report hashes only"],
           ready: ["Hedera testnet execution is enabled.", "No transaction has been submitted for this case yet."],
           pending: ["Transaction submitted to Hedera testnet.", "Waiting for Mirror Node confirmation and HCS audit records."],
           verified: ["Verified on Hedera testnet", "Mirror Node confirmed · HCS anchored"],
           partial: ["Hedera transaction confirmed.", "HCS audit anchoring was skipped or unavailable."],
-          failed: ["The submitted transaction could not be independently verified.", "Review the transaction and audit details."],
+          failed: verification?.transactionSubmitted
+            ? ["The submitted transaction could not be independently verified.", "Review the transaction and audit details."]
+            : ["No verifiable Hedera transaction was recorded.", "Review the failure details before retrying."],
         }[state.key];
-        const payment = data?.payment;
-        const report = data?.report;
         const decision = data?.decision;
         const audit = Array.isArray(data?.auditTrail) ? data.auditTrail : [];
-        const topic = audit.find((item) => item.hcsTopicId)?.hcsTopicId;
-        const sequences = audit.map((item) => item.hcsSequenceNumber).filter((value) => value != null);
         const statuses = audit.map((item) => `${item.eventType}: ${item.hcsStatus}${item.hcsSequenceNumber ? ` #${item.hcsSequenceNumber}` : ""}`);
-        const explorer = payment?.explorerUrl?.startsWith("http") ? `<a href="${esc(payment.explorerUrl)}" target="_blank" rel="noopener">View on HashScan ↗</a>` : "Not recorded";
-        const mirror = payment?.mode === "AUTONOMOUS_TESTNET" && payment?.result === "SUCCESS" && payment?.consensusTimestamp ? "CONFIRMED" : payment?.mode === "SIMULATION" ? "Not applicable" : "Not confirmed";
+        const explorer = verification?.hashscanUrl?.startsWith("http") ? `<a href="${esc(verification.hashscanUrl)}" target="_blank" rel="noopener">View on HashScan ↗</a>` : "Not recorded";
         const groups = [
           evidenceGroup("Decision Evidence", [
             evidenceRow("Decision", data?.kind || "Not recorded"), evidenceRow("Proposal ID", data?.proposalId, true),
-            evidenceRow("Policy version", decision?.policyVersion), evidenceRow("Policy hash", decision?.canonicalHash || report?.policyHash, true),
+            evidenceRow("Policy version", verification?.policyVersion || decision?.policyVersion), evidenceRow("Policy hash", verification?.policyHash || decision?.canonicalHash, true),
           ]),
           evidenceGroup("Payment Verification", [
-            evidenceRow(payment?.mode === "SIMULATION" ? "Synthetic payment ID" : "Transaction ID", payment?.transactionId, true),
-            evidenceRow("Amount", payment ? tinybars(payment.amountTinybars) : null), evidenceRow("Vendor account", payment?.vendorAccountId, true),
-            evidenceRow("Memo", payment?.memo, true), evidenceRow("HashScan", explorer, false, true),
+            evidenceRow("Execution mode", verification?.executionMode || mode),
+            evidenceRow("Transaction submitted", verification ? (verification.transactionSubmitted ? "Yes" : "No") : "No"),
+            evidenceRow("Transaction ID", verification?.transactionId, true),
+            evidenceRow("Amount", verification?.amountTinybars != null ? tinybars(verification.amountTinybars) : null), evidenceRow("Vendor account", verification?.vendorAccountId, true),
+            evidenceRow("Memo", verification?.memo, true), evidenceRow("HashScan", explorer, false, true),
           ]),
-          evidenceGroup("Mirror Node Record", [evidenceRow("Verification status", mirror), evidenceRow("Consensus timestamp", payment?.consensusTimestamp)]),
-          evidenceGroup("HCS Audit Trail", [evidenceRow("HCS topic", topic, true), evidenceRow("Sequence numbers", sequences.length ? sequences.join(", ") : null), evidenceRow("Lifecycle records", statuses.length ? statuses.join(" · ") : null)]),
-          evidenceGroup("Report Integrity", [evidenceRow("Report hash", report?.reportHash, true), evidenceRow("Policy hash", report?.policyHash || decision?.canonicalHash, true), evidenceRow("Policy version", report?.policyVersion || decision?.policyVersion)]),
+          evidenceGroup("Mirror Node Record", [evidenceRow("Confirmation", verification?.mirrorNodeConfirmation), evidenceRow("Consensus timestamp", verification?.consensusTimestamp)]),
+          evidenceGroup("HCS Audit Trail", [evidenceRow("HCS configured", verification ? (verification.hcsConfigured ? "Yes" : "No") : null), evidenceRow("Anchoring status", verification?.hcsAnchoringStatus), evidenceRow("HCS topic", verification?.hcsTopicId, true), evidenceRow("Sequence numbers", verification?.hcsSequenceNumbers?.length ? verification.hcsSequenceNumbers.join(", ") : null), evidenceRow("Lifecycle records", statuses.length ? statuses.join(" · ") : null)]),
+          evidenceGroup("Report Integrity", [evidenceRow("Report hash", verification?.reportHash, true), evidenceRow("Policy hash", verification?.policyHash || decision?.canonicalHash, true), evidenceRow("Policy version", verification?.policyVersion || decision?.policyVersion), evidenceRow("Failure code", verification?.failureCode), evidenceRow("Failure reason", verification?.failureReason)]),
         ];
         return `<section class="verification" aria-labelledby="verificationHeading"><div class="verification-head"><div><div class="section-kicker">Permanent case evidence</div><h3 id="verificationHeading">Verification &amp; Audit</h3><div class="verification-copy">${copy.map((line) => `<span>${esc(line)}</span>`).join("")}</div></div><span class="evidence-badge ${state.key}">${state.badge}</span></div><div class="evidence-groups">${groups.join("")}</div><details><summary>How Hedera Verification Works</summary><ol><li>RouteGuard records the policy decision.</li><li>A controlled HBAR transaction may execute.</li><li>Mirror Node confirms the transaction record.</li><li>HCS anchors ordered lifecycle events.</li><li>Policy and report hashes preserve integrity.</li></ol></details></section>`;
       }

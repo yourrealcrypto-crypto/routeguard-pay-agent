@@ -35,6 +35,9 @@ describe("agent flow — scenarios", () => {
       expect(r.report.reportHash).toMatch(/^[0-9a-f]{64}$/);
       expect(r.payment.memo.startsWith("RG:")).toBe(true);
       expect(r.auditTrail.length).toBeGreaterThanOrEqual(2);
+      expect(r.verification.status).toBe("SIMULATION_EVIDENCE");
+      expect(r.verification.transactionSubmitted).toBe(false);
+      expect(r.verification.mirrorNodeConfirmation).toBe("NOT_APPLICABLE");
       // lifecycle hook observed both core stages
       expect(r.lifecycle.some((e) => e.stage === "post_core")).toBe(true);
     }

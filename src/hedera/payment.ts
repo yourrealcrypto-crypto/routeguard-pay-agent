@@ -8,6 +8,8 @@ import { config } from "../config/index.js";
 import { getClient, explorerUrlForTx } from "./client.js";
 import {
   type PaymentProof,
+  type RGErrorCode,
+  type SubmittedTransactionEvidence,
   RouteGuardError,
   RGError,
 } from "../domain/index.js";
@@ -19,6 +21,18 @@ export interface PaymentRequest {
   amountTinybars: number;
   memo: string;
   mode: ExecutionMode;
+}
+
+export class PaymentExecutionError extends RouteGuardError {
+  constructor(
+    code: RGErrorCode,
+    publicMessage: string,
+    retryable: boolean,
+    public submittedTransaction?: SubmittedTransactionEvidence,
+  ) {
+    super(code, publicMessage, retryable);
+    this.name = "PaymentExecutionError";
+  }
 }
 
 /**
@@ -65,8 +79,7 @@ export async function executePayment(
   const payer = config.HEDERA_OPERATOR_ID!;
   const amount = Hbar.from(req.amountTinybars, HbarUnit.Tinybar);
 
-  let txId: string;
-  let consensusTimestamp: string | null = null;
+  let submittedTransaction: SubmittedTransactionEvidence | undefined;
   try {
     const tx = new TransferTransaction()
       .addHbarTransfer(AccountId.fromString(payer), amount.negated())
@@ -74,7 +87,16 @@ export async function executePayment(
       .setTransactionMemo(req.memo);
 
     const response = await tx.execute(client);
-    txId = response.transactionId.toString();
+    const txId = response.transactionId.toString();
+    submittedTransaction = {
+      network: "testnet",
+      mode: "AUTONOMOUS_TESTNET",
+      transactionId: txId,
+      hashscanUrl: explorerUrlForTx(txId),
+      vendorAccountId: req.vendorAccountId,
+      amountTinybars: req.amountTinybars,
+      memo: req.memo,
+    };
 
     const receipt = await response.getReceipt(client);
     if (receipt.status.toString() !== "SUCCESS") {
@@ -85,24 +107,38 @@ export async function executePayment(
       );
     }
   } catch (err) {
-    if (err instanceof RouteGuardError) throw err;
-    throw new RouteGuardError(
+    if (err instanceof RouteGuardError)
+      throw new PaymentExecutionError(
+        err.code,
+        err.publicMessage,
+        err.retryable,
+        submittedTransaction,
+      );
+    throw new PaymentExecutionError(
       RGError.HEDERA_SUBMISSION_FAILED,
       `Hedera submission failed: ${String(err)}`,
       true,
+      submittedTransaction,
     );
   }
+
+  if (!submittedTransaction)
+    throw new PaymentExecutionError(
+      RGError.HEDERA_SUBMISSION_FAILED,
+      "Hedera submission returned no transaction evidence.",
+      true,
+    );
 
   return {
     network: "testnet",
     mode: "AUTONOMOUS_TESTNET",
-    transactionId: txId,
+    transactionId: submittedTransaction.transactionId,
     payerAccountId: payer,
     vendorAccountId: req.vendorAccountId,
     amountTinybars: req.amountTinybars,
     memo: req.memo,
-    consensusTimestamp,
+    consensusTimestamp: null,
     result: "SUCCESS",
-    explorerUrl: explorerUrlForTx(txId),
+    explorerUrl: submittedTransaction.hashscanUrl,
   };
 }

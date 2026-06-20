@@ -16,10 +16,12 @@ import {
   type ApprovalMode,
   type ApprovalRecord,
   type PurchaseProposal,
+  type VerificationResult,
   RouteGuardError,
   RGError,
   sha256,
 } from "../domain/index.js";
+import { buildVerificationResult } from "../verification/result.js";
 
 /**
  * Orchestration algorithm (deterministic app code owns state; the LLM only
@@ -80,6 +82,7 @@ export type AgentRunResult =
       payment: PaymentProof;
       report: PremiumReport;
       auditTrail: AuditAnchor[];
+      verification: VerificationResult;
       lifecycle: ReturnType<RouteGuardOrchestrator["lifecycleEvents"]>;
       approval?: ApprovalRecord;
     }
@@ -89,6 +92,7 @@ export type AgentRunResult =
       proposalId?: string;
       errorCode: string;
       message: string;
+      verification?: VerificationResult;
     };
 
 export interface ApprovalRequestView {
@@ -453,6 +457,7 @@ export class AgentService {
           proposalId,
           errorCode: "RG_VENDOR_API_FAILED",
           message: "Payment or report missing after execution.",
+          verification: result.verification,
         };
       return {
         kind: "COMPLETED",
@@ -464,6 +469,7 @@ export class AgentService {
         payment: result.payment,
         report: result.report,
         auditTrail: result.auditTrail,
+        verification: result.verification,
         lifecycle: this.orch.lifecycleEvents(),
       };
     } catch (err) {
@@ -536,19 +542,61 @@ function failure(
   proposalId: string | undefined,
   err: unknown,
 ): AgentRunResult {
-  if (err instanceof RouteGuardError)
+  if (err instanceof RouteGuardError) {
+    const verification = verificationAfterFailure(
+      proposalId,
+      err.code,
+      err.publicMessage,
+    );
     return {
       kind: "FAILED",
       shipmentId,
       proposalId,
       errorCode: err.code,
       message: err.publicMessage,
+      ...(verification ? { verification } : {}),
     };
+  }
+  const message = String(err);
+  const verification = verificationAfterFailure(
+    proposalId,
+    RGError.HEDERA_SUBMISSION_FAILED,
+    message,
+  );
   return {
     kind: "FAILED",
     shipmentId,
     proposalId,
     errorCode: "RG_HEDERA_SUBMISSION_FAILED",
-    message: String(err),
+    message,
+    ...(verification ? { verification } : {}),
   };
+}
+
+function verificationAfterFailure(
+  proposalId: string | undefined,
+  failureCode: string,
+  failureReason: string,
+): VerificationResult | undefined {
+  if (!proposalId) return undefined;
+  const record = store.purchases.get(proposalId);
+  if (!record) return undefined;
+  const verification = buildVerificationResult({
+    executionMode: record.executionMode,
+    payment: record.payment,
+    submittedTransaction: record.submittedTransaction,
+    vendorAccountId: record.vendorAccountId,
+    amountTinybars: record.amountTinybars,
+    memo: record.memo,
+    mirrorNodeConfirmation: record.mirrorNodeConfirmation,
+    auditTrail: record.auditTrail,
+    hcsConfigured: config.hcsConfigured,
+    configuredHcsTopicId: config.HCS_AUDIT_TOPIC_ID ?? null,
+    report: record.report,
+    decision: store.decisions.get(proposalId),
+    failureCode,
+    failureReason,
+  });
+  record.verification = verification;
+  return verification;
 }

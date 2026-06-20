@@ -15,15 +15,21 @@ import {
   type PaymentProof,
   type PremiumReport,
   type AuditAnchor,
+  type VerificationResult,
   RouteGuardError,
   RGError,
   sha256,
 } from "../domain/index.js";
-import { executePayment, type ExecutionMode } from "../hedera/payment.js";
+import {
+  executePayment,
+  PaymentExecutionError,
+  type ExecutionMode,
+} from "../hedera/payment.js";
 import { verifyPaymentOnMirror } from "../hedera/mirror.js";
 import { anchorAuditEvent } from "../hedera/hcs.js";
 import { generatePremiumReport } from "../risk/engine.js";
 import type { ExecutionPlan } from "./transaction-integrity-policy.js";
+import { buildVerificationResult } from "../verification/result.js";
 
 /**
  * execute_route_risk_purchase — a transaction BaseTool.
@@ -242,9 +248,25 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
       amountTinybars: n.amountTinybars,
       memo: n.memo,
       transactionId: null,
+      executionMode: n.executionMode,
       state: "EXECUTING",
       errorCode: null,
+      mirrorNodeConfirmation:
+        n.executionMode === "SIMULATION" ? "NOT_APPLICABLE" : "PENDING",
+      mirrorFailureReason: null,
       auditTrail: [],
+      verification: buildVerificationResult({
+        executionMode: n.executionMode,
+        vendorAccountId: n.vendorAccountId,
+        amountTinybars: n.amountTinybars,
+        memo: n.memo,
+        mirrorNodeConfirmation:
+          n.executionMode === "SIMULATION" ? "NOT_APPLICABLE" : "PENDING",
+        auditTrail: [],
+        hcsConfigured: config.hcsConfigured,
+        configuredHcsTopicId: config.HCS_AUDIT_TOPIC_ID ?? null,
+        decision: store.decisions.get(n.proposalId),
+      }),
     };
     store.purchases.set(n.proposalId, record);
     this.setProposalStatus(n.proposalId, "EXECUTING");
@@ -260,10 +282,19 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
       });
     } catch (err) {
       store.releaseBudget(n.proposalId);
+      if (err instanceof PaymentExecutionError && err.submittedTransaction) {
+        record.submittedTransaction = err.submittedTransaction;
+        record.transactionId = err.submittedTransaction.transactionId;
+      }
       record.state = "FAILED";
       record.errorCode =
         err instanceof RouteGuardError ? err.code : RGError.HEDERA_SUBMISSION_FAILED;
       this.setProposalStatus(n.proposalId, "FAILED");
+      refreshVerification(
+        record,
+        err instanceof RouteGuardError ? err.code : RGError.HEDERA_SUBMISSION_FAILED,
+        err instanceof RouteGuardError ? err.publicMessage : String(err),
+      );
       throw err;
     }
     record.payment = payment;
@@ -279,6 +310,7 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
         mode: n.executionMode,
       }),
     );
+    refreshVerification(record);
 
     // 2) Unlock the report (independent step — ret1ryable without repaying).
     const report = await this.unlockAndStore(record, n, payment);
@@ -303,13 +335,24 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
       if (!verify.ok) {
         record.state = "FAILED";
         record.errorCode = verify.reasonCode ?? RGError.VENDOR_PAYMENT_INVALID;
+        record.mirrorNodeConfirmation = "FAILED";
+        record.mirrorFailureReason =
+          verify.reasonCode ?? "Mirror Node verification failed.";
         this.setProposalStatus(n.proposalId, "FAILED");
+        refreshVerification(
+          record,
+          record.errorCode,
+          "Vendor could not verify the payment on the mirror node.",
+        );
         throw new RouteGuardError(
           (verify.reasonCode as never) ?? RGError.VENDOR_PAYMENT_INVALID,
           "Vendor could not verify the payment on the mirror node.",
           true,
         );
       }
+      record.mirrorNodeConfirmation = "CONFIRMED";
+      payment.consensusTimestamp = verify.consensusTimestamp ?? null;
+      refreshVerification(record);
     }
 
     // Single-use redemption: a transaction can unlock exactly one report.
@@ -346,6 +389,7 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
         mode: payment.mode,
       }),
     );
+    refreshVerification(record);
     return report;
   }
 
@@ -373,6 +417,7 @@ export interface ExecuteResult {
   payment: PaymentProof | undefined;
   report: PremiumReport | undefined;
   auditTrail: AuditAnchor[];
+  verification: VerificationResult;
 }
 
 function buildResult(
@@ -385,7 +430,33 @@ function buildResult(
     payment: record.payment,
     report,
     auditTrail: record.auditTrail,
+    verification: record.verification,
   };
+}
+
+export function refreshVerification(
+  record: PurchaseRecord,
+  failureCode: string | null = record.errorCode,
+  failureReason: string | null = record.mirrorFailureReason,
+): VerificationResult {
+  const verification = buildVerificationResult({
+    executionMode: record.executionMode,
+    payment: record.payment,
+    submittedTransaction: record.submittedTransaction,
+    vendorAccountId: record.vendorAccountId,
+    amountTinybars: record.amountTinybars,
+    memo: record.memo,
+    mirrorNodeConfirmation: record.mirrorNodeConfirmation,
+    auditTrail: record.auditTrail,
+    hcsConfigured: config.hcsConfigured,
+    configuredHcsTopicId: config.HCS_AUDIT_TOPIC_ID ?? null,
+    report: record.report,
+    decision: store.decisions.get(record.proposalId),
+    failureCode,
+    failureReason,
+  });
+  record.verification = verification;
+  return verification;
 }
 
 function mapReasonToError(reason?: string) {

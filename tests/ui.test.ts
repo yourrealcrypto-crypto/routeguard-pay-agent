@@ -87,16 +87,16 @@ describe("RouteGuard interface model", () => {
   });
 
   it("maps every verification evidence state", () => {
-    expect(ui.verificationState({ payment: { mode: "SIMULATION" } }, "SIMULATION", false).key).toBe("simulation");
-    expect(ui.verificationState({}, "AUTONOMOUS_TESTNET", true).key).toBe("ready");
-    expect(ui.verificationState({ payment: { ...livePayment, consensusTimestamp: null } }, "AUTONOMOUS_TESTNET", true).key).toBe("pending");
-    expect(ui.verificationState({ payment: livePayment, auditTrail: [{ hcsStatus: "ANCHORED" }, { hcsStatus: "ANCHORED" }] }, "AUTONOMOUS_TESTNET", true).key).toBe("verified");
-    expect(ui.verificationState({ payment: livePayment, auditTrail: [{ hcsStatus: "FAILED" }] }, "AUTONOMOUS_TESTNET", true).key).toBe("partial");
-    expect(ui.verificationState({ kind: "FAILED", errorCode: "RG_MIRROR_VERIFICATION_FAILED" }, "AUTONOMOUS_TESTNET", true).key).toBe("failed");
+    expect(ui.verificationState({ verification: { status: "SIMULATION_EVIDENCE" } }, "AUTONOMOUS_TESTNET", true).key).toBe("simulation");
+    expect(ui.verificationState({ verification: { status: "VERIFICATION_PENDING" } }, "SIMULATION", false).key).toBe("pending");
+    expect(ui.verificationState({ verification: { status: "VERIFIED_ON_HEDERA" } }, "SIMULATION", false).key).toBe("verified");
+    expect(ui.verificationState({ verification: { status: "PARTIALLY_VERIFIED" } }, "SIMULATION", false).key).toBe("partial");
+    expect(ui.verificationState({ verification: { status: "VERIFICATION_FAILED" } }, "SIMULATION", false).key).toBe("failed");
   });
 
-  it("never treats simulation or a selected testnet mode as verified evidence", () => {
-    expect(ui.verificationState({ payment: { mode: "SIMULATION", transactionId: "SIM-123" } }, "AUTONOMOUS_TESTNET", true).badge).toBe("SIMULATION EVIDENCE");
+  it("uses backend verification first and never treats selected testnet or loose evidence as verified", () => {
+    expect(ui.verificationState({ verification: { status: "SIMULATION_EVIDENCE" }, payment: livePayment }, "AUTONOMOUS_TESTNET", true).badge).toBe("SIMULATION EVIDENCE");
     expect(ui.verificationState({}, "AUTONOMOUS_TESTNET", true).badge).toBe("TESTNET READY");
+    expect(ui.verificationState({ payment: livePayment, auditTrail: [{ hcsStatus: "ANCHORED" }] }, "AUTONOMOUS_TESTNET", true).badge).toBe("TESTNET READY");
   });
 });

@@ -189,6 +189,77 @@ export const PaymentProofSchema = z.object({
 });
 export type PaymentProof = z.infer<typeof PaymentProofSchema>;
 
+/** Evidence retained when Hedera accepted a transaction but a later receipt or
+ * verification step failed before a full PaymentProof could be produced. */
+export const SubmittedTransactionEvidenceSchema = z.object({
+  network: z.literal("testnet"),
+  mode: z.literal("AUTONOMOUS_TESTNET"),
+  transactionId: z.string(),
+  hashscanUrl: z.string(),
+  vendorAccountId: z.string(),
+  amountTinybars: z.number().int(),
+  memo: z.string(),
+});
+export type SubmittedTransactionEvidence = z.infer<
+  typeof SubmittedTransactionEvidenceSchema
+>;
+
+/* -------------------------------------------------------------------------- */
+/*  Authoritative verification result                                         */
+/* -------------------------------------------------------------------------- */
+
+export const VerificationStatus = z.enum([
+  "SIMULATION_EVIDENCE",
+  "VERIFICATION_PENDING",
+  "VERIFIED_ON_HEDERA",
+  "PARTIALLY_VERIFIED",
+  "VERIFICATION_FAILED",
+]);
+export type VerificationStatus = z.infer<typeof VerificationStatus>;
+
+export const MirrorNodeConfirmation = z.enum([
+  "NOT_APPLICABLE",
+  "PENDING",
+  "CONFIRMED",
+  "FAILED",
+]);
+export type MirrorNodeConfirmation = z.infer<
+  typeof MirrorNodeConfirmation
+>;
+
+export const HcsAnchoringStatus = z.enum([
+  "NOT_APPLICABLE",
+  "NOT_CONFIGURED",
+  "PENDING",
+  "ANCHORED",
+  "PARTIAL",
+  "FAILED",
+]);
+export type HcsAnchoringStatus = z.infer<typeof HcsAnchoringStatus>;
+
+export const VerificationResultSchema = z.object({
+  status: VerificationStatus,
+  executionMode: z.enum(["SIMULATION", "AUTONOMOUS_TESTNET"]),
+  transactionSubmitted: z.boolean(),
+  transactionId: z.string().nullable(),
+  hashscanUrl: z.string().nullable(),
+  vendorAccountId: z.string().nullable(),
+  amountTinybars: z.number().int().nullable(),
+  memo: z.string().nullable(),
+  mirrorNodeConfirmation: MirrorNodeConfirmation,
+  consensusTimestamp: z.string().nullable(),
+  hcsConfigured: z.boolean(),
+  hcsAnchoringStatus: HcsAnchoringStatus,
+  hcsTopicId: z.string().nullable(),
+  hcsSequenceNumbers: z.array(z.number().int().nonnegative()),
+  reportHash: z.string().nullable(),
+  policyHash: z.string().nullable(),
+  policyVersion: z.string().nullable(),
+  failureCode: z.string().nullable(),
+  failureReason: z.string().nullable(),
+});
+export type VerificationResult = z.infer<typeof VerificationResultSchema>;
+
 /* -------------------------------------------------------------------------- */
 /*  Premium report                                                            */
 /* -------------------------------------------------------------------------- */
