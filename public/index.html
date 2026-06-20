@@ -369,9 +369,9 @@
       .footer-copy { display: grid; gap: 4px; }
       .legal { max-width: 90ch; color: #69758a; font-size: 9.5px; }
 
-      .main-tabs { display: flex; gap: 8px; margin: 18px 0; padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: rgba(10,16,26,.82); }
-      .main-tab { flex: 0 1 240px; border: 1px solid transparent; background: transparent; color: var(--muted); text-align: left; }
-      .main-tab[aria-selected="true"] { color: var(--text); background: var(--surface-2); border-color: var(--line-strong); box-shadow: inset 3px 0 var(--amber); }
+      .main-tabs { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; margin: 18px 0; padding: 6px; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: rgba(10,16,26,.82); scrollbar-width: thin; backdrop-filter: blur(18px); }
+      .main-tab { flex: 0 1 240px; min-width: max-content; border: 1px solid transparent; background: transparent; color: var(--muted); text-align: center; }
+      .main-tab[aria-selected="true"] { color: var(--text); background: var(--surface-2); border-color: var(--line-strong); box-shadow: inset 0 -3px var(--amber); }
       .tab-view[hidden] { display: none; }
       .governance-shell { display: grid; gap: 14px; }
       .governance-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
@@ -400,12 +400,9 @@
       .locked-list li::before { content: "LOCKED"; margin-right: 8px; color: var(--red); font: 9px var(--mono); }
       .score-explain { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
       .score-total { font: 700 26px var(--mono); color: var(--green); }
-      .gov-status { min-height: 20px; color: var(--muted); margin-top: 10px; }
+      .gov-status { display: block; min-height: 20px; color: var(--muted); margin-top: 10px; }
 
       /* Product shell */
-      .main-tabs { position: sticky; top: 0; z-index: 20; overflow-x: auto; scrollbar-width: thin; backdrop-filter: blur(18px); }
-      .main-tab { min-width: max-content; text-align: center; }
-      .main-tab[aria-selected="true"] { box-shadow: inset 0 -3px var(--amber); }
       .workspace-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end; margin-bottom: 14px; }
       .filter-group { display: flex; gap: 7px; flex-wrap: wrap; }
       .filter-chip { padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-dim); background: var(--panel-soft); font-size: 10px; }
@@ -458,6 +455,35 @@
       .setup-panel h2 { margin: 4px 0 8px; font-size: 20px; }
       .roadmap-list { display: grid; gap: 9px; margin: 16px 0 0; padding: 0; list-style: none; }
       .roadmap-list li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-soft); }
+      .live-intel-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 16px; }
+      .live-intel-head h2 { margin: 4px 0 6px; font-size: 20px; }
+      .weather-attribution { flex: none; color: var(--blue); font: 10px var(--mono); }
+      .live-route-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .live-route-card { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-soft); }
+      .live-route-card h3 { margin: 2px 0 0; font-size: 15px; }
+      .live-route-card .route-id { color: var(--amber); font: 700 10px var(--mono); }
+      .live-route-card .cargo { color: var(--ink-dim); font-size: 11px; }
+      .route-track { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 12px; }
+      .route-track::before { content: ""; position: absolute; top: 16px; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, var(--blue), var(--amber)); }
+      .route-point { position: relative; z-index: 1; min-width: 0; text-align: center; color: var(--ink-faint); font: 8px/1.35 var(--mono); }
+      .route-point::before { content: ""; display: block; width: 9px; height: 9px; margin: 0 auto 7px; border: 2px solid var(--blue); border-radius: 50%; background: var(--panel); }
+      .route-point:last-child::before { border-color: var(--amber); }
+      .live-route-result { margin-top: 14px; padding: 18px; }
+      .live-result-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+      .live-score { display: flex; align-items: baseline; gap: 8px; }
+      .live-score .n { color: var(--ink); font: 750 38px/1 var(--mono); }
+      .source-badge { padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--blue); font: 700 9px var(--mono); }
+      .weather-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; margin-top: 14px; }
+      .weather-card { padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-soft); }
+      .weather-card h4 { margin: 0 0 8px; font-size: 11px; }
+      .weather-metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+      .weather-metric { color: var(--ink-faint); font: 8px/1.35 var(--mono); }
+      .weather-metric b { display: block; margin-top: 2px; color: var(--ink); font-size: 10px; }
+      .rule-list { display: grid; gap: 7px; margin-top: 12px; }
+      .rule-item { display: grid; grid-template-columns: minmax(150px,.7fr) auto minmax(0,1.3fr); gap: 10px; padding: 9px; border: 1px solid var(--line); border-radius: 8px; font-size: 10px; }
+      .manual-review { padding: 18px; border: 1px solid rgba(245,185,66,.4); border-radius: 10px; background: var(--amber-soft); color: var(--amber); }
+      .live-route-result details { margin-top: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+      .live-route-result summary { cursor: pointer; color: var(--blue); font-weight: 650; }
       .archive-toolbar { display: flex; gap: 12px; align-items: end; justify-content: space-between; margin-bottom: 14px; }
       .archive-list { display: grid; gap: 10px; }
       .archive-record { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; padding: 15px; }
@@ -473,6 +499,7 @@
         .case-summary { grid-template-columns: repeat(2, minmax(0,1fr)); }
         .timeline-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
         .setup-grid { grid-template-columns: 1fr; }
+        .live-route-grid, .weather-grid { grid-template-columns: 1fr; }
         .hero-facts { justify-content: flex-start; }
         .gate, .proof { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .process-preview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -510,6 +537,8 @@
         .case-summary, .evidence-groups { grid-template-columns: 1fr; }
         .timeline-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
         .verification-head, .archive-toolbar { align-items: stretch; flex-direction: column; }
+        .live-intel-head, .live-result-head { align-items: stretch; flex-direction: column; }
+        .rule-item { grid-template-columns: 1fr; }
         .archive-actions { align-items: stretch; flex-direction: column; }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -548,12 +577,12 @@
         </div>
       </header>
 
-      <nav class="main-tabs" role="tablist" aria-label="RouteGuard workspaces">
+      <div class="main-tabs" role="tablist" aria-label="RouteGuard workspaces">
         <button class="main-tab" id="casesTab" role="tab" aria-selected="true" aria-controls="casesView" data-tab="cases">Active Cases</button>
         <button class="main-tab" id="intelligenceTab" role="tab" aria-selected="false" aria-controls="intelligenceView" data-tab="intelligence">Live Route Intelligence</button>
         <button class="main-tab" id="governanceTab" role="tab" aria-selected="false" aria-controls="governanceView" data-tab="governance">Policy &amp; Governance</button>
         <button class="main-tab" id="archiveTab" role="tab" aria-selected="false" aria-controls="archiveView" data-tab="archive">Archive</button>
-      </nav>
+      </div>
 
       <div class="tab-view" id="casesView" role="tabpanel" aria-labelledby="casesTab">
       <div class="workspace-toolbar card side-card">
@@ -633,25 +662,15 @@
       </div>
 
       <section class="tab-view setup-view" id="intelligenceView" role="tabpanel" aria-labelledby="intelligenceTab" hidden>
-        <div class="setup-grid">
-          <section class="card setup-panel">
-            <div class="section-kicker">Connection status</div>
-            <h2>Live Route Intelligence is not configured yet.</h2>
-            <p class="muted">No live-route API exists in this deployment. RouteGuard will not present static shipment fixtures as live weather, traffic, or checkpoint evidence.</p>
-            <div class="simulation-notice">Third-party route services are never called from the browser. Data source, observation time, confidence, and policy version will be shown when a trusted server integration is available.</div>
-          </section>
-          <section class="card setup-panel">
-            <div class="section-kicker">Integration roadmap</div>
-            <h2>Route intelligence pipeline</h2>
-            <ul class="roadmap-list">
-              <li>Live weather with source and observation timestamp</li>
-              <li>Route checkpoints and milestone health</li>
-              <li>Traffic incidents and corridor disruption evidence</li>
-              <li>Cargo-specific operating thresholds</li>
-              <li>Deterministic route-risk scoring and confidence</li>
-            </ul>
-          </section>
+        <div class="live-intel-head">
+          <div><div class="section-kicker">Phase 1 · current weather evidence</div><h2>Live Route Intelligence</h2><p class="muted">Select an allowlisted freight corridor to retrieve server-side weather observations and apply RouteGuard's deterministic demonstration policy. This workspace cannot authorize payment.</p></div>
+          <a class="weather-attribution" href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a>
         </div>
+        <div class="live-route-grid" id="liveRouteCards"><div class="card setup-panel muted">Loading allowlisted freight routes…</div></div>
+        <section class="card live-route-result" id="liveRouteResult" aria-live="polite">
+          <div class="section-kicker">Awaiting route selection</div>
+          <p class="muted">No live weather has been requested. Choose one of the three corridors above to begin a server-side assessment.</p>
+        </section>
       </section>
 
       <section class="tab-view governance-shell" id="governanceView" role="tabpanel" aria-labelledby="governanceTab" hidden>
@@ -682,7 +701,7 @@
                 <button type="submit">Submit proposal</button>
               </div>
             </form>
-            <div id="proposalStatus" class="gov-status" role="status" aria-live="polite"></div>
+            <output id="proposalStatus" class="gov-status" aria-live="polite"></output>
             <div id="impactPreview"></div>
           </section>
 
@@ -732,8 +751,17 @@
 
     <script>
       const $ = (s) => document.querySelector(s);
-      const el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
-      const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+      const el = (t, c, h) => {
+        const e = document.createElement(t);
+        if (c) {
+          e.className = c;
+        }
+        if (h != null) {
+          e.innerHTML = h;
+        }
+        return e;
+      };
+      const esc = (s) => String(s).replaceAll(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
       const tinybars = (t) => (t / 1e8).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 }) + " HBAR";
 
       let HEALTH = {};
@@ -743,6 +771,7 @@
       let SCORES = new Map();
       let ACTIVE_RISK_POLICY = null;
       let GOVERNANCE_CONFIG = null;
+      let LIVE_ROUTE_CATALOG = null;
       let ACTIVE_FILTER = "all";
       let ARCHIVE_FILTER = "all";
       let SELECTED_SCENARIO = null;
@@ -785,11 +814,21 @@
         const route = (scenario) => { const s = shipments.get(scenario.shipmentId); return `${s?.origin?.city || ""}-${s?.destination?.city || ""}`; };
         const number = (scenario, field) => Number(field === "cargo" ? shipments.get(scenario.shipmentId)?.cargoValueEur : scores.get(scenario.shipmentId)?.riskScore) || 0;
         return [...cases].sort((a, b) => {
-          if (sort === "priority") return (priority[statusForScenario(a.id)] ?? 99) - (priority[statusForScenario(b.id)] ?? 99);
-          if (sort === "status") return statusForScenario(a.id).localeCompare(statusForScenario(b.id));
-          if (sort === "shipment") return a.shipmentId.localeCompare(b.shipmentId);
-          if (sort === "route") return route(a).localeCompare(route(b));
-          if (sort === "cargo" || sort === "risk") return number(b, sort) - number(a, sort);
+          if (sort === "priority") {
+            return (priority[statusForScenario(a.id)] ?? 99) - (priority[statusForScenario(b.id)] ?? 99);
+          }
+          if (sort === "status") {
+            return statusForScenario(a.id).localeCompare(statusForScenario(b.id));
+          }
+          if (sort === "shipment") {
+            return a.shipmentId.localeCompare(b.shipmentId);
+          }
+          if (sort === "route") {
+            return route(a).localeCompare(route(b));
+          }
+          if (sort === "cargo" || sort === "risk") {
+            return number(b, sort) - number(a, sort);
+          }
           return 0;
         });
       }
@@ -802,9 +841,24 @@
           PARTIALLY_VERIFIED: { key: "partial", badge: "PARTIALLY VERIFIED" },
           VERIFICATION_FAILED: { key: "failed", badge: "VERIFICATION FAILED" },
         }[data?.verification?.status];
-        if (backend) return backend;
-        if (selectedMode === "AUTONOMOUS_TESTNET" && livePaymentsEnabled) return { key: "ready", badge: "TESTNET READY" };
+        if (backend) {
+          return backend;
+        }
+        if (selectedMode === "AUTONOMOUS_TESTNET" && livePaymentsEnabled) {
+          return { key: "ready", badge: "TESTNET READY" };
+        }
         return { key: "simulation", badge: "SIMULATION EVIDENCE" };
+      }
+
+      function nextTabIndex(key, currentIndex, tabCount) {
+        if (key === "Home") {
+          return 0;
+        }
+        if (key === "End") {
+          return tabCount - 1;
+        }
+        const direction = key === "ArrowRight" ? 1 : -1;
+        return (currentIndex + direction + tabCount) % tabCount;
       }
 
       function createArchiveRecord(scenario, data, archivedAt, selectedMode, livePaymentsEnabled) {
@@ -842,7 +896,7 @@
         renderCaseFilters();
         renderScenarios();
         renderArchive();
-        await refreshGovernance();
+        await Promise.all([refreshGovernance(), loadLiveRoutes()]);
       }
       async function fetchFeedback() {
         // feedback URL is embedded server-side; fall back to the kit issues page
@@ -856,16 +910,22 @@
             const active = tab.dataset.tab === name;
             tab.setAttribute("aria-selected", String(active));
             $("#" + tab.getAttribute("aria-controls")).hidden = !active;
-            if (active && focus) tab.focus();
+            if (active && focus) {
+              tab.focus();
+            }
           });
-          if (name === "archive") renderArchive();
+          if (name === "archive") {
+            renderArchive();
+          }
         };
         tabs.forEach((tab, index) => {
           tab.onclick = () => activate(tab.dataset.tab);
           tab.onkeydown = (event) => {
-            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+              return;
+            }
             event.preventDefault();
-            const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+            const next = nextTabIndex(event.key, index, tabs.length);
             activate(tabs[next].dataset.tab);
           };
         });
@@ -873,14 +933,110 @@
         $("#explainShipment").onchange = explainSelectedShipment;
         $("#previewProposalBtn").onclick = previewProposal;
         $("#proposalForm").onsubmit = submitProposal;
-        window.activateRouteGuardTab = activate;
+        globalThis.activateRouteGuardTab = activate;
       }
 
       async function apiJson(url, options) {
         const response = await fetch(url, options);
         const body = await response.json();
-        if (!response.ok) throw new Error(`${body.errorCode || "REQUEST_FAILED"}: ${body.message || "Request failed"}`);
+        if (!response.ok) {
+          throw new Error(`${body.errorCode || "REQUEST_FAILED"}: ${body.message || "Request failed"}`);
+        }
         return body;
+      }
+
+      async function loadLiveRoutes() {
+        try {
+          LIVE_ROUTE_CATALOG = await apiJson("/api/live-routes");
+          renderLiveRouteCards(LIVE_ROUTE_CATALOG.routes);
+        } catch (error) {
+          $("#liveRouteCards").innerHTML = `<div class="card manual-review">Route configuration is unavailable. ${esc(String(error))}</div>`;
+        }
+      }
+
+      function routeTrack(route) {
+        const checkpoints = route.checkpoints.map((checkpoint) => routePoint(checkpoint)).join("");
+        return `<div class="route-track" aria-label="Route checkpoints">${checkpoints}</div>`;
+      }
+
+      function routePoint(checkpoint) {
+        return `<div class="route-point"><span>${esc(checkpoint.name)}</span></div>`;
+      }
+
+      function liveRouteCard(route) {
+        const temperatureRange = `${route.temperatureToleranceC.minimum}–${route.temperatureToleranceC.maximum}°C`;
+        return `<article class="live-route-card"><div><div class="route-id">${esc(route.id)}</div><h3>${esc(route.origin)} → ${esc(route.destination)}</h3><div class="cargo">${esc(route.cargo)} · tolerance ${temperatureRange}</div></div>${routeTrack(route)}<button type="button" class="assess-live-route" data-route-id="${esc(route.id)}">Assess current weather risk</button></article>`;
+      }
+
+      function renderLiveRouteCards(routes) {
+        $("#liveRouteCards").innerHTML = routes.map((route) => liveRouteCard(route)).join("");
+        document.querySelectorAll(".assess-live-route").forEach((button) => button.onclick = () => assessLiveRoute(button.dataset.routeId));
+      }
+
+      async function assessLiveRoute(routeId) {
+        document.querySelectorAll(".assess-live-route").forEach((button) => button.disabled = true);
+        $("#liveRouteResult").innerHTML = `<div class="row"><span class="spinner"></span><span class="muted">Retrieving and validating Open-Meteo evidence for ${esc(routeId)}…</span></div>`;
+        try {
+          const result = await apiJson("/api/live-route-risk", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ routeId }),
+          });
+          renderLiveRouteRisk(result);
+        } catch (error) {
+          $("#liveRouteResult").innerHTML = `<div class="manual-review"><b>WEATHER DATA UNAVAILABLE · MANUAL REVIEW</b><p>RouteGuard could not retrieve complete, validated weather evidence. No low-risk assumption was made and no payment action is available.</p><span class="mono">${esc(String(error))}</span></div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
+        } finally {
+          document.querySelectorAll(".assess-live-route").forEach((button) => button.disabled = false);
+        }
+      }
+
+      function weatherMetric(label, value) {
+        return `<div class="weather-metric">${esc(label)}<b>${esc(value)}</b></div>`;
+      }
+
+      function renderCheckpointWeather(checkpoint) {
+        const evidenceClass = checkpoint.triggeredReasonCodes.length ? "p-appr" : "p-pass";
+        const triggeredEvidence = checkpoint.triggeredReasonCodes.length
+          ? esc(checkpoint.triggeredReasonCodes.join(" · "))
+          : "No demonstration threshold triggered at this checkpoint.";
+        const metrics = [
+          weatherMetric("Temperature", checkpoint.temperatureC + "°C"),
+          weatherMetric("Precipitation", checkpoint.precipitationMm + " mm"),
+          weatherMetric("Wind", checkpoint.windSpeedKph + " km/h"),
+          weatherMetric("Gusts", checkpoint.windGustsKph + " km/h"),
+          weatherMetric("Visibility", checkpoint.visibilityM.toLocaleString() + " m"),
+          weatherMetric("Weather code", checkpoint.weatherCode),
+        ].join("");
+        return `<article class="weather-card"><h4>${esc(checkpoint.name)} <span class="pill ${evidenceClass}">${esc(checkpoint.role)}</span></h4><div class="weather-metrics">${metrics}</div><p class="muted mono">Source ${esc(formatTimestamp(checkpoint.sourceTimestamp))}</p><p class="muted">${triggeredEvidence}</p></article>`;
+      }
+
+      function renderTriggeredRule(rule) {
+        const checkpointIds = esc(rule.checkpointIds.join(", "));
+        return `<div class="rule-item"><b class="mono">${esc(rule.code)}</b><span class="pill p-appr">+${rule.contribution}</span><span>${esc(rule.explanation)} <span class="muted mono">${checkpointIds}</span></span></div>`;
+      }
+
+      function renderWeatherPolicyDetails(thresholds) {
+        if (!thresholds) {
+          return "";
+        }
+        const thunderstormCodes = esc(thresholds.thunderstormWeatherCodes.join(", "));
+        return `<details><summary>Weather-risk demonstration thresholds</summary><p class="muted">Wind ≥${thresholds.severeWindKph} km/h · gusts ≥${thresholds.severeGustKph} km/h · precipitation ≥${thresholds.heavyPrecipitationMm} mm · visibility &lt;${thresholds.poorVisibilityM} m · freezing ≤${thresholds.freezingC}°C · thunderstorms ${thunderstormCodes} · stale after ${thresholds.staleAfterMinutes} minutes. Missing or invalid evidence returns WEATHER_DATA_UNAVAILABLE for manual review.</p></details>`;
+      }
+
+      function renderLiveRouteRisk(result) {
+        const bandClass = { low: "p-pass", moderate: "p-appr", high: "p-appr", critical: "p-block" }[result.riskBand] || "p-none";
+        const thresholds = LIVE_ROUTE_CATALOG?.policy?.thresholds;
+        const evidence = result.checkpointEvidence.map((checkpoint) => renderCheckpointWeather(checkpoint)).join("");
+        const rules = result.triggeredRules.length
+          ? result.triggeredRules.map((rule) => renderTriggeredRule(rule)).join("")
+          : `<div class="muted">No weather demonstration threshold was triggered. This is evidence-based low risk, not an approval for procurement.</div>`;
+        const policyDetails = renderWeatherPolicyDetails(thresholds);
+        const reportRecommendation = result.premiumReportRecommended ? "recommended" : "not indicated";
+        const confidence = Math.round(result.confidence * 100);
+        const resultHeader = `<div class="live-result-head"><div><div class="section-kicker">${esc(result.route.id)} · deterministic assessment</div><h3>${esc(result.route.origin)} → ${esc(result.route.destination)}</h3><div class="live-score"><span class="n">${result.score}</span><span>/ 100</span><span class="pill ${bandClass}">${esc(result.riskBand.toUpperCase())}</span></div></div><div><span class="source-badge">${esc(result.dataSource)}</span><div class="muted mono" style="margin-top:8px">confidence ${confidence}%</div></div></div>`;
+        const policyFacts = `<div class="policy-facts"><div><span>source timestamp</span><b>${esc(formatTimestamp(result.sourceTimestamp))}</b></div><div><span>retrieved</span><b>${esc(formatTimestamp(result.retrievedAt))}</b></div><div><span>weather policy</span><b>v${esc(result.policyVersion)} · ${esc(result.policyHash)}</b></div><div><span>premium report</span><b>${reportRecommendation} · simulation only</b></div></div>`;
+        const triggeredRules = `<div class="blk"><div class="lbl">Triggered demonstration rules</div><div class="rule-list">${rules}</div></div>`;
+        $("#liveRouteResult").innerHTML = `${resultHeader}${policyFacts}<div class="weather-grid">${evidence}</div>${triggeredRules}${policyDetails}<div class="simulation-notice">${esc(result.disclaimer)} Purchase mode: ${esc(result.purchaseMode)}.</div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
       }
 
       async function refreshGovernance() {
@@ -929,9 +1085,13 @@
       }
 
       function populateGovernanceControls(config) {
-        if (!config) return;
+        if (!config) {
+          return;
+        }
         const shipmentSelect = $("#explainShipment");
-        if (!shipmentSelect.options.length) shipmentSelect.innerHTML = [...SHIPMENTS.values()].map((s) => `<option value="${esc(s.id)}">${esc(s.id)} · ${esc(s.origin.city)} → ${esc(s.destination.city)}</option>`).join("");
+        if (!shipmentSelect.options.length) {
+          shipmentSelect.innerHTML = [...SHIPMENTS.values()].map((s) => `<option value="${esc(s.id)}">${esc(s.id)} · ${esc(s.origin.city)} → ${esc(s.destination.city)}</option>`).join("");
+        }
         const fieldSelect = $("#proposalField");
         fieldSelect.innerHTML = config.editableFields.map((field) => `<option value="${esc(field.path)}">${esc(field.label)} · ${field.minimum}–${field.maximum}</option>`).join("");
         const roleOptions = config.roles.map((role) => `<option value="${esc(role)}">${esc(role)} (simulated)</option>`).join("");
@@ -944,9 +1104,13 @@
       }
 
       function syncProposalBounds() {
-        if (!GOVERNANCE_CONFIG || !ACTIVE_RISK_POLICY) return;
+        if (!GOVERNANCE_CONFIG || !ACTIVE_RISK_POLICY) {
+          return;
+        }
         const descriptor = GOVERNANCE_CONFIG.editableFields.find((field) => field.path === $("#proposalField").value);
-        if (!descriptor) return;
+        if (!descriptor) {
+          return;
+        }
         const input = $("#proposalValue");
         input.min = descriptor.minimum;
         input.max = descriptor.maximum;
@@ -958,7 +1122,9 @@
 
       async function explainSelectedShipment() {
         const shipmentId = $("#explainShipment").value;
-        if (!shipmentId) return;
+        if (!shipmentId) {
+          return;
+        }
         try {
           const score = await apiJson("/api/policies/risk/explain/" + encodeURIComponent(shipmentId));
           const inputRows = Object.entries(score.canonicalInputs).map(([key, value]) => `<tr><td>${esc(key)}</td><td class="mono">${esc(Array.isArray(value) ? value.join(", ") || "none" : value)}</td></tr>`).join("");
@@ -1008,6 +1174,16 @@
         target.innerHTML = `<table class="impact-table"><thead><tr><th>Shipment</th><th>Active</th><th>Proposed</th><th>Δ score</th><th>Premium recommendation</th></tr></thead><tbody>${body}</tbody></table>`;
       }
 
+      function proposalStatusClass(status) {
+        if (status === "ACTIVATED") {
+          return "p-pass";
+        }
+        if (status === "REJECTED") {
+          return "p-block";
+        }
+        return "p-appr";
+      }
+
       function renderGovernanceQueue(proposals) {
         $("#queueCount").textContent = `${proposals.length} proposal${proposals.length === 1 ? "" : "s"}`;
         if (!proposals.length) {
@@ -1017,7 +1193,11 @@
         $("#governanceQueue").innerHTML = proposals.map((proposal) => {
           const roleOptions = GOVERNANCE_CONFIG.roles.map((role) => `<option value="${esc(role)}">${esc(role)} (simulated)</option>`).join("");
           const approvals = proposal.approvals.length ? proposal.approvals.map((a) => `${esc(a.role)} · ${esc(a.approvedAt)}`).join("<br>") : "none";
-          return `<article class="proposal-card" data-proposal-id="${esc(proposal.proposalId)}" data-proposal-hash="${esc(proposal.proposalHash)}"><div class="proposal-head"><div><div class="section-kicker">${esc(proposal.status)}</div><h3>${esc(proposal.field)}: ${proposal.oldValue} → ${proposal.proposedValue}</h3></div><span class="pill ${proposal.status === "ACTIVATED" ? "p-pass" : proposal.status === "REJECTED" ? "p-block" : "p-appr"}">${esc(proposal.status)}</span></div><p>${esc(proposal.reason)}</p><div class="gov-meta"><div><span>proposal ID</span><b>${esc(proposal.proposalId)}</b></div><div><span>proposer</span><b>${esc(proposal.proposerRole)} · simulated</b></div><div><span>base / expiry</span><b>v${esc(proposal.basePolicyVersion)} · ${esc(proposal.expiresAt)}</b></div><div><span>approvals</span><b>${approvals} · ${proposal.approvals.length}/${proposal.quorumRequired}</b></div></div><p class="proposal-hash">${esc(proposal.proposalHash)}</p><div class="proposal-impact"></div>${proposal.status === "PENDING" ? `<div class="queue-actions"><select class="queue-role" aria-label="Simulated role for proposal action">${roleOptions}</select><button class="approve-policy">Approve proposal</button><button class="ghost reject-policy">Reject proposal</button></div>` : ""}</article>`;
+          const statusClass = proposalStatusClass(proposal.status);
+          const queueActions = proposal.status === "PENDING"
+            ? `<div class="queue-actions"><select class="queue-role" aria-label="Simulated role for proposal action">${roleOptions}</select><button class="approve-policy">Approve proposal</button><button class="ghost reject-policy">Reject proposal</button></div>`
+            : "";
+          return `<article class="proposal-card" data-proposal-id="${esc(proposal.proposalId)}" data-proposal-hash="${esc(proposal.proposalHash)}"><div class="proposal-head"><div><div class="section-kicker">${esc(proposal.status)}</div><h3>${esc(proposal.field)}: ${proposal.oldValue} → ${proposal.proposedValue}</h3></div><span class="pill ${statusClass}">${esc(proposal.status)}</span></div><p>${esc(proposal.reason)}</p><div class="gov-meta"><div><span>proposal ID</span><b>${esc(proposal.proposalId)}</b></div><div><span>proposer</span><b>${esc(proposal.proposerRole)} · simulated</b></div><div><span>base / expiry</span><b>v${esc(proposal.basePolicyVersion)} · ${esc(proposal.expiresAt)}</b></div><div><span>approvals</span><b>${approvals} · ${proposal.approvals.length}/${proposal.quorumRequired}</b></div></div><p class="proposal-hash">${esc(proposal.proposalHash)}</p><div class="proposal-impact"></div>${queueActions}</article>`;
         }).join("");
         proposals.forEach((proposal) => {
           const card = document.querySelector(`[data-proposal-id="${proposal.proposalId}"]`);
@@ -1049,7 +1229,8 @@
 
       function renderLockedPaymentPolicy(policy) {
         const facts = `<div class="gov-meta"><div><span>network</span><b>${esc(policy.network)}</b></div><div><span>live execution</span><b>${policy.liveExecutionEnabled ? "configured" : "disabled"}</b></div><div><span>ENABLE_HEDERA_TX / LIVE_TESTNET_PAYMENTS_ENABLED</span><b>${policy.enableHederaTx} / ${policy.liveTestnetPaymentsEnabled}</b></div><div><span>approval authentication</span><b>${policy.approvalAuthConfigured ? "configured" : "not configured"}</b></div><div><span>vendor / account</span><b>${esc(policy.vendorId)} · ${esc(policy.vendorAccountId)}</b></div><div><span>SKU / price</span><b>${esc(policy.sku)} · ${tinybars(policy.catalogPriceTinybars)}</b></div><div><span>hard purchase cap</span><b>${tinybars(policy.maxPerPurchaseTinybars)}</b></div><div><span>daily budget</span><b>${tinybars(policy.dailyBudgetTinybars)}</b></div></div>`;
-        $("#lockedPaymentPolicy").innerHTML = facts + `<ul class="locked-list">${policy.immutableRules.map((rule) => `<li>${esc(rule)}</li>`).join("")}</ul><p class="muted">These controls cannot be proposed, approved, or activated through simulated risk governance.</p>`;
+        const rules = policy.immutableRules.map((rule) => `<li>${esc(rule)}</li>`).join("");
+        $("#lockedPaymentPolicy").innerHTML = facts + `<ul class="locked-list">${rules}</ul><p class="muted">These controls cannot be proposed, approved, or activated through simulated risk governance.</p>`;
       }
 
       function renderCatalog(c) {
@@ -1077,10 +1258,16 @@
         $("#executionMode").onchange = () => {
           const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
           $("#modeNote").textContent = mode === "AUTONOMOUS_TESTNET" ? "Hedera testnet selected" : "Simulation selected";
-          $("#liveHelp").textContent = mode === "AUTONOMOUS_TESTNET"
-            ? "Live Hedera testnet execution enabled. Verification requires actual transaction, Mirror Node, and HCS evidence."
-            : HEALTH.livePaymentsEnabled ? "Simulation selected · no real HBAR transfer." : "Live testnet execution is not configured on this server.";
-          if (LAST && SELECTED_SCENARIO) render(LAST, SELECTED_SCENARIO);
+          let liveHelp = "Live testnet execution is not configured on this server.";
+          if (mode === "AUTONOMOUS_TESTNET") {
+            liveHelp = "Live Hedera testnet execution enabled. Verification requires actual transaction, Mirror Node, and HCS evidence.";
+          } else if (HEALTH.livePaymentsEnabled) {
+            liveHelp = "Simulation selected · no real HBAR transfer.";
+          }
+          $("#liveHelp").textContent = liveHelp;
+          if (LAST && SELECTED_SCENARIO) {
+            render(LAST, SELECTED_SCENARIO);
+          }
         };
         $("#resetBtn").onclick = resetDemo;
         $("#archiveCaseBtn").onclick = archiveSelectedCase;
@@ -1112,6 +1299,7 @@
           const view = CASE_PRESENTATION[s.id] || { tone: "none", icon: "·", status: "PENDING", reason: "Policy evaluation pending." };
           const shipment = SHIPMENTS.get(s.shipmentId);
           const score = SCORES.get(s.shipmentId);
+          const riskSummary = score ? `${score.riskScore} · ${esc(score.riskBand)}` : "risk pending";
           const b = el("button", `scn tone-${view.tone}`);
           b.setAttribute("aria-label", `Open ${s.shipmentId}: ${s.label}`);
           b.setAttribute("aria-pressed", "false");
@@ -1121,7 +1309,7 @@
           copy.innerHTML = `<span class="scn-head"><span class="case-id">${esc(s.shipmentId)}</span><span class="case-status">${esc(view.status)}</span></span>
             <span class="t">${esc(s.label)}</span>
             <span class="case-route">${esc(shipment?.origin?.city || "Origin")}<span class="arrow">→</span>${esc(shipment?.destination?.city || "Destination")}</span>
-            <span class="case-meta"><span>${esc((shipment?.mode || "freight").toUpperCase())} · €${esc((shipment?.cargoValueEur || 0).toLocaleString("en-US"))}</span><span class="case-risk">${score ? `${score.riskScore} · ${esc(score.riskBand)}` : "risk pending"}</span></span>
+            <span class="case-meta"><span>${esc((shipment?.mode || "freight").toUpperCase())} · €${esc((shipment?.cargoValueEur || 0).toLocaleString("en-US"))}</span><span class="case-risk">${riskSummary}</span></span>
             <span class="exp">${esc(view.reason)}</span>`;
           b.appendChild(copy);
           b.onclick = () => run(s);
@@ -1132,11 +1320,13 @@
 
       function renderShipmentStrip(shipmentId) {
         const shipment = SHIPMENTS.get(shipmentId);
-        if (!shipment) return "";
+        if (!shipment) {
+          return "";
+        }
         return `<div class="shipment-strip">
           <span class="shipment-id">${esc(shipment.id)}</span>
           <span class="route">${esc(shipment.origin.city)}, ${esc(shipment.origin.countryCode)} → ${esc(shipment.destination.city)}, ${esc(shipment.destination.countryCode)}</span>
-          <span class="meta">${esc(shipment.mode.toUpperCase())}<br>${esc(shipment.cargoType.replace(/_/g, " "))}</span>
+          <span class="meta">${esc(shipment.mode.toUpperCase())}<br>${esc(shipment.cargoType.replaceAll("_", " "))}</span>
           <span class="meta">€${esc(shipment.cargoValueEur.toLocaleString("en-US"))}<br>${esc(shipment.riskSignals.length)} risk signals</span>
         </div>`;
       }
@@ -1147,39 +1337,97 @@
 
       function renderCaseSummary(scenario, data) {
         const shipment = SHIPMENTS.get(data?.shipmentId || scenario?.shipmentId);
-        if (!shipment) return "";
+        if (!shipment) {
+          return "";
+        }
         const score = SCORES.get(shipment.id);
         const signals = shipment.riskSignals?.length ? shipment.riskSignals.join(", ") : "None declared";
+        const recommendedService = CATALOG ? `${CATALOG.serviceCategory} · ${CATALOG.sku}` : "Not recorded";
+        const riskSummary = score ? `${score.riskScore} · ${score.riskBand}` : "Not recorded";
+        const riskPolicyVersion = score?.policyVersion ? `v${score.policyVersion}` : "Not recorded";
+        const paymentPolicyVersion = data?.decision?.policyVersion ? `v${data.decision.policyVersion}` : "v1.0";
         return `<div class="case-summary" aria-label="Shipment case summary">
           ${summaryItem("Shipment ID", shipment.id, true)}
           ${summaryItem("Route", `${shipment.origin.city}, ${shipment.origin.countryCode} → ${shipment.destination.city}, ${shipment.destination.countryCode}`)}
           ${summaryItem("Mode", shipment.mode.toUpperCase())}
-          ${summaryItem("Cargo", shipment.cargoType.replace(/_/g, " "))}
+          ${summaryItem("Cargo", shipment.cargoType.replaceAll("_", " "))}
           ${summaryItem("Declared value", `€${shipment.cargoValueEur.toLocaleString("en-US")}`)}
           ${summaryItem("Risk signals", signals)}
-          ${summaryItem("Recommended service", CATALOG ? `${CATALOG.serviceCategory} · ${CATALOG.sku}` : "Not recorded", true)}
+          ${summaryItem("Recommended service", recommendedService, true)}
           ${summaryItem("Current decision", statusForScenario(scenario?.id))}
-          ${summaryItem("Risk score / band", score ? `${score.riskScore} · ${score.riskBand}` : "Not recorded", true)}
-          ${summaryItem("Risk policy version", score?.policyVersion ? `v${score.policyVersion}` : "Not recorded", true)}
-          ${summaryItem("Payment policy version", data?.decision?.policyVersion ? `v${data.decision.policyVersion}` : "v1.0", true)}
+          ${summaryItem("Risk score / band", riskSummary, true)}
+          ${summaryItem("Risk policy version", riskPolicyVersion, true)}
+          ${summaryItem("Payment policy version", paymentPolicyVersion, true)}
           ${summaryItem("Case reason", CASE_PRESENTATION[scenario?.id]?.reason || data?.message || "Policy evaluation pending")}
         </div>`;
+      }
+
+      function approvalTimelineState(kind, approval) {
+        if (kind === "APPROVAL_REQUIRED") {
+          return "Pending";
+        }
+        if (approval) {
+          return "Completed";
+        }
+        return "Skipped";
+      }
+
+      function fulfillmentTimelineState(kind) {
+        if (kind === "COMPLETED") {
+          return "Completed";
+        }
+        if (kind === "APPROVAL_REQUIRED") {
+          return "Pending";
+        }
+        if (kind === "FAILED") {
+          return "Failed";
+        }
+        if (kind === "BLOCKED" || kind === "REJECTED") {
+          return "Blocked";
+        }
+        return "Skipped";
+      }
+
+      function auditTimelineState(verificationKey) {
+        if (verificationKey === "pending") {
+          return "Pending";
+        }
+        if (verificationKey === "failed") {
+          return "Failed";
+        }
+        return "Completed";
+      }
+
+      function recommendationTimelineState(kind, proposalId) {
+        return kind === "FAILED" && !proposalId ? "Failed" : "Completed";
+      }
+
+      function policyTimelineState(kind, decision) {
+        if (decision) {
+          return "Completed";
+        }
+        if (kind === "NO_PURCHASE") {
+          return "Skipped";
+        }
+        if (kind === "FAILED") {
+          return "Failed";
+        }
+        return "Pending";
       }
 
       function decisionTimeline(data) {
         const kind = data?.kind;
         const verification = verificationState(data, executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled), HEALTH.livePaymentsEnabled);
-        const approval = kind === "APPROVAL_REQUIRED" ? "Pending" : data?.approval ? "Completed" : ["BLOCKED", "NO_PURCHASE"].includes(kind) ? "Skipped" : "Skipped";
-        const payment = kind === "COMPLETED" ? "Completed" : kind === "APPROVAL_REQUIRED" ? "Pending" : kind === "FAILED" ? "Failed" : kind === "BLOCKED" || kind === "REJECTED" ? "Blocked" : "Skipped";
-        const report = kind === "COMPLETED" ? "Completed" : kind === "APPROVAL_REQUIRED" ? "Pending" : kind === "FAILED" ? "Failed" : kind === "BLOCKED" || kind === "REJECTED" ? "Blocked" : "Skipped";
-        const audit = verification.key === "pending" ? "Pending" : verification.key === "failed" ? "Failed" : "Completed";
+        const approval = approvalTimelineState(kind, data?.approval);
+        const fulfillment = fulfillmentTimelineState(kind);
+        const audit = auditTimelineState(verification.key);
         return [
           ["Shipment assessed", "Completed"],
-          ["Agent recommendation created", kind === "FAILED" && !data?.proposalId ? "Failed" : "Completed"],
-          ["Policy evaluated", data?.decision ? "Completed" : kind === "NO_PURCHASE" ? "Skipped" : kind === "FAILED" ? "Failed" : "Pending"],
+          ["Agent recommendation created", recommendationTimelineState(kind, data?.proposalId)],
+          ["Policy evaluated", policyTimelineState(kind, data?.decision)],
           ["Approval requested or skipped", approval],
-          ["Payment executed, simulated, or blocked", payment],
-          ["Report delivered", report],
+          ["Payment executed, simulated, or blocked", fulfillment],
+          ["Report delivered", fulfillment],
           ["Verification & Audit recorded", audit],
         ];
       }
@@ -1190,33 +1438,58 @@
       }
 
       function evidenceRow(label, value, copy = false, html = false) {
-        if (value == null || value === "") value = "Not recorded";
+        if (value == null || value === "") {
+          value = "Not recorded";
+        }
         const rendered = html ? value : esc(value);
-        return `<div class="evidence-row"><span>${esc(label)}</span><span>${rendered}${copy && value !== "Not recorded" ? `<button class="copy" data-copy="${esc(value)}">copy</button>` : ""}</span></div>`;
+        const copyButton = copy && value !== "Not recorded"
+          ? `<button class="copy" data-copy="${esc(value)}">copy</button>`
+          : "";
+        return `<div class="evidence-row"><span>${esc(label)}</span><span>${rendered}${copyButton}</span></div>`;
       }
 
       function evidenceGroup(title, rows) {
         return `<section class="evidence-group"><h4>${esc(title)}</h4>${rows.join("")}</section>`;
       }
 
-      function renderVerification(data) {
-        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
-        const state = verificationState(data, mode, HEALTH.livePaymentsEnabled);
-        const verification = data?.verification;
-        const copy = {
+      function verificationCopy(stateKey, transactionSubmitted) {
+        const standardCopy = {
           simulation: ["Not written to Hedera", "No real HBAR transfer", "Local policy and report hashes only"],
           ready: ["Hedera testnet execution is enabled.", "No transaction has been submitted for this case yet."],
           pending: ["Transaction submitted to Hedera testnet.", "Waiting for Mirror Node confirmation and HCS audit records."],
           verified: ["Verified on Hedera testnet", "Mirror Node confirmed · HCS anchored"],
           partial: ["Hedera transaction confirmed.", "HCS audit anchoring was skipped or unavailable."],
-          failed: verification?.transactionSubmitted
-            ? ["The submitted transaction could not be independently verified.", "Review the transaction and audit details."]
-            : ["No verifiable Hedera transaction was recorded.", "Review the failure details before retrying."],
-        }[state.key];
+        };
+        if (stateKey !== "failed") {
+          return standardCopy[stateKey];
+        }
+        if (transactionSubmitted) {
+          return ["The submitted transaction could not be independently verified.", "Review the transaction and audit details."];
+        }
+        return ["No verifiable Hedera transaction was recorded.", "Review the failure details before retrying."];
+      }
+
+      function auditStatus(item) {
+        const sequence = item.hcsSequenceNumber ? ` #${item.hcsSequenceNumber}` : "";
+        return `${item.eventType}: ${item.hcsStatus}${sequence}`;
+      }
+
+      function renderVerification(data) {
+        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
+        const state = verificationState(data, mode, HEALTH.livePaymentsEnabled);
+        const verification = data?.verification;
+        const copy = verificationCopy(state.key, verification?.transactionSubmitted);
         const decision = data?.decision;
         const audit = Array.isArray(data?.auditTrail) ? data.auditTrail : [];
-        const statuses = audit.map((item) => `${item.eventType}: ${item.hcsStatus}${item.hcsSequenceNumber ? ` #${item.hcsSequenceNumber}` : ""}`);
+        const statuses = audit.map((item) => auditStatus(item));
         const explorer = verification?.hashscanUrl?.startsWith("http") ? `<a href="${esc(verification.hashscanUrl)}" target="_blank" rel="noopener">View on HashScan ↗</a>` : "Not recorded";
+        const transactionSubmitted = verification?.transactionSubmitted ? "Yes" : "No";
+        let hcsConfigured = null;
+        if (verification) {
+          hcsConfigured = verification.hcsConfigured ? "Yes" : "No";
+        }
+        const sequenceNumbers = verification?.hcsSequenceNumbers?.length ? verification.hcsSequenceNumbers.join(", ") : null;
+        const lifecycleRecords = statuses.length ? statuses.join(" · ") : null;
         const groups = [
           evidenceGroup("Decision Evidence", [
             evidenceRow("Decision", data?.kind || "Not recorded"), evidenceRow("Proposal ID", data?.proposalId, true),
@@ -1224,16 +1497,17 @@
           ]),
           evidenceGroup("Payment Verification", [
             evidenceRow("Execution mode", verification?.executionMode || mode),
-            evidenceRow("Transaction submitted", verification ? (verification.transactionSubmitted ? "Yes" : "No") : "No"),
+            evidenceRow("Transaction submitted", transactionSubmitted),
             evidenceRow("Transaction ID", verification?.transactionId, true),
             evidenceRow("Amount", verification?.amountTinybars != null ? tinybars(verification.amountTinybars) : null), evidenceRow("Vendor account", verification?.vendorAccountId, true),
             evidenceRow("Memo", verification?.memo, true), evidenceRow("HashScan", explorer, false, true),
           ]),
           evidenceGroup("Mirror Node Record", [evidenceRow("Confirmation", verification?.mirrorNodeConfirmation), evidenceRow("Consensus timestamp", verification?.consensusTimestamp)]),
-          evidenceGroup("HCS Audit Trail", [evidenceRow("HCS configured", verification ? (verification.hcsConfigured ? "Yes" : "No") : null), evidenceRow("Anchoring status", verification?.hcsAnchoringStatus), evidenceRow("HCS topic", verification?.hcsTopicId, true), evidenceRow("Sequence numbers", verification?.hcsSequenceNumbers?.length ? verification.hcsSequenceNumbers.join(", ") : null), evidenceRow("Lifecycle records", statuses.length ? statuses.join(" · ") : null)]),
+          evidenceGroup("HCS Audit Trail", [evidenceRow("HCS configured", hcsConfigured), evidenceRow("Anchoring status", verification?.hcsAnchoringStatus), evidenceRow("HCS topic", verification?.hcsTopicId, true), evidenceRow("Sequence numbers", sequenceNumbers), evidenceRow("Lifecycle records", lifecycleRecords)]),
           evidenceGroup("Report Integrity", [evidenceRow("Report hash", verification?.reportHash, true), evidenceRow("Policy hash", verification?.policyHash || decision?.canonicalHash, true), evidenceRow("Policy version", verification?.policyVersion || decision?.policyVersion), evidenceRow("Failure code", verification?.failureCode), evidenceRow("Failure reason", verification?.failureReason)]),
         ];
-        return `<section class="verification" aria-labelledby="verificationHeading"><div class="verification-head"><div><div class="section-kicker">Permanent case evidence</div><h3 id="verificationHeading">Verification &amp; Audit</h3><div class="verification-copy">${copy.map((line) => `<span>${esc(line)}</span>`).join("")}</div></div><span class="evidence-badge ${state.key}">${state.badge}</span></div><div class="evidence-groups">${groups.join("")}</div><details><summary>How Hedera Verification Works</summary><ol><li>RouteGuard records the policy decision.</li><li>A controlled HBAR transaction may execute.</li><li>Mirror Node confirms the transaction record.</li><li>HCS anchors ordered lifecycle events.</li><li>Policy and report hashes preserve integrity.</li></ol></details></section>`;
+        const copyLines = copy.map((line) => `<span>${esc(line)}</span>`).join("");
+        return `<section class="verification" aria-labelledby="verificationHeading"><div class="verification-head"><div><div class="section-kicker">Permanent case evidence</div><h3 id="verificationHeading">Verification &amp; Audit</h3><div class="verification-copy">${copyLines}</div></div><span class="evidence-badge ${state.key}">${state.badge}</span></div><div class="evidence-groups">${groups.join("")}</div><details><summary>How Hedera Verification Works</summary><ol><li>RouteGuard records the policy decision.</li><li>A controlled HBAR transaction may execute.</li><li>Mirror Node confirms the transaction record.</li><li>HCS anchors ordered lifecycle events.</li><li>Policy and report hashes preserve integrity.</li></ol></details></section>`;
       }
 
       function selectScenario(id) {
@@ -1305,42 +1579,66 @@
       }
 
       function pill(outcome) {
-        if (outcome === "PASS") return `<span class="pill p-pass">PASS</span>`;
-        if (outcome === "BLOCK") return `<span class="pill p-block">BLOCK</span>`;
+        if (outcome === "PASS") {
+          return `<span class="pill p-pass">PASS</span>`;
+        }
+        if (outcome === "BLOCK") {
+          return `<span class="pill p-block">BLOCK</span>`;
+        }
         return `<span class="pill p-appr">APPROVAL</span>`;
       }
 
+      function policyDecisionLabel(scenarioLabel, decision) {
+        if (scenarioLabel === "INJECTION RESISTED") {
+          return "Injection resisted";
+        }
+        if (scenarioLabel === "APPROVAL REQUIRED" || decision === "REQUIRE_APPROVAL") {
+          return "Approval required";
+        }
+        if (decision === "ALLOW_AUTONOMOUS") {
+          return "Auto-approved";
+        }
+        return "Blocked";
+      }
+
       function renderGate(decision, scenarioId) {
-        if (!decision) return "";
+        if (!decision) {
+          return "";
+        }
         const checks = decision.checks
           .map((c) => {
             const ev = Object.entries(c.evidence || {})
               .map(([k, v]) => `<b>${esc(k)}</b>=${esc(typeof v === "object" ? JSON.stringify(v) : v)}`)
               .join("  ·  ");
+            const evidence = ev ? `<div class="ev">${ev}</div>` : "";
             return `<div class="chk">
               <div class="chk-top"><span class="chk-name">${esc(c.name)}</span>${pill(c.outcome)}</div>
               <div class="chk-msg">${esc(c.publicMessage)}</div>
-              ${ev ? `<div class="ev">${ev}</div>` : ""}
+              ${evidence}
             </div>`;
           })
           .join("");
         const scenarioLabel = statusForScenario(scenarioId);
-        const decisionLabel = scenarioLabel === "INJECTION RESISTED" ? "Injection resisted" : scenarioLabel === "APPROVAL REQUIRED" ? "Approval required" : decision.decision === "ALLOW_AUTONOMOUS" ? "Auto-approved" : decision.decision === "REQUIRE_APPROVAL" ? "Approval required" : "Blocked";
+        const decisionLabel = policyDecisionLabel(scenarioLabel, decision.decision);
         return `<div class="blk"><div class="lbl">Policy Evaluation · ${decisionLabel} · v${decision.policyVersion} · hash ${esc(decision.canonicalHash.slice(0, 16))}…</div><div class="gate">${checks}</div></div>`;
       }
 
       function pf(k, v, copy) {
-        return `<div class="pf"><div class="k">${esc(k)}</div><div class="v">${esc(v)}${copy ? `<button class="copy" data-copy="${esc(v)}">copy</button>` : ""}</div></div>`;
+        const copyButton = copy ? `<button class="copy" data-copy="${esc(v)}">copy</button>` : "";
+        return `<div class="pf"><div class="k">${esc(k)}</div><div class="v">${esc(v)}${copyButton}</div></div>`;
       }
 
       function formatTimestamp(value) {
-        if (!value) return "not recorded";
+        if (!value) {
+          return "not recorded";
+        }
         const date = new Date(value);
         return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium", timeZone: "UTC" }) + " UTC";
       }
 
       function approvalField(label, value, wide = false, copy = false) {
-        return `<div class="approval-field ${wide ? "wide" : ""}"><div class="k">${esc(label)}</div><div class="v">${esc(value)}${copy ? `<button class="copy" data-copy="${esc(value)}">copy</button>` : ""}</div></div>`;
+        const copyButton = copy ? `<button class="copy" data-copy="${esc(value)}">copy</button>` : "";
+        return `<div class="approval-field ${wide ? "wide" : ""}"><div class="k">${esc(label)}</div><div class="v">${esc(value)}${copyButton}</div></div>`;
       }
 
       function renderApprovalPanel(data) {
@@ -1352,12 +1650,13 @@
         const warning = simulated
           ? "Demo approval · no identity verification · no real HBAR transfer"
           : "Live approval requires a verified, allowlisted approver identity. This public demo has no login surface.";
+        const route = shipment ? `${shipment.origin.city} → ${shipment.destination.city}` : "Not recorded";
         return `<section class="approve-card" aria-labelledby="approvalTitle">
           <div class="approval-head"><div><div class="ttl" id="approvalTitle">Procurement approval pending</div><div class="ds">${esc(a.reason)}</div></div><span class="validity">${expired ? "EXPIRED" : "VALID · SINGLE USE"}</span></div>
           <div class="approval-warning">${esc(warning)}</div>
           <div class="approval-grid">
             ${approvalField("shipment", a.shipmentId)}
-            ${approvalField("route", shipment ? `${shipment.origin.city} → ${shipment.destination.city}` : "Not recorded", true)}
+            ${approvalField("route", route, true)}
             ${approvalField("vendor", a.vendorId)}
             ${approvalField("vendor account", a.vendorAccountId, false, true)}
             ${approvalField("service", CATALOG?.serviceCategory || "Not recorded")}
@@ -1377,7 +1676,9 @@
       }
 
       function renderApprovalReceipt(approval) {
-        if (!approval) return "";
+        if (!approval) {
+          return "";
+        }
         const rejected = approval.status === "REJECTED";
         const timestamp = rejected ? approval.rejectedAt : approval.approvedAt;
         return `<section class="approval-receipt ${rejected ? "rejected" : ""}" aria-label="Approval decision receipt">
@@ -1419,12 +1720,22 @@
         let html = `<div class="result-head"><div>${verdictBadge(data.kind, SELECTED_SCENARIO?.id)}</div><div class="src-tag">${esc(SELECTED_SCENARIO?.label || scn?.label || "Case result")}</div></div>`;
         html += renderCaseSummary(SELECTED_SCENARIO, data);
 
-        if (data.rationale) html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.rationale)}</div></div>`;
-        if (data.kind === "NO_PURCHASE") html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.explanation)}</div><div class="muted" style="margin-top:8px">recommendation source: ${esc(data.intentSource)}</div></div>`;
+        if (data.rationale) {
+          html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.rationale)}</div></div>`;
+        }
+        if (data.kind === "NO_PURCHASE") {
+          html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.explanation)}</div><div class="muted" style="margin-top:8px">recommendation source: ${esc(data.intentSource)}</div></div>`;
+        }
 
-        if (data.kind === "APPROVAL_REQUIRED") html += renderApprovalPanel(data);
-        if (data.decision) html += renderGate(data.decision, SELECTED_SCENARIO?.id);
-        if (data.kind === "REJECTED") html += renderApprovalReceipt(data.approval);
+        if (data.kind === "APPROVAL_REQUIRED") {
+          html += renderApprovalPanel(data);
+        }
+        if (data.decision) {
+          html += renderGate(data.decision, SELECTED_SCENARIO?.id);
+        }
+        if (data.kind === "REJECTED") {
+          html += renderApprovalReceipt(data.approval);
+        }
 
         if (data.kind === "COMPLETED") {
           html += renderApprovalReceipt(data.approval);
@@ -1474,14 +1785,22 @@
       function setApprovalBusy(message) {
         const approveButton = $("#approveBtn");
         const rejectButton = $("#rejectBtn");
-        if (approveButton) approveButton.disabled = true;
-        if (rejectButton) rejectButton.disabled = true;
+        if (approveButton) {
+          approveButton.disabled = true;
+        }
+        if (rejectButton) {
+          rejectButton.disabled = true;
+        }
         const actions = document.querySelector(".approval-actions");
-        if (actions) actions.insertAdjacentHTML("afterbegin", `<span class="spinner" aria-hidden="true"></span><span class="muted" role="status">${esc(message)}</span>`);
+        if (actions) {
+          actions.insertAdjacentHTML("afterbegin", `<span class="spinner" aria-hidden="true"></span><output class="muted">${esc(message)}</output>`);
+        }
       }
 
       function archiveSelectedCase() {
-        if (!SELECTED_SCENARIO?.id || !LAST) return;
+        if (!SELECTED_SCENARIO?.id || !LAST) {
+          return;
+        }
         const archivedAt = new Date().toISOString();
         ARCHIVED.set(SELECTED_SCENARIO.id, createArchiveRecord(SELECTED_SCENARIO, LAST, archivedAt, executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled), HEALTH.livePaymentsEnabled));
         LAST = null;
@@ -1492,16 +1811,28 @@
         renderCaseFilters();
         renderScenarios();
         renderArchive();
-        window.activateRouteGuardTab?.("archive");
+        globalThis.activateRouteGuardTab?.("archive");
       }
 
       function archiveMatches(record, filter) {
-        if (filter === "all") return true;
-        if (filter === "approved") return record.data.kind === "COMPLETED";
-        if (filter === "blocked") return record.data.kind === "BLOCKED" || record.data.kind === "REJECTED";
-        if (filter === "no-purchase") return record.data.kind === "NO_PURCHASE";
-        if (filter === "verified") return record.verification.key === "verified";
-        if (filter === "simulation") return record.verification.key === "simulation";
+        if (filter === "all") {
+          return true;
+        }
+        if (filter === "approved") {
+          return record.data.kind === "COMPLETED";
+        }
+        if (filter === "blocked") {
+          return record.data.kind === "BLOCKED" || record.data.kind === "REJECTED";
+        }
+        if (filter === "no-purchase") {
+          return record.data.kind === "NO_PURCHASE";
+        }
+        if (filter === "verified") {
+          return record.verification.key === "verified";
+        }
+        if (filter === "simulation") {
+          return record.verification.key === "simulation";
+        }
         return true;
       }
 
@@ -1511,9 +1842,15 @@
         document.querySelectorAll("#archiveFilters .filter-chip").forEach((button) => button.onclick = () => { ARCHIVE_FILTER = button.dataset.filter; renderArchive(); });
         const sort = $("#archiveSort").value;
         const visible = records.filter((record) => archiveMatches(record, ARCHIVE_FILTER)).sort((a, b) => {
-          if (sort === "shipment") return a.scenario.shipmentId.localeCompare(b.scenario.shipmentId);
-          if (sort === "decision") return statusForScenario(a.scenario.id).localeCompare(statusForScenario(b.scenario.id));
-          if (sort === "verification") return a.verification.badge.localeCompare(b.verification.badge);
+          if (sort === "shipment") {
+            return a.scenario.shipmentId.localeCompare(b.scenario.shipmentId);
+          }
+          if (sort === "decision") {
+            return statusForScenario(a.scenario.id).localeCompare(statusForScenario(b.scenario.id));
+          }
+          if (sort === "verification") {
+            return a.verification.badge.localeCompare(b.verification.badge);
+          }
           return Date.parse(b.archivedAt) - Date.parse(a.archivedAt);
         });
         if (!visible.length) {
@@ -1525,20 +1862,24 @@
           const id = card.dataset.archiveId;
           card.querySelector(".view-archive").onclick = () => {
             const record = ARCHIVED.get(id);
-            if (!record) return;
+            if (!record) {
+              return;
+            }
             SELECTED_SCENARIO = record.scenario;
-            window.activateRouteGuardTab?.("cases");
+            globalThis.activateRouteGuardTab?.("cases");
             render(record.data, record.scenario);
           };
           card.querySelector(".restore-archive").onclick = () => {
             const record = ARCHIVED.get(id);
-            if (!record) return;
+            if (!record) {
+              return;
+            }
             ARCHIVED.delete(id);
             renderCaseFilters();
             renderScenarios();
             renderArchive();
             SELECTED_SCENARIO = record.scenario;
-            window.activateRouteGuardTab?.("cases");
+            globalThis.activateRouteGuardTab?.("cases");
             render(record.data, record.scenario);
           };
         });
@@ -1555,8 +1896,21 @@
         });
       }
 
-      globalThis.RouteGuardUIModel = { statusForScenario, executionModeFor, filterCases, sortCases, verificationState, createArchiveRecord };
-      if (typeof document !== "undefined") boot();
+      globalThis.RouteGuardUIModel = {
+        statusForScenario,
+        executionModeFor,
+        filterCases,
+        sortCases,
+        verificationState,
+        createArchiveRecord,
+        nextTabIndex,
+        approvalTimelineState,
+        policyDecisionLabel,
+        archiveMatches,
+      };
+      if (typeof document !== "undefined") {
+        boot();
+      }
     </script>
   </body>
 </html>

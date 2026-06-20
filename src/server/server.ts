@@ -23,6 +23,12 @@ import {
   type GovernanceRole,
   type ProposalInput,
 } from "../governance/service.js";
+import {
+  assessLiveRouteRisk,
+  liveRouteCatalog,
+  UnknownLiveRouteError,
+} from "../live-routes/service.js";
+import { WeatherDataUnavailableError } from "../live-routes/open-meteo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -102,6 +108,34 @@ app.get("/api/scenarios", (_req, res) =>
     })),
   ),
 );
+
+app.get("/api/live-routes", (_req, res) => {
+  res.json(liveRouteCatalog());
+});
+
+app.post("/api/live-route-risk", async (req, res) => {
+  try {
+    // Route ID is the only browser-controlled input. Coordinates and cargo
+    // tolerances are resolved from the server allowlist.
+    res.json(await assessLiveRouteRisk(req.body?.routeId));
+  } catch (error) {
+    if (error instanceof UnknownLiveRouteError)
+      return res.status(400).json({
+        errorCode: error.code,
+        message: error.message,
+      });
+    const unavailable =
+      error instanceof WeatherDataUnavailableError
+        ? error
+        : new WeatherDataUnavailableError();
+    return res.status(503).json({
+      errorCode: unavailable.code,
+      message: unavailable.message,
+      status: "UNAVAILABLE",
+      manualReviewRequired: true,
+    });
+  }
+});
 
 app.get("/api/policies/risk/active", (_req, res) => {
   res.json(getActiveRiskPolicy());

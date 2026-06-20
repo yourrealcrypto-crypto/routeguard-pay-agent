@@ -14,6 +14,10 @@ type UiModel = {
   ) => Array<{ id: string }>;
   verificationState: (data: unknown, selectedMode: string, enabled: boolean) => { key: string; badge: string };
   createArchiveRecord: (scenario: unknown, data: unknown, archivedAt: string, selectedMode: string, enabled: boolean) => Record<string, unknown>;
+  nextTabIndex: (key: string, currentIndex: number, tabCount: number) => number;
+  approvalTimelineState: (kind: string, approval?: unknown) => string;
+  policyDecisionLabel: (scenarioLabel: string, decision: string) => string;
+  archiveMatches: (record: { data: { kind: string }; verification: { key: string } }, filter: string) => boolean;
 };
 
 const html = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
@@ -45,6 +49,26 @@ describe("RouteGuard interface model", () => {
     expect(html).toContain(">Policy &amp; Governance<");
     expect(html).toContain(">Archive<");
     expect(html).not.toMatch(/>Hedera Proof</i);
+    expect(html).toContain("Weather data by Open-Meteo");
+    expect(html).toContain('apiJson("/api/live-route-risk"');
+    expect(html).not.toContain("api.open-meteo.com");
+  });
+
+  it("uses native outputs for dynamic status messages and keeps one authoritative tab style", () => {
+    expect(html).toContain('<div class="main-tabs" role="tablist" aria-label="RouteGuard workspaces">');
+    expect(html).toContain('<button class="main-tab" id="casesTab" role="tab"');
+    expect(html).toContain('<output id="proposalStatus" class="gov-status" aria-live="polite"></output>');
+    expect(html).toContain('<output class="muted">${esc(message)}</output>');
+    expect(html.match(/^\s*\.main-tabs\s*\{/gm)).toHaveLength(1);
+    expect(html.match(/^\s*\.main-tab\s*\{/gm)).toHaveLength(1);
+    expect(html.match(/^\s*\.main-tab\[aria-selected="true"\]\s*\{/gm)).toHaveLength(1);
+  });
+
+  it("preserves keyboard tab navigation after replacing nested conditionals", () => {
+    expect(ui.nextTabIndex("Home", 2, 4)).toBe(0);
+    expect(ui.nextTabIndex("End", 1, 4)).toBe(3);
+    expect(ui.nextTabIndex("ArrowRight", 3, 4)).toBe(0);
+    expect(ui.nextTabIndex("ArrowLeft", 0, 4)).toBe(3);
   });
 
   it("keeps all six case outcomes and filters them client-side", () => {
@@ -98,5 +122,27 @@ describe("RouteGuard interface model", () => {
     expect(ui.verificationState({ verification: { status: "SIMULATION_EVIDENCE" }, payment: livePayment }, "AUTONOMOUS_TESTNET", true).badge).toBe("SIMULATION EVIDENCE");
     expect(ui.verificationState({}, "AUTONOMOUS_TESTNET", true).badge).toBe("TESTNET READY");
     expect(ui.verificationState({ payment: livePayment, auditTrail: [{ hcsStatus: "ANCHORED" }] }, "AUTONOMOUS_TESTNET", true).badge).toBe("TESTNET READY");
+  });
+
+  it("uses the intended approval timeline result without duplicate conditional branches", () => {
+    expect(ui.approvalTimelineState("APPROVAL_REQUIRED")).toBe("Pending");
+    expect(ui.approvalTimelineState("COMPLETED", { status: "APPROVED" })).toBe("Completed");
+    expect(ui.approvalTimelineState("BLOCKED")).toBe("Skipped");
+    expect(ui.approvalTimelineState("NO_PURCHASE")).toBe("Skipped");
+    expect(ui.approvalTimelineState("FAILED")).toBe("Skipped");
+  });
+
+  it("keeps policy labels and archive filters scoped to their matching conditions", () => {
+    expect(ui.policyDecisionLabel("INJECTION RESISTED", "BLOCK")).toBe("Injection resisted");
+    expect(ui.policyDecisionLabel("APPROVAL REQUIRED", "BLOCK")).toBe("Approval required");
+    expect(ui.policyDecisionLabel("PENDING", "ALLOW_AUTONOMOUS")).toBe("Auto-approved");
+    expect(ui.policyDecisionLabel("PENDING", "BLOCK")).toBe("Blocked");
+
+    const record = { data: { kind: "COMPLETED" }, verification: { key: "simulation" } };
+    expect(ui.archiveMatches(record, "all")).toBe(true);
+    expect(ui.archiveMatches(record, "approved")).toBe(true);
+    expect(ui.archiveMatches(record, "blocked")).toBe(false);
+    expect(ui.archiveMatches(record, "simulation")).toBe(true);
+    expect(ui.archiveMatches(record, "verified")).toBe(false);
   });
 });

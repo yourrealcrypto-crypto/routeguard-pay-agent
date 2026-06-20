@@ -62,6 +62,92 @@ export const ShipmentSchema = z.object({
 export type Shipment = z.infer<typeof ShipmentSchema>;
 
 /* -------------------------------------------------------------------------- */
+/*  Live freight routes + weather evidence                                    */
+/* -------------------------------------------------------------------------- */
+
+export const LiveRouteId = z.enum([
+  "LIVE-HAM-RTM",
+  "LIVE-MUC-MIL",
+  "LIVE-LEJ-WAW",
+]);
+export type LiveRouteId = z.infer<typeof LiveRouteId>;
+
+export const LiveCargoProfile = z.enum([
+  "TEMPERATURE_CONTROLLED",
+  "FRAGILE_HIGH_VALUE",
+  "GENERAL_CARGO",
+]);
+export type LiveCargoProfile = z.infer<typeof LiveCargoProfile>;
+
+export const LiveRouteCheckpointSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  role: z.enum(["ORIGIN", "CHECKPOINT", "DESTINATION"]),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+});
+export type LiveRouteCheckpoint = z.infer<
+  typeof LiveRouteCheckpointSchema
+>;
+
+export const LiveFreightRouteSchema = z.object({
+  id: LiveRouteId,
+  origin: z.string(),
+  destination: z.string(),
+  cargo: z.string(),
+  cargoProfile: LiveCargoProfile,
+  temperatureToleranceC: z.object({ minimum: z.number(), maximum: z.number() }),
+  checkpoints: z.array(LiveRouteCheckpointSchema).length(3),
+});
+export type LiveFreightRoute = z.infer<typeof LiveFreightRouteSchema>;
+
+export const WeatherCheckpointEvidenceSchema = LiveRouteCheckpointSchema.extend({
+  temperatureC: z.number(),
+  precipitationMm: z.number().nonnegative(),
+  windSpeedKph: z.number().nonnegative(),
+  windGustsKph: z.number().nonnegative(),
+  visibilityM: z.number().nonnegative(),
+  weatherCode: z.number().int().nonnegative(),
+  sourceTimestamp: z.string().datetime(),
+  triggeredReasonCodes: z.array(z.string()).default([]),
+});
+export type WeatherCheckpointEvidence = z.infer<
+  typeof WeatherCheckpointEvidenceSchema
+>;
+
+export const WeatherRiskRuleResultSchema = z.object({
+  code: z.string(),
+  contribution: z.number().nonnegative(),
+  checkpointIds: z.array(z.string()),
+  explanation: z.string(),
+});
+export type WeatherRiskRuleResult = z.infer<
+  typeof WeatherRiskRuleResultSchema
+>;
+
+export const LiveRouteRiskResultSchema = z.object({
+  route: LiveFreightRouteSchema,
+  status: z.literal("AVAILABLE"),
+  dataSource: z.enum(["LIVE", "CACHE"]),
+  retrievedAt: z.string().datetime(),
+  sourceTimestamp: z.string().datetime(),
+  score: z.number().int().min(0).max(100),
+  riskBand: z.enum(["low", "moderate", "high", "critical"]),
+  confidence: z.number().min(0).max(1),
+  triggeredReasonCodes: z.array(z.string()),
+  triggeredRules: z.array(WeatherRiskRuleResultSchema),
+  checkpointEvidence: z.array(WeatherCheckpointEvidenceSchema).length(3),
+  policyVersion: z.string(),
+  policyHash: z.string().regex(/^[0-9a-f]{64}$/),
+  premiumReportRecommended: z.boolean(),
+  purchaseMode: z.literal("SIMULATION_ONLY"),
+  disclaimer: z.string(),
+});
+export type LiveRouteRiskResult = z.infer<
+  typeof LiveRouteRiskResultSchema
+>;
+
+/* -------------------------------------------------------------------------- */
 /*  Service catalog (server-controlled)                                       */
 /* -------------------------------------------------------------------------- */
 
