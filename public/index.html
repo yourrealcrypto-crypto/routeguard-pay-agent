@@ -369,10 +369,110 @@
       .footer-copy { display: grid; gap: 4px; }
       .legal { max-width: 90ch; color: #69758a; font-size: 9.5px; }
 
+      .main-tabs { display: flex; gap: 8px; margin: 18px 0; padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: rgba(10,16,26,.82); }
+      .main-tab { flex: 0 1 240px; border: 1px solid transparent; background: transparent; color: var(--muted); text-align: left; }
+      .main-tab[aria-selected="true"] { color: var(--text); background: var(--surface-2); border-color: var(--line-strong); box-shadow: inset 3px 0 var(--amber); }
+      .tab-view[hidden] { display: none; }
+      .governance-shell { display: grid; gap: 14px; }
+      .governance-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+      .gov-card { grid-column: span 6; padding: 20px; }
+      .gov-card.full { grid-column: 1 / -1; }
+      .gov-card.third { grid-column: span 4; }
+      .gov-meta, .policy-facts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 14px; }
+      .gov-meta > div, .policy-facts > div { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+      .gov-meta b, .policy-facts b { display: block; margin-top: 4px; font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+      .policy-table, .impact-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
+      .policy-table th, .policy-table td, .impact-table th, .impact-table td { padding: 9px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      .policy-table th, .impact-table th { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+      .gov-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 14px; }
+      .gov-form .wide { grid-column: 1 / -1; }
+      .gov-form label { display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+      .gov-form select, .gov-form input, .gov-form textarea, .queue-actions select { width: 100%; border: 1px solid var(--line-strong); border-radius: 7px; background: #0b121d; color: var(--text); padding: 10px; font: inherit; }
+      #explainShipment { width: 100%; margin-top: 7px; border: 1px solid var(--line-strong); border-radius: 7px; background: #0b121d; color: var(--text); padding: 10px; font: inherit; }
+      .gov-form textarea { min-height: 82px; resize: vertical; }
+      .gov-actions, .queue-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .queue { display: grid; gap: 12px; margin-top: 12px; }
+      .proposal-card { border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: 9px; padding: 14px; background: var(--surface-2); }
+      .proposal-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+      .proposal-hash { font: 11px/1.5 var(--mono); color: var(--purple); overflow-wrap: anywhere; }
+      .simulation-notice { margin-top: 12px; padding: 10px 12px; border: 1px solid rgba(244,184,76,.35); border-radius: 8px; color: var(--amber); background: rgba(244,184,76,.06); }
+      .locked-list { display: grid; gap: 7px; padding: 0; list-style: none; }
+      .locked-list li::before { content: "LOCKED"; margin-right: 8px; color: var(--red); font: 9px var(--mono); }
+      .score-explain { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+      .score-total { font: 700 26px var(--mono); color: var(--green); }
+      .gov-status { min-height: 20px; color: var(--muted); margin-top: 10px; }
+
+      /* Product shell */
+      .main-tabs { position: sticky; top: 0; z-index: 20; overflow-x: auto; scrollbar-width: thin; backdrop-filter: blur(18px); }
+      .main-tab { min-width: max-content; text-align: center; }
+      .main-tab[aria-selected="true"] { box-shadow: inset 0 -3px var(--amber); }
+      .workspace-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end; margin-bottom: 14px; }
+      .filter-group { display: flex; gap: 7px; flex-wrap: wrap; }
+      .filter-chip { padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-dim); background: var(--panel-soft); font-size: 10px; }
+      .filter-chip[aria-pressed="true"] { border-color: var(--amber); color: var(--ink); background: var(--amber-soft); }
+      .filter-chip b { margin-left: 5px; color: var(--ink); font-family: var(--mono); }
+      .sort-control, .mode-control { display: grid; gap: 5px; color: var(--ink-faint); font: 650 9px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+      .sort-control select, .mode-control select { min-width: 170px; border: 1px solid var(--line-strong); border-radius: 8px; padding: 9px 30px 9px 10px; color: var(--ink); background: #0b121d; font: 500 11px/1.3 var(--sans); text-transform: none; }
+      .mode-card { display: grid; gap: 8px; padding: 13px; border: 1px solid var(--line); border-radius: 11px; background: rgba(8,12,18,.35); }
+      .mode-state { min-height: 18px; color: var(--blue); font: 10px/1.45 var(--mono); }
+      .case-actions { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+      .archive-btn { color: var(--ink-dim); }
+      .case-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin: 14px 0; }
+      .summary-item { min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; background: rgba(8,12,18,.35); }
+      .summary-item .k { color: var(--ink-faint); font: 8px/1.3 var(--mono); letter-spacing: .07em; text-transform: uppercase; }
+      .summary-item .v { margin-top: 4px; overflow-wrap: anywhere; color: var(--ink); font-size: 11px; }
+      .summary-item.mono .v { font-family: var(--mono); }
+      .timeline-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+      .timeline-card { min-height: 96px; padding: 9px; border: 1px solid var(--line); border-top: 3px solid var(--ink-faint); border-radius: 8px; background: var(--panel-soft); }
+      .timeline-card[data-state="Completed"] { border-top-color: var(--green); }
+      .timeline-card[data-state="Pending"] { border-top-color: var(--amber); }
+      .timeline-card[data-state="Blocked"], .timeline-card[data-state="Failed"] { border-top-color: var(--red); }
+      .timeline-card[data-state="Skipped"] { border-top-color: var(--ink-faint); opacity: .75; }
+      .timeline-index { color: var(--ink-faint); font: 9px var(--mono); }
+      .timeline-label { display: block; margin-top: 5px; color: var(--ink); font-size: 10px; line-height: 1.35; }
+      .timeline-state { display: block; margin-top: 8px; color: var(--ink-faint); font: 8px var(--mono); text-transform: uppercase; }
+      .verification { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: rgba(8,12,18,.32); }
+      .verification-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; padding: 14px; border-bottom: 1px solid var(--line); }
+      .verification-head h3 { margin: 3px 0 0; font-size: 15px; }
+      .verification-copy { margin-top: 7px; color: var(--ink-dim); font-size: 11px; }
+      .verification-copy span { display: block; }
+      .evidence-badge { flex: none; padding: 6px 9px; border: 1px solid var(--line-strong); border-radius: 999px; font: 700 9px var(--mono); letter-spacing: .06em; }
+      .evidence-badge.simulation { color: var(--blue); border-color: rgba(109,180,255,.35); background: var(--blue-soft); }
+      .evidence-badge.ready, .evidence-badge.pending { color: var(--amber); border-color: rgba(245,185,66,.4); background: var(--amber-soft); }
+      .evidence-badge.verified { color: var(--green); border-color: rgba(94,227,154,.4); background: linear-gradient(90deg, var(--green-soft), var(--purple-soft)); }
+      .evidence-badge.partial { color: #c7c0ff; border-color: rgba(148,135,255,.4); background: var(--purple-soft); }
+      .evidence-badge.failed { color: var(--red); border-color: rgba(255,127,136,.4); background: var(--red-soft); }
+      .evidence-groups { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; padding: 14px; }
+      .evidence-group { padding: 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-soft); }
+      .evidence-group h4 { margin: 0 0 8px; color: var(--ink-dim); font: 650 9px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+      .evidence-row { display: grid; grid-template-columns: minmax(100px, .7fr) minmax(0, 1.3fr); gap: 8px; padding: 5px 0; border-top: 1px solid rgba(255,255,255,.05); font-size: 10px; }
+      .evidence-row:first-of-type { border-top: 0; }
+      .evidence-row span:first-child { color: var(--ink-faint); }
+      .evidence-row span:last-child { overflow-wrap: anywhere; color: var(--ink); font-family: var(--mono); }
+      .verification details { margin: 0 14px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink-dim); font-size: 11px; }
+      .verification summary { cursor: pointer; color: var(--blue); font-weight: 650; }
+      .verification ol { margin-bottom: 0; padding-left: 19px; }
+      .setup-view { padding: 24px; }
+      .setup-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: 14px; }
+      .setup-panel { padding: 22px; }
+      .setup-panel h2 { margin: 4px 0 8px; font-size: 20px; }
+      .roadmap-list { display: grid; gap: 9px; margin: 16px 0 0; padding: 0; list-style: none; }
+      .roadmap-list li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-soft); }
+      .archive-toolbar { display: flex; gap: 12px; align-items: end; justify-content: space-between; margin-bottom: 14px; }
+      .archive-list { display: grid; gap: 10px; }
+      .archive-record { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; padding: 15px; }
+      .archive-record h3 { margin: 0; font: 700 13px var(--mono); }
+      .archive-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; color: var(--ink-faint); font: 10px var(--mono); }
+      .archive-actions { display: flex; gap: 8px; align-items: center; }
+      .empty-archive { padding: 38px; text-align: center; color: var(--ink-dim); }
       @media (max-width: 1080px) {
+        .gov-card, .gov-card.third { grid-column: 1 / -1; }
         .wrap { padding-inline: 18px; }
         .cols { grid-template-columns: 300px minmax(0, 1fr); gap: 14px; }
         .hero-grid { grid-template-columns: 1fr; gap: 16px; }
+        .case-summary { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        .timeline-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+        .setup-grid { grid-template-columns: 1fr; }
         .hero-facts { justify-content: flex-start; }
         .gate, .proof { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .process-preview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -403,6 +503,14 @@
         .stage { padding: 15px; }
         .stage-head { align-items: flex-start; }
         footer { grid-template-columns: 1fr; }
+        .gov-meta, .policy-facts, .gov-form, .score-explain { grid-template-columns: 1fr; }
+        .gov-form .wide { grid-column: auto; }
+        .workspace-toolbar, .archive-record { grid-template-columns: 1fr; }
+        .workspace-toolbar .sort-control, .workspace-toolbar select { width: 100%; }
+        .case-summary, .evidence-groups { grid-template-columns: 1fr; }
+        .timeline-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        .verification-head, .archive-toolbar { align-items: stretch; flex-direction: column; }
+        .archive-actions { align-items: stretch; flex-direction: column; }
       }
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -415,23 +523,22 @@
         <div class="topbar">
           <div class="brand">
             <span class="logo"><span class="logo-mark">RG</span>RouteGuard Pay Agent</span>
-            <span class="net-badge" id="netBadge">Hedera testnet</span>
+            <span class="net-badge" id="netBadge">Policy control active</span>
           </div>
-          <div class="attribution">Built with Hedera Agent Kit · Hedera testnet · HCS audit proof</div>
+          <div class="attribution">Built with Hedera Agent Kit</div>
         </div>
         <div class="hero-grid">
           <div>
             <div class="thesis">The LLM proposes. <b>Policy decides.</b> Hedera proves.</div>
-            <div class="product-line">Policy-gated logistics procurement on Hedera testnet</div>
+            <div class="product-line">Policy-controlled logistics procurement</div>
             <div class="sub">
-              A policy-gated procurement agent evaluates logistics risk before unlocking a Premium RouteRisk report.
-              Simulation uses synthetic payment evidence and local audit hashes; configured real-testnet runs can execute
-              capped HBAR payments and anchor audit events to HCS.
+              A logistics control tower for shipment-risk decisions, bounded procurement approval, and durable audit evidence.
+              RouteGuard keeps recommendations, policy authority, execution mode, and verification status visibly separate.
             </div>
           </div>
           <div class="hero-facts" aria-label="RouteGuard control summary">
             <div class="fact"><b>Fixed price</b><span>0.05 HBAR</span></div>
-            <div class="fact"><b>Policy checks</b><span>7 + integrity gate</span></div>
+            <div class="fact"><b>Decision authority</b><span>deterministic policy</span></div>
             <div class="fact"><b>Default mode</b><span>simulation only</span></div>
           </div>
         </div>
@@ -441,26 +548,52 @@
         </div>
       </header>
 
+      <nav class="main-tabs" role="tablist" aria-label="RouteGuard workspaces">
+        <button class="main-tab" id="casesTab" role="tab" aria-selected="true" aria-controls="casesView" data-tab="cases">Active Cases</button>
+        <button class="main-tab" id="intelligenceTab" role="tab" aria-selected="false" aria-controls="intelligenceView" data-tab="intelligence">Live Route Intelligence</button>
+        <button class="main-tab" id="governanceTab" role="tab" aria-selected="false" aria-controls="governanceView" data-tab="governance">Policy &amp; Governance</button>
+        <button class="main-tab" id="archiveTab" role="tab" aria-selected="false" aria-controls="archiveView" data-tab="archive">Archive</button>
+      </nav>
+
+      <div class="tab-view" id="casesView" role="tabpanel" aria-labelledby="casesTab">
+      <div class="workspace-toolbar card side-card">
+        <div>
+          <div class="section-kicker">Open operations queue</div>
+          <div class="filter-group" id="caseFilters" aria-label="Filter active cases"></div>
+        </div>
+        <label class="sort-control" for="caseSort">Sort cases
+          <select id="caseSort">
+            <option value="priority">Priority</option>
+            <option value="status">Status</option>
+            <option value="shipment">Shipment ID</option>
+            <option value="route">Route</option>
+            <option value="cargo">Cargo value</option>
+            <option value="risk">Risk score</option>
+          </select>
+        </label>
+      </div>
       <div class="cols">
         <!-- left rail -->
-        <aside class="sidebar" aria-label="Judge sandbox controls">
+        <aside class="sidebar" aria-label="Active case controls">
           <section class="card side-card">
             <div class="section-head">
-              <div><div class="section-kicker">Policy lab</div><h2>Judge sandbox</h2></div>
-              <span class="section-count">6 scenarios</span>
+              <div><div class="section-kicker">Shipment operations</div><h2>Active Cases</h2></div>
+              <span class="section-count" id="activeCaseCount">6 cases</span>
             </div>
             <div class="scenarios" id="scenarios"></div>
             <div class="controls">
-              <label class="toggle">
-                <input type="checkbox" id="liveToggle" />
-                <span class="toggle-copy">
-                  <span>Use real testnet payment</span>
-                  <small id="liveHelp">Available only when explicitly configured by the operator.</small>
-                </span>
-              </label>
+              <div class="mode-card">
+                <label class="mode-control" for="executionMode">Execution mode
+                  <select id="executionMode">
+                    <option value="SIMULATION">Simulation</option>
+                    <option value="AUTONOMOUS_TESTNET" id="testnetMode">Hedera testnet</option>
+                  </select>
+                </label>
+                <div class="mode-state" id="liveHelp">Checking server execution capability...</div>
+              </div>
               <div class="row">
                 <button class="ghost" id="resetBtn">Reset demo state</button>
-                <span class="mode-note" id="modeNote">simulation</span>
+                <span class="mode-note" id="modeNote">Simulation selected</span>
               </div>
             </div>
           </section>
@@ -476,8 +609,8 @@
         <!-- stage -->
         <main class="card stage" id="stage">
           <div class="stage-head">
-            <div><div class="section-kicker">Agent workspace</div><h2>Execution &amp; policy evidence</h2></div>
-            <span class="stage-status">system ready</span>
+            <div><div class="section-kicker">Policy Decision Workspace</div><h2>Case decision, approval &amp; audit</h2></div>
+            <div class="case-actions"><span class="stage-status">system ready</span><button class="ghost archive-btn is-hidden" id="archiveCaseBtn" type="button">Archive case</button></div>
           </div>
           <div class="empty" id="emptyState">
             <div class="empty-inner">
@@ -490,13 +623,103 @@
                 <div class="process-step"><b>Agent proposal</b><span>Bounded report request</span></div>
                 <div class="process-step"><b>Policy gate</b><span>Deterministic authority</span></div>
                 <div class="process-step"><b>Approval / payment</b><span>Controlled procurement</span></div>
-                <div class="process-step"><b>Hedera proof</b><span>Transaction or local evidence</span></div>
+                <div class="process-step"><b>Verification &amp; Audit</b><span>Transaction or local evidence</span></div>
               </div>
             </div>
           </div>
           <div id="result" class="is-hidden"></div>
         </main>
       </div>
+      </div>
+
+      <section class="tab-view setup-view" id="intelligenceView" role="tabpanel" aria-labelledby="intelligenceTab" hidden>
+        <div class="setup-grid">
+          <section class="card setup-panel">
+            <div class="section-kicker">Connection status</div>
+            <h2>Live Route Intelligence is not configured yet.</h2>
+            <p class="muted">No live-route API exists in this deployment. RouteGuard will not present static shipment fixtures as live weather, traffic, or checkpoint evidence.</p>
+            <div class="simulation-notice">Third-party route services are never called from the browser. Data source, observation time, confidence, and policy version will be shown when a trusted server integration is available.</div>
+          </section>
+          <section class="card setup-panel">
+            <div class="section-kicker">Integration roadmap</div>
+            <h2>Route intelligence pipeline</h2>
+            <ul class="roadmap-list">
+              <li>Live weather with source and observation timestamp</li>
+              <li>Route checkpoints and milestone health</li>
+              <li>Traffic incidents and corridor disruption evidence</li>
+              <li>Cargo-specific operating thresholds</li>
+              <li>Deterministic route-risk scoring and confidence</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-view governance-shell" id="governanceView" role="tabpanel" aria-labelledby="governanceTab" hidden>
+        <div class="governance-grid">
+          <section class="card gov-card full" aria-labelledby="activePolicyHeading">
+            <div class="section-head"><div><div class="section-kicker">Public scoring contract</div><h2 id="activePolicyHeading">Active Risk Policy</h2></div><span class="pill p-pass" id="riskPolicyStatus">loading</span></div>
+            <div id="activePolicyContent" class="muted">Loading active risk policy…</div>
+            <div class="simulation-notice">Demonstration thresholds, not universal transport-safety standards.</div>
+          </section>
+
+          <section class="card gov-card" aria-labelledby="explainHeading">
+            <div class="section-head"><div><div class="section-kicker">Reproducible evidence</div><h2 id="explainHeading">Explain This Score</h2></div></div>
+            <label class="lbl" for="explainShipment">Synthetic shipment</label>
+            <select id="explainShipment" aria-label="Select shipment to explain"></select>
+            <div id="scoreExplanation" class="muted">Choose a shipment to inspect canonical scoring evidence.</div>
+          </section>
+
+          <section class="card gov-card" aria-labelledby="proposeHeading">
+            <div class="section-head"><div><div class="section-kicker">Bounded change request</div><h2 id="proposeHeading">Propose Change</h2></div></div>
+            <form id="proposalForm" class="gov-form">
+              <label>Editable field<select id="proposalField" required></select></label>
+              <label>Current value<input id="proposalCurrent" type="text" readonly /></label>
+              <label>Proposed value<input id="proposalValue" type="number" required /></label>
+              <label>Simulated proposer role<select id="proposerRole" required></select></label>
+              <label class="wide">Stated reason<textarea id="proposalReason" minlength="10" maxlength="500" required placeholder="Explain why this bounded demonstration threshold should change."></textarea></label>
+              <div class="wide gov-actions">
+                <button type="button" class="ghost" id="previewProposalBtn">Preview impact</button>
+                <button type="submit">Submit proposal</button>
+              </div>
+            </form>
+            <div id="proposalStatus" class="gov-status" role="status" aria-live="polite"></div>
+            <div id="impactPreview"></div>
+          </section>
+
+          <section class="card gov-card full" aria-labelledby="queueHeading">
+            <div class="section-head"><div><div class="section-kicker">Two-role quorum</div><h2 id="queueHeading">Governance Queue</h2></div><span class="section-count" id="queueCount">0 proposals</span></div>
+            <div class="simulation-notice">Governance simulation · role identity is not authenticated · public governance metadata is held in memory and resets on restart.</div>
+            <div id="governanceQueue" class="queue"></div>
+          </section>
+
+          <section class="card gov-card" aria-labelledby="historyHeading">
+            <div class="section-head"><div><div class="section-kicker">Immutable lineage</div><h2 id="historyHeading">Policy History</h2></div></div>
+            <div id="policyHistory"></div>
+          </section>
+
+          <section class="card gov-card" aria-labelledby="lockedHeading">
+            <div class="section-head"><div><div class="section-kicker">Outside governance authority</div><h2 id="lockedHeading">Locked Payment Safety Policy</h2></div><span class="pill p-block">IMMUTABLE</span></div>
+            <div id="lockedPaymentPolicy" class="muted">Loading locked safeguards…</div>
+          </section>
+
+          <section class="card gov-card full" aria-labelledby="roadmapHeading">
+            <div class="section-head"><div><div class="section-kicker">Production path</div><h2 id="roadmapHeading">Production governance path</h2></div></div>
+            <p class="rationale">A production design could map authorized approvers to allowlisted Hedera accounts or cryptographic identities, have each approver sign the exact proposal hash, verify quorum before activation, and anchor proposal, approval, and activation events to HCS. HCS can prove event order and consensus timestamps; it does not by itself prove that a person holds a corporate role.</p>
+            <p class="muted">No wallet login, OAuth, smart contract, DAO, or cryptographic role authentication is implemented in this simulation.</p>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-view setup-view" id="archiveView" role="tabpanel" aria-labelledby="archiveTab" hidden>
+        <div class="archive-toolbar">
+          <div><div class="section-kicker">Closed operations</div><h2>Archive</h2><p class="muted">Archive state is held in this browser session and resets when the page or demo server restarts. Evidence is retained in each archived snapshot; on-chain records are never deleted.</p></div>
+          <label class="sort-control" for="archiveSort">Sort archive
+            <select id="archiveSort"><option value="recent">Recently archived</option><option value="shipment">Shipment ID</option><option value="decision">Decision</option><option value="verification">Verification status</option></select>
+          </label>
+        </div>
+        <div class="filter-group" id="archiveFilters" aria-label="Filter archived cases"></div>
+        <div class="archive-list" id="archiveList"></div>
+      </section>
 
       <footer>
         <div class="footer-copy">
@@ -515,29 +738,319 @@
 
       let HEALTH = {};
       let SHIPMENTS = new Map();
+      let SCENARIOS = [];
+      let CATALOG = null;
+      let SCORES = new Map();
+      let ACTIVE_RISK_POLICY = null;
+      let GOVERNANCE_CONFIG = null;
+      let ACTIVE_FILTER = "all";
+      let ARCHIVE_FILTER = "all";
+      let SELECTED_SCENARIO = null;
+      const ARCHIVED = new Map();
+
+      const CASE_PRESENTATION = {
+        "auto-approved": { tone: "allow", icon: "✓", status: "AUTO-APPROVED", filter: "auto-approved", reason: "High value and low confidence; bounded premium analysis is eligible." },
+        "approval-required": { tone: "approval", icon: "!", status: "APPROVAL REQUIRED", filter: "approval-required", reason: "Strict profile requires a human procurement decision." },
+        "vendor-blocked": { tone: "block", icon: "×", status: "BLOCKED", filter: "blocked", reason: "Vendor account does not match the server allowlist." },
+        "budget-exceeded": { tone: "block", icon: "×", status: "BLOCKED", filter: "blocked", reason: "Daily procurement budget is exhausted." },
+        "prompt-injection": { tone: "defense", icon: "◇", status: "INJECTION RESISTED", filter: "injection-resisted", reason: "Untrusted shipment text cannot change financial parameters." },
+        "no-purchase": { tone: "none", icon: "—", status: "NO PURCHASE", filter: "no-purchase", reason: "Current shipment evidence does not justify procurement." },
+      };
+
+      const FILTERS = [
+        ["all", "All"], ["auto-approved", "Auto-approved"], ["approval-required", "Approval required"],
+        ["blocked", "Blocked"], ["injection-resisted", "Injection resisted"], ["no-purchase", "No purchase"],
+      ];
+
+      const ARCHIVE_FILTERS = [
+        ["all", "All"], ["approved", "Approved"], ["blocked", "Blocked"], ["no-purchase", "No purchase"],
+        ["verified", "Verified on Hedera"], ["simulation", "Simulation evidence"],
+      ];
+
+      function statusForScenario(scenarioId) {
+        return CASE_PRESENTATION[scenarioId]?.status || "PENDING";
+      }
+
+      function executionModeFor(value, livePaymentsEnabled) {
+        return value === "AUTONOMOUS_TESTNET" && livePaymentsEnabled ? "AUTONOMOUS_TESTNET" : "SIMULATION";
+      }
+
+      function filterCases(cases, filter, archivedIds = []) {
+        const archived = new Set(archivedIds);
+        return cases.filter((scenario) => !archived.has(scenario.id) && (filter === "all" || CASE_PRESENTATION[scenario.id]?.filter === filter));
+      }
+
+      function sortCases(cases, sort, shipments, scores) {
+        const priority = { "APPROVAL REQUIRED": 0, "BLOCKED": 1, "INJECTION RESISTED": 2, "AUTO-APPROVED": 3, "NO PURCHASE": 4 };
+        const route = (scenario) => { const s = shipments.get(scenario.shipmentId); return `${s?.origin?.city || ""}-${s?.destination?.city || ""}`; };
+        const number = (scenario, field) => Number(field === "cargo" ? shipments.get(scenario.shipmentId)?.cargoValueEur : scores.get(scenario.shipmentId)?.riskScore) || 0;
+        return [...cases].sort((a, b) => {
+          if (sort === "priority") return (priority[statusForScenario(a.id)] ?? 99) - (priority[statusForScenario(b.id)] ?? 99);
+          if (sort === "status") return statusForScenario(a.id).localeCompare(statusForScenario(b.id));
+          if (sort === "shipment") return a.shipmentId.localeCompare(b.shipmentId);
+          if (sort === "route") return route(a).localeCompare(route(b));
+          if (sort === "cargo" || sort === "risk") return number(b, sort) - number(a, sort);
+          return 0;
+        });
+      }
+
+      function verificationState(data, selectedMode, livePaymentsEnabled) {
+        const payment = data?.payment;
+        if (payment?.mode === "SIMULATION") return { key: "simulation", badge: "SIMULATION EVIDENCE" };
+        const realTransaction = payment?.mode === "AUTONOMOUS_TESTNET" && Boolean(payment.transactionId) && !String(payment.transactionId).startsWith("SIM-");
+        const mirrorConfirmed = realTransaction && payment.result === "SUCCESS" && Boolean(payment.consensusTimestamp);
+        const audit = Array.isArray(data?.auditTrail) ? data.auditTrail : [];
+        if (data?.verificationStatus === "FAILED" || (data?.kind === "FAILED" && /MIRROR|VERIF/i.test(data.errorCode || ""))) return { key: "failed", badge: "VERIFICATION FAILED" };
+        if (realTransaction && (!mirrorConfirmed || audit.some((item) => item.hcsStatus === "PENDING"))) return { key: "pending", badge: "VERIFICATION PENDING" };
+        if (mirrorConfirmed && audit.length > 0 && audit.every((item) => item.hcsStatus === "ANCHORED")) return { key: "verified", badge: "VERIFIED ON HEDERA" };
+        if (mirrorConfirmed) return { key: "partial", badge: "PARTIALLY VERIFIED" };
+        if (selectedMode === "AUTONOMOUS_TESTNET" && livePaymentsEnabled) return { key: "ready", badge: "TESTNET READY" };
+        return { key: "simulation", badge: "SIMULATION EVIDENCE" };
+      }
+
+      function createArchiveRecord(scenario, data, archivedAt, selectedMode, livePaymentsEnabled) {
+        return {
+          scenario,
+          data,
+          archivedAt,
+          originalDecisionAt: data?.decision?.evaluatedAt || data?.report?.generatedAt || data?.basic?.evaluatedAt || archivedAt,
+          verification: verificationState(data, selectedMode, livePaymentsEnabled),
+        };
+      }
 
       async function boot() {
         HEALTH = await (await fetch("/api/health")).json();
         $("#feedbackLink").href = await fetchFeedback();
         if (!HEALTH.livePaymentsEnabled) {
-          $("#liveToggle").disabled = true;
-          $("#liveToggle").parentElement.title = "Real payments are disabled by server safety configuration.";
-          $("#liveHelp").textContent = "Disabled safely · this deployment runs simulation only.";
+          $("#testnetMode").disabled = true;
+          $("#liveHelp").textContent = "Live testnet execution is not configured on this server.";
         } else {
-          $("#liveHelp").textContent = "Configured for capped Hedera testnet payments.";
+          $("#liveHelp").textContent = "Live Hedera testnet execution enabled.";
         }
         const [catalog, scenarios, shipments] = await Promise.all([
           fetch("/api/catalog").then((res) => res.json()),
           fetch("/api/scenarios").then((res) => res.json()),
           fetch("/api/shipments").then((res) => res.json()),
         ]);
+        CATALOG = catalog;
+        SCENARIOS = scenarios;
         SHIPMENTS = new Map(shipments.map((shipment) => [shipment.id, shipment]));
+        const scoreRows = await Promise.all(shipments.map((shipment) => apiJson("/api/policies/risk/explain/" + encodeURIComponent(shipment.id)).catch(() => null)));
+        SCORES = new Map(scoreRows.filter(Boolean).map((score) => [score.shipmentId, score]));
         renderCatalog(catalog);
-        renderScenarios(scenarios);
+        setupTabs();
+        setupCaseControls();
+        renderCaseFilters();
+        renderScenarios();
+        renderArchive();
+        await refreshGovernance();
       }
       async function fetchFeedback() {
         // feedback URL is embedded server-side; fall back to the kit issues page
         return "https://github.com/hashgraph/hedera-agent-kit/issues/new?title=RouteGuard%20Pay%20Agent%20feedback";
+      }
+
+      function setupTabs() {
+        const tabs = [...document.querySelectorAll(".main-tab")];
+        const activate = (name, focus = true) => {
+          tabs.forEach((tab) => {
+            const active = tab.dataset.tab === name;
+            tab.setAttribute("aria-selected", String(active));
+            $("#" + tab.getAttribute("aria-controls")).hidden = !active;
+            if (active && focus) tab.focus();
+          });
+          if (name === "archive") renderArchive();
+        };
+        tabs.forEach((tab, index) => {
+          tab.onclick = () => activate(tab.dataset.tab);
+          tab.onkeydown = (event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+            activate(tabs[next].dataset.tab);
+          };
+        });
+        $("#proposalField").onchange = syncProposalBounds;
+        $("#explainShipment").onchange = explainSelectedShipment;
+        $("#previewProposalBtn").onclick = previewProposal;
+        $("#proposalForm").onsubmit = submitProposal;
+        window.activateRouteGuardTab = activate;
+      }
+
+      async function apiJson(url, options) {
+        const response = await fetch(url, options);
+        const body = await response.json();
+        if (!response.ok) throw new Error(`${body.errorCode || "REQUEST_FAILED"}: ${body.message || "Request failed"}`);
+        return body;
+      }
+
+      async function refreshGovernance() {
+        try {
+          const [active, payment, queue] = await Promise.all([
+            apiJson("/api/policies/risk/active"),
+            apiJson("/api/policies/payment/active"),
+            apiJson("/api/policy-proposals"),
+          ]);
+          ACTIVE_RISK_POLICY = active;
+          GOVERNANCE_CONFIG = queue.governance;
+          renderActivePolicy(active);
+          renderLockedPaymentPolicy(payment);
+          populateGovernanceControls(queue.governance);
+          renderGovernanceQueue(queue.proposals);
+          renderPolicyHistory(queue.history);
+          await explainSelectedShipment();
+        } catch (error) {
+          $("#proposalStatus").textContent = String(error);
+        }
+      }
+
+      function renderActivePolicy(policy) {
+        $("#riskPolicyStatus").textContent = policy.status;
+        const weights = [
+          ...Object.entries(policy.modeWeights).map(([key, value]) => ["Mode · " + key, value]),
+          ...Object.entries(policy.cargoWeights).map(([key, value]) => ["Cargo · " + key, value]),
+        ];
+        const rows = weights.map(([label, value]) => `<tr><td>${esc(label)}</td><td class="mono">${esc(value)}</td></tr>`).join("");
+        const values = policy.cargoValueThresholds.map((t) => `≥€${Number(t.minimum).toLocaleString()} → ${t.points}`).join(" · ");
+        const schedule = policy.scheduleThresholds.map((t) => `≤${t.maximumDays}d → ${t.points}`).join(" · ") + ` · fallback ${policy.scheduleFallbackPoints}`;
+        const bands = policy.riskBands.map((b, i) => `${esc(b.band)} ${i ? policy.riskBands[i - 1].maximum + 1 : 0}–${b.maximum}`).join(" · ");
+        $("#activePolicyContent").innerHTML = `
+          <div class="gov-meta">
+            <div><span>version</span><b>v${esc(policy.policyVersion)}</b></div>
+            <div><span>effective</span><b>${esc(policy.effectiveDate)}</b></div>
+            <div><span>policy ID</span><b>${esc(policy.policyId)}</b></div>
+            <div><span>canonical policy hash</span><b>${esc(policy.policyHash)}</b></div>
+          </div>
+          <div class="simulation-notice">score = min(${policy.score.maximum}, MODE + CARGO + VALUE + ROUTE + SCHEDULE + SIGNALS)</div>
+          <div class="governance-grid">
+            <div class="gov-card third"><h3>Weights</h3><table class="policy-table"><tbody>${rows}</tbody></table></div>
+            <div class="gov-card third"><h3>Thresholds &amp; caps</h3><p><b>Cargo value:</b> ${esc(values)} · fallback ${policy.cargoValueFallbackPoints}</p><p><b>Schedule:</b> ${esc(schedule)}</p><p><b>Route:</b> base ${policy.routeRisk.base} + cross-border ${policy.routeRisk.crossBorder} + ocean ${policy.routeRisk.ocean}; cap ${policy.routeRisk.cap}</p><p><b>Signals:</b> ${policy.riskSignals.pointsPerSignal} each; cap ${policy.riskSignals.cap}</p></div>
+            <div class="gov-card third"><h3>Bands &amp; confidence</h3><p>${bands}</p><p>Premium confidence: ${policy.confidence.premiumValue} (${esc(policy.confidence.premiumMethod)})</p><p>Minimum usable confidence: ${policy.confidence.minimumUsableConfidence}</p><p>Basic assessment: mode + cargo + ${policy.basicAssessment.pointsPerSignal}/signal, then ×${policy.basicAssessment.multiplier}</p></div>
+          </div>`;
+      }
+
+      function populateGovernanceControls(config) {
+        if (!config) return;
+        const shipmentSelect = $("#explainShipment");
+        if (!shipmentSelect.options.length) shipmentSelect.innerHTML = [...SHIPMENTS.values()].map((s) => `<option value="${esc(s.id)}">${esc(s.id)} · ${esc(s.origin.city)} → ${esc(s.destination.city)}</option>`).join("");
+        const fieldSelect = $("#proposalField");
+        fieldSelect.innerHTML = config.editableFields.map((field) => `<option value="${esc(field.path)}">${esc(field.label)} · ${field.minimum}–${field.maximum}</option>`).join("");
+        const roleOptions = config.roles.map((role) => `<option value="${esc(role)}">${esc(role)} (simulated)</option>`).join("");
+        $("#proposerRole").innerHTML = roleOptions;
+        syncProposalBounds();
+      }
+
+      function getObjectPath(root, path) {
+        return path.split(".").reduce((value, key) => value == null ? undefined : value[key], root);
+      }
+
+      function syncProposalBounds() {
+        if (!GOVERNANCE_CONFIG || !ACTIVE_RISK_POLICY) return;
+        const descriptor = GOVERNANCE_CONFIG.editableFields.find((field) => field.path === $("#proposalField").value);
+        if (!descriptor) return;
+        const input = $("#proposalValue");
+        input.min = descriptor.minimum;
+        input.max = descriptor.maximum;
+        input.step = descriptor.integer ? "1" : "0.01";
+        const oldValue = Number(getObjectPath(ACTIVE_RISK_POLICY, descriptor.path));
+        $("#proposalCurrent").value = String(oldValue);
+        input.value = String(Math.min(descriptor.maximum, oldValue + (descriptor.integer ? 1 : 0.01)));
+      }
+
+      async function explainSelectedShipment() {
+        const shipmentId = $("#explainShipment").value;
+        if (!shipmentId) return;
+        try {
+          const score = await apiJson("/api/policies/risk/explain/" + encodeURIComponent(shipmentId));
+          const inputRows = Object.entries(score.canonicalInputs).map(([key, value]) => `<tr><td>${esc(key)}</td><td class="mono">${esc(Array.isArray(value) ? value.join(", ") || "none" : value)}</td></tr>`).join("");
+          const factorRows = score.factors.map((factor) => `<tr><td><b>${esc(factor.code)}</b><br><span class="muted">${esc(factor.label)}</span></td><td>+${factor.contribution}</td><td>${esc(factor.explanation)}</td></tr>`).join("");
+          $("#scoreExplanation").innerHTML = `<div class="score-explain"><div><h3>Canonical inputs</h3><table class="policy-table"><tbody>${inputRows}</tbody></table></div><div><h3>Factor evidence</h3><table class="policy-table"><tbody>${factorRows}</tbody></table></div></div><div class="policy-facts"><div><span>evaluation timestamp</span><b>${esc(score.evaluationTimestamp)}</b></div><div><span>total before cap</span><b>${score.totalBeforeCap}</b></div><div><span>final score / band / confidence</span><b class="score-total">${score.riskScore} · ${esc(score.riskBand)} · ${score.confidence}</b></div><div><span>policy version / hash</span><b>v${esc(score.policyVersion)} · ${esc(score.policyHash)}</b></div></div>`;
+        } catch (error) {
+          $("#scoreExplanation").textContent = String(error);
+        }
+      }
+
+      function proposalInput() {
+        return {
+          basePolicyVersion: ACTIVE_RISK_POLICY.policyVersion,
+          field: $("#proposalField").value,
+          proposedValue: Number($("#proposalValue").value),
+          reason: $("#proposalReason").value,
+          proposerRole: $("#proposerRole").value,
+        };
+      }
+
+      async function previewProposal() {
+        $("#proposalStatus").textContent = "Calculating impact with the proposed draft policy…";
+        try {
+          const result = await apiJson("/api/policy-proposals/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(proposalInput()) });
+          renderImpactPreview(result.impactPreview, $("#impactPreview"));
+          $("#proposalStatus").textContent = "Impact preview ready. No policy was changed.";
+        } catch (error) {
+          $("#proposalStatus").textContent = String(error);
+        }
+      }
+
+      async function submitProposal(event) {
+        event.preventDefault();
+        $("#proposalStatus").textContent = "Submitting bounded simulation proposal…";
+        try {
+          const proposal = await apiJson("/api/policy-proposals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(proposalInput()) });
+          $("#proposalStatus").textContent = `Proposal ${proposal.proposalId} created. Two distinct non-proposer roles are required.`;
+          $("#proposalReason").value = "";
+          await refreshGovernance();
+        } catch (error) {
+          $("#proposalStatus").textContent = String(error);
+        }
+      }
+
+      function renderImpactPreview(rows, target) {
+        const body = rows.map((row) => `<tr><td class="mono">${esc(row.shipmentId)}</td><td>${row.oldScore} / ${esc(row.oldBand)}</td><td>${row.proposedScore} / ${esc(row.proposedBand)}</td><td>${row.scoreDifference > 0 ? "+" : ""}${row.scoreDifference}</td><td>${row.premiumReportRecommendationChanged ? "CHANGED" : "unchanged"}</td></tr>`).join("");
+        target.innerHTML = `<table class="impact-table"><thead><tr><th>Shipment</th><th>Active</th><th>Proposed</th><th>Δ score</th><th>Premium recommendation</th></tr></thead><tbody>${body}</tbody></table>`;
+      }
+
+      function renderGovernanceQueue(proposals) {
+        $("#queueCount").textContent = `${proposals.length} proposal${proposals.length === 1 ? "" : "s"}`;
+        if (!proposals.length) {
+          $("#governanceQueue").innerHTML = `<div class="muted">No simulated policy proposals are queued.</div>`;
+          return;
+        }
+        $("#governanceQueue").innerHTML = proposals.map((proposal) => {
+          const roleOptions = GOVERNANCE_CONFIG.roles.map((role) => `<option value="${esc(role)}">${esc(role)} (simulated)</option>`).join("");
+          const approvals = proposal.approvals.length ? proposal.approvals.map((a) => `${esc(a.role)} · ${esc(a.approvedAt)}`).join("<br>") : "none";
+          return `<article class="proposal-card" data-proposal-id="${esc(proposal.proposalId)}" data-proposal-hash="${esc(proposal.proposalHash)}"><div class="proposal-head"><div><div class="section-kicker">${esc(proposal.status)}</div><h3>${esc(proposal.field)}: ${proposal.oldValue} → ${proposal.proposedValue}</h3></div><span class="pill ${proposal.status === "ACTIVATED" ? "p-pass" : proposal.status === "REJECTED" ? "p-block" : "p-appr"}">${esc(proposal.status)}</span></div><p>${esc(proposal.reason)}</p><div class="gov-meta"><div><span>proposal ID</span><b>${esc(proposal.proposalId)}</b></div><div><span>proposer</span><b>${esc(proposal.proposerRole)} · simulated</b></div><div><span>base / expiry</span><b>v${esc(proposal.basePolicyVersion)} · ${esc(proposal.expiresAt)}</b></div><div><span>approvals</span><b>${approvals} · ${proposal.approvals.length}/${proposal.quorumRequired}</b></div></div><p class="proposal-hash">${esc(proposal.proposalHash)}</p><div class="proposal-impact"></div>${proposal.status === "PENDING" ? `<div class="queue-actions"><select class="queue-role" aria-label="Simulated role for proposal action">${roleOptions}</select><button class="approve-policy">Approve proposal</button><button class="ghost reject-policy">Reject proposal</button></div>` : ""}</article>`;
+        }).join("");
+        proposals.forEach((proposal) => {
+          const card = document.querySelector(`[data-proposal-id="${proposal.proposalId}"]`);
+          renderImpactPreview(proposal.impactPreview, card.querySelector(".proposal-impact"));
+        });
+        document.querySelectorAll(".approve-policy").forEach((button) => button.onclick = () => actOnProposal(button.closest(".proposal-card"), "approve"));
+        document.querySelectorAll(".reject-policy").forEach((button) => button.onclick = () => actOnProposal(button.closest(".proposal-card"), "reject"));
+      }
+
+      async function actOnProposal(card, action) {
+        const proposalId = card.dataset.proposalId;
+        const proposalHash = card.dataset.proposalHash;
+        const role = card.querySelector(".queue-role").value;
+        card.querySelectorAll("button,select").forEach((control) => control.disabled = true);
+        try {
+          await apiJson(`/api/policy-proposals/${proposalId}/${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role, proposalHash }) });
+          $("#proposalStatus").textContent = `${action === "approve" ? "Approval" : "Rejection"} recorded for ${proposalId}.`;
+          await refreshGovernance();
+        } catch (error) {
+          $("#proposalStatus").textContent = String(error);
+          card.querySelectorAll("button,select").forEach((control) => control.disabled = false);
+        }
+      }
+
+      function renderPolicyHistory(history) {
+        const rows = history.map((entry) => `<tr><td>v${esc(entry.policy.policyVersion)}<br><span class="pill ${entry.policy.status === "ACTIVE" ? "p-pass" : "p-none"}">${esc(entry.policy.status)}</span></td><td class="mono">${esc(entry.policy.policyHash)}</td><td>${esc(entry.activatedAt)}<br><span class="muted">proposal ${esc(entry.proposalId || "initial policy")} · previous ${esc(entry.previousVersion || "none")}</span></td></tr>`).join("");
+        $("#policyHistory").innerHTML = `<table class="policy-table"><thead><tr><th>Version</th><th>Policy hash</th><th>Activation</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      function renderLockedPaymentPolicy(policy) {
+        const facts = `<div class="gov-meta"><div><span>network</span><b>${esc(policy.network)}</b></div><div><span>live execution</span><b>${policy.liveExecutionEnabled ? "configured" : "disabled"}</b></div><div><span>ENABLE_HEDERA_TX / LIVE_TESTNET_PAYMENTS_ENABLED</span><b>${policy.enableHederaTx} / ${policy.liveTestnetPaymentsEnabled}</b></div><div><span>approval authentication</span><b>${policy.approvalAuthConfigured ? "configured" : "not configured"}</b></div><div><span>vendor / account</span><b>${esc(policy.vendorId)} · ${esc(policy.vendorAccountId)}</b></div><div><span>SKU / price</span><b>${esc(policy.sku)} · ${tinybars(policy.catalogPriceTinybars)}</b></div><div><span>hard purchase cap</span><b>${tinybars(policy.maxPerPurchaseTinybars)}</b></div><div><span>daily budget</span><b>${tinybars(policy.dailyBudgetTinybars)}</b></div></div>`;
+        $("#lockedPaymentPolicy").innerHTML = facts + `<ul class="locked-list">${policy.immutableRules.map((rule) => `<li>${esc(rule)}</li>`).join("")}</ul><p class="muted">These controls cannot be proposed, approved, or activated through simulated risk governance.</p>`;
       }
 
       function renderCatalog(c) {
@@ -559,35 +1072,63 @@
         $("#catalog").appendChild(tbl);
       }
 
-      function renderScenarios(list) {
+      function setupCaseControls() {
+        $("#caseSort").onchange = renderScenarios;
+        $("#archiveSort").onchange = renderArchive;
+        $("#executionMode").onchange = () => {
+          const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
+          $("#modeNote").textContent = mode === "AUTONOMOUS_TESTNET" ? "Hedera testnet selected" : "Simulation selected";
+          $("#liveHelp").textContent = mode === "AUTONOMOUS_TESTNET"
+            ? "Live Hedera testnet execution enabled. Verification requires actual transaction, Mirror Node, and HCS evidence."
+            : HEALTH.livePaymentsEnabled ? "Simulation selected · no real HBAR transfer." : "Live testnet execution is not configured on this server.";
+          if (LAST && SELECTED_SCENARIO) render(LAST, SELECTED_SCENARIO);
+        };
+        $("#resetBtn").onclick = resetDemo;
+        $("#archiveCaseBtn").onclick = archiveSelectedCase;
+      }
+
+      function renderCaseFilters() {
+        const active = filterCases(SCENARIOS, "all", [...ARCHIVED.keys()]);
+        $("#caseFilters").innerHTML = FILTERS.map(([key, label]) => {
+          const count = key === "all" ? active.length : active.filter((scenario) => CASE_PRESENTATION[scenario.id]?.filter === key).length;
+          return `<button class="filter-chip" type="button" data-filter="${key}" aria-pressed="${ACTIVE_FILTER === key}">${esc(label)} <b>${count}</b></button>`;
+        }).join("");
+        $("#activeCaseCount").textContent = `${active.length} case${active.length === 1 ? "" : "s"}`;
+        document.querySelectorAll("#caseFilters .filter-chip").forEach((button) => button.onclick = () => {
+          ACTIVE_FILTER = button.dataset.filter;
+          renderCaseFilters();
+          renderScenarios();
+        });
+      }
+
+      function renderScenarios() {
         const box = $("#scenarios");
         box.innerHTML = "";
-        const presentation = {
-          "auto-approved": ["allow", "✓", "APPROVED", "high value · low confidence"],
-          "approval-required": ["approval", "!", "APPROVAL REQUIRED", "strict approval threshold"],
-          "vendor-blocked": ["block", "×", "BLOCKED", "vendor allowlist mismatch"],
-          "budget-exceeded": ["block", "×", "BLOCKED", "daily spend cap reached"],
-          "prompt-injection": ["defense", "◇", "INJECTION RESISTED", "untrusted instruction detected"],
-          "no-purchase": ["none", "—", "NO PURCHASE", "low risk · high confidence"],
-        };
+        const list = sortCases(filterCases(SCENARIOS, ACTIVE_FILTER, [...ARCHIVED.keys()]), $("#caseSort").value, SHIPMENTS, SCORES);
+        if (!list.length) {
+          box.innerHTML = `<div class="muted">No active cases match this filter.</div>`;
+          return;
+        }
         list.forEach((s) => {
-          const [tone, icon, status, risk] = presentation[s.id] || ["none", "·", "PENDING", "policy evaluation"];
+          const view = CASE_PRESENTATION[s.id] || { tone: "none", icon: "·", status: "PENDING", reason: "Policy evaluation pending." };
           const shipment = SHIPMENTS.get(s.shipmentId);
-          const b = el("button", `scn tone-${tone}`);
-          b.setAttribute("aria-label", s.label);
+          const score = SCORES.get(s.shipmentId);
+          const b = el("button", `scn tone-${view.tone}`);
+          b.setAttribute("aria-label", `Open ${s.shipmentId}: ${s.label}`);
           b.setAttribute("aria-pressed", "false");
           b.dataset.scenarioId = s.id;
-          b.appendChild(el("span", "scn-icon", esc(icon)));
+          b.appendChild(el("span", "scn-icon", esc(view.icon)));
           const copy = el("span", "scn-copy");
-          copy.innerHTML = `<span class="scn-head"><span class="case-id">${esc(s.shipmentId)}</span><span class="case-status">${esc(status)}</span></span>
+          copy.innerHTML = `<span class="scn-head"><span class="case-id">${esc(s.shipmentId)}</span><span class="case-status">${esc(view.status)}</span></span>
             <span class="t">${esc(s.label)}</span>
             <span class="case-route">${esc(shipment?.origin?.city || "Origin")}<span class="arrow">→</span>${esc(shipment?.destination?.city || "Destination")}</span>
-            <span class="case-meta"><span>${esc((shipment?.mode || "freight").toUpperCase())} · ${esc((shipment?.cargoType || "cargo").replace(/_/g, " "))}</span><span class="case-risk">${esc(risk)}</span></span>
-            <span class="exp">EXPECTED · ${esc(status)}</span>`;
+            <span class="case-meta"><span>${esc((shipment?.mode || "freight").toUpperCase())} · €${esc((shipment?.cargoValueEur || 0).toLocaleString("en-US"))}</span><span class="case-risk">${score ? `${score.riskScore} · ${esc(score.riskBand)}` : "risk pending"}</span></span>
+            <span class="exp">${esc(view.reason)}</span>`;
           b.appendChild(copy);
           b.onclick = () => run(s);
           box.appendChild(b);
         });
+        selectScenario(SELECTED_SCENARIO?.id);
       }
 
       function renderShipmentStrip(shipmentId) {
@@ -601,6 +1142,101 @@
         </div>`;
       }
 
+      function summaryItem(label, value, mono = false) {
+        return `<div class="summary-item ${mono ? "mono" : ""}"><div class="k">${esc(label)}</div><div class="v">${esc(value ?? "Not recorded")}</div></div>`;
+      }
+
+      function renderCaseSummary(scenario, data) {
+        const shipment = SHIPMENTS.get(data?.shipmentId || scenario?.shipmentId);
+        if (!shipment) return "";
+        const score = SCORES.get(shipment.id);
+        const signals = shipment.riskSignals?.length ? shipment.riskSignals.join(", ") : "None declared";
+        return `<div class="case-summary" aria-label="Shipment case summary">
+          ${summaryItem("Shipment ID", shipment.id, true)}
+          ${summaryItem("Route", `${shipment.origin.city}, ${shipment.origin.countryCode} → ${shipment.destination.city}, ${shipment.destination.countryCode}`)}
+          ${summaryItem("Mode", shipment.mode.toUpperCase())}
+          ${summaryItem("Cargo", shipment.cargoType.replace(/_/g, " "))}
+          ${summaryItem("Declared value", `€${shipment.cargoValueEur.toLocaleString("en-US")}`)}
+          ${summaryItem("Risk signals", signals)}
+          ${summaryItem("Recommended service", CATALOG ? `${CATALOG.serviceCategory} · ${CATALOG.sku}` : "Not recorded", true)}
+          ${summaryItem("Current decision", statusForScenario(scenario?.id))}
+          ${summaryItem("Risk score / band", score ? `${score.riskScore} · ${score.riskBand}` : "Not recorded", true)}
+          ${summaryItem("Risk policy version", score?.policyVersion ? `v${score.policyVersion}` : "Not recorded", true)}
+          ${summaryItem("Payment policy version", data?.decision?.policyVersion ? `v${data.decision.policyVersion}` : "v1.0", true)}
+          ${summaryItem("Case reason", CASE_PRESENTATION[scenario?.id]?.reason || data?.message || "Policy evaluation pending")}
+        </div>`;
+      }
+
+      function decisionTimeline(data) {
+        const kind = data?.kind;
+        const verification = verificationState(data, executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled), HEALTH.livePaymentsEnabled);
+        const approval = kind === "APPROVAL_REQUIRED" ? "Pending" : data?.approval ? "Completed" : ["BLOCKED", "NO_PURCHASE"].includes(kind) ? "Skipped" : "Skipped";
+        const payment = kind === "COMPLETED" ? "Completed" : kind === "APPROVAL_REQUIRED" ? "Pending" : kind === "FAILED" ? "Failed" : kind === "BLOCKED" || kind === "REJECTED" ? "Blocked" : "Skipped";
+        const report = kind === "COMPLETED" ? "Completed" : kind === "APPROVAL_REQUIRED" ? "Pending" : kind === "FAILED" ? "Failed" : kind === "BLOCKED" || kind === "REJECTED" ? "Blocked" : "Skipped";
+        const audit = verification.key === "pending" ? "Pending" : verification.key === "failed" ? "Failed" : "Completed";
+        return [
+          ["Shipment assessed", "Completed"],
+          ["Agent recommendation created", kind === "FAILED" && !data?.proposalId ? "Failed" : "Completed"],
+          ["Policy evaluated", data?.decision ? "Completed" : kind === "NO_PURCHASE" ? "Skipped" : kind === "FAILED" ? "Failed" : "Pending"],
+          ["Approval requested or skipped", approval],
+          ["Payment executed, simulated, or blocked", payment],
+          ["Report delivered", report],
+          ["Verification & Audit recorded", audit],
+        ];
+      }
+
+      function renderDecisionTimeline(data) {
+        const cards = decisionTimeline(data).map(([label, state], index) => `<div class="timeline-card" data-state="${state}"><span class="timeline-index">0${index + 1}</span><span class="timeline-label">${esc(label)}</span><span class="timeline-state">${esc(state)}</span></div>`).join("");
+        return `<div class="blk"><div class="lbl">Decision timeline</div><div class="timeline-grid">${cards}</div></div>`;
+      }
+
+      function evidenceRow(label, value, copy = false, html = false) {
+        if (value == null || value === "") value = "Not recorded";
+        const rendered = html ? value : esc(value);
+        return `<div class="evidence-row"><span>${esc(label)}</span><span>${rendered}${copy && value !== "Not recorded" ? `<button class="copy" data-copy="${esc(value)}">copy</button>` : ""}</span></div>`;
+      }
+
+      function evidenceGroup(title, rows) {
+        return `<section class="evidence-group"><h4>${esc(title)}</h4>${rows.join("")}</section>`;
+      }
+
+      function renderVerification(data) {
+        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
+        const state = verificationState(data, mode, HEALTH.livePaymentsEnabled);
+        const copy = {
+          simulation: ["Not written to Hedera", "No real HBAR transfer", "Local policy and report hashes only"],
+          ready: ["Hedera testnet execution is enabled.", "No transaction has been submitted for this case yet."],
+          pending: ["Transaction submitted to Hedera testnet.", "Waiting for Mirror Node confirmation and HCS audit records."],
+          verified: ["Verified on Hedera testnet", "Mirror Node confirmed · HCS anchored"],
+          partial: ["Hedera transaction confirmed.", "HCS audit anchoring was skipped or unavailable."],
+          failed: ["The submitted transaction could not be independently verified.", "Review the transaction and audit details."],
+        }[state.key];
+        const payment = data?.payment;
+        const report = data?.report;
+        const decision = data?.decision;
+        const audit = Array.isArray(data?.auditTrail) ? data.auditTrail : [];
+        const topic = audit.find((item) => item.hcsTopicId)?.hcsTopicId;
+        const sequences = audit.map((item) => item.hcsSequenceNumber).filter((value) => value != null);
+        const statuses = audit.map((item) => `${item.eventType}: ${item.hcsStatus}${item.hcsSequenceNumber ? ` #${item.hcsSequenceNumber}` : ""}`);
+        const explorer = payment?.explorerUrl?.startsWith("http") ? `<a href="${esc(payment.explorerUrl)}" target="_blank" rel="noopener">View on HashScan ↗</a>` : "Not recorded";
+        const mirror = payment?.mode === "AUTONOMOUS_TESTNET" && payment?.result === "SUCCESS" && payment?.consensusTimestamp ? "CONFIRMED" : payment?.mode === "SIMULATION" ? "Not applicable" : "Not confirmed";
+        const groups = [
+          evidenceGroup("Decision Evidence", [
+            evidenceRow("Decision", data?.kind || "Not recorded"), evidenceRow("Proposal ID", data?.proposalId, true),
+            evidenceRow("Policy version", decision?.policyVersion), evidenceRow("Policy hash", decision?.canonicalHash || report?.policyHash, true),
+          ]),
+          evidenceGroup("Payment Verification", [
+            evidenceRow(payment?.mode === "SIMULATION" ? "Synthetic payment ID" : "Transaction ID", payment?.transactionId, true),
+            evidenceRow("Amount", payment ? tinybars(payment.amountTinybars) : null), evidenceRow("Vendor account", payment?.vendorAccountId, true),
+            evidenceRow("Memo", payment?.memo, true), evidenceRow("HashScan", explorer, false, true),
+          ]),
+          evidenceGroup("Mirror Node Record", [evidenceRow("Verification status", mirror), evidenceRow("Consensus timestamp", payment?.consensusTimestamp)]),
+          evidenceGroup("HCS Audit Trail", [evidenceRow("HCS topic", topic, true), evidenceRow("Sequence numbers", sequences.length ? sequences.join(", ") : null), evidenceRow("Lifecycle records", statuses.length ? statuses.join(" · ") : null)]),
+          evidenceGroup("Report Integrity", [evidenceRow("Report hash", report?.reportHash, true), evidenceRow("Policy hash", report?.policyHash || decision?.canonicalHash, true), evidenceRow("Policy version", report?.policyVersion || decision?.policyVersion)]),
+        ];
+        return `<section class="verification" aria-labelledby="verificationHeading"><div class="verification-head"><div><div class="section-kicker">Permanent case evidence</div><h3 id="verificationHeading">Verification &amp; Audit</h3><div class="verification-copy">${copy.map((line) => `<span>${esc(line)}</span>`).join("")}</div></div><span class="evidence-badge ${state.key}">${state.badge}</span></div><div class="evidence-groups">${groups.join("")}</div><details><summary>How Hedera Verification Works</summary><ol><li>RouteGuard records the policy decision.</li><li>A controlled HBAR transaction may execute.</li><li>Mirror Node confirms the transaction record.</li><li>HCS anchors ordered lifecycle events.</li><li>Policy and report hashes preserve integrity.</li></ol></details></section>`;
+      }
+
       function selectScenario(id) {
         document.querySelectorAll(".scn").forEach((button) => {
           const selected = button.dataset.scenarioId === id;
@@ -609,18 +1245,24 @@
         });
       }
 
-      $("#liveToggle").addEventListener("change", (e) => {
-        $("#modeNote").textContent = e.target.checked ? "REAL testnet payment" : "simulation";
-      });
-      $("#resetBtn").addEventListener("click", async () => {
+      async function resetDemo() {
         await fetch("/api/sandbox/reset", { method: "POST" });
+        ARCHIVED.clear();
+        LAST = null;
+        SELECTED_SCENARIO = null;
         $("#result").classList.add("is-hidden");
         $("#emptyState").classList.remove("is-hidden");
+        $("#archiveCaseBtn").classList.add("is-hidden");
         selectScenario(null);
-      });
+        renderCaseFilters();
+        renderScenarios();
+        renderArchive();
+        await refreshGovernance();
+      }
 
       async function run(scn) {
-        const mode = $("#liveToggle").checked ? "AUTONOMOUS_TESTNET" : "SIMULATION";
+        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
+        SELECTED_SCENARIO = scn;
         selectScenario(scn.id);
         showLoading(scn.label);
         try {
@@ -645,9 +1287,14 @@
         $("#result").innerHTML = `<div class="verdict v-block">ERROR</div><div class="chk-msg">${esc(msg)}</div>`;
       }
 
-      function verdictBadge(kind) {
+      function verdictBadge(kind, scenarioId) {
+        const scenarioView = CASE_PRESENTATION[scenarioId];
+        if (scenarioView) {
+          const className = { allow: "v-allow", approval: "v-appr", block: "v-block", defense: "v-none", none: "v-none" }[scenarioView.tone] || "v-none";
+          return `<span class="verdict ${className}">${esc(scenarioView.status)}</span>`;
+        }
         const map = {
-          COMPLETED: ["v-allow", "POLICY GATE PASSED"],
+          COMPLETED: ["v-allow", "AUTO-APPROVED"],
           BLOCKED: ["v-block", "BLOCKED"],
           APPROVAL_REQUIRED: ["v-appr", "APPROVAL REQUIRED"],
           REJECTED: ["v-block", "PURCHASE REJECTED"],
@@ -664,7 +1311,7 @@
         return `<span class="pill p-appr">APPROVAL</span>`;
       }
 
-      function renderGate(decision) {
+      function renderGate(decision, scenarioId) {
         if (!decision) return "";
         const checks = decision.checks
           .map((c) => {
@@ -678,30 +1325,9 @@
             </div>`;
           })
           .join("");
-        return `<div class="blk"><div class="lbl">Policy gate · v${decision.policyVersion} · hash ${esc(decision.canonicalHash.slice(0, 16))}…</div><div class="gate">${checks}</div></div>`;
-      }
-
-      function renderTimeline(steps) {
-        const items = steps
-          .map(
-            (s) => `<div class="tl-step ${s.done ? "done" : ""}"><span class="ic"></span><span class="x">${esc(s.label)} ${s.meta ? `<small>${esc(s.meta)}</small>` : ""}</span></div>`,
-          )
-          .join("");
-        return `<div class="blk"><div class="lbl">Execution timeline</div><div class="tl">${items}</div></div>`;
-      }
-
-      function auditTimelineStep(audit) {
-        const statuses = (audit || []).map((a) => a.hcsStatus);
-        if (statuses.length > 0 && statuses.every((status) => status === "ANCHORED")) {
-          return { label: "HCS audit anchored", done: true };
-        }
-        if (statuses.includes("ANCHORED")) {
-          return { label: "HCS audit partially anchored", done: true };
-        }
-        if (statuses.includes("FAILED")) {
-          return { label: "HCS audit anchoring failed", done: true, meta: "payment unaffected" };
-        }
-        return { label: "Audit hashed locally", done: true, meta: "no HCS write" };
+        const scenarioLabel = statusForScenario(scenarioId);
+        const decisionLabel = scenarioLabel === "INJECTION RESISTED" ? "Injection resisted" : scenarioLabel === "APPROVAL REQUIRED" ? "Approval required" : decision.decision === "ALLOW_AUTONOMOUS" ? "Auto-approved" : decision.decision === "REQUIRE_APPROVAL" ? "Approval required" : "Blocked";
+        return `<div class="blk"><div class="lbl">Policy Evaluation · ${decisionLabel} · v${decision.policyVersion} · hash ${esc(decision.canonicalHash.slice(0, 16))}…</div><div class="gate">${checks}</div></div>`;
       }
 
       function pf(k, v, copy) {
@@ -720,6 +1346,7 @@
 
       function renderApprovalPanel(data) {
         const a = data.approvalRequest;
+        const shipment = SHIPMENTS.get(a.shipmentId);
         const simulated = a.mode === "SIMULATED_DEMO";
         const expired = Date.parse(a.expiresAt) <= Date.now();
         const approveLabel = simulated ? "Approve simulated purchase" : "Approve authenticated testnet purchase";
@@ -731,14 +1358,16 @@
           <div class="approval-warning">${esc(warning)}</div>
           <div class="approval-grid">
             ${approvalField("shipment", a.shipmentId)}
+            ${approvalField("route", shipment ? `${shipment.origin.city} → ${shipment.destination.city}` : "Not recorded", true)}
             ${approvalField("vendor", a.vendorId)}
             ${approvalField("vendor account", a.vendorAccountId, false, true)}
-            ${approvalField("service / SKU", a.sku, true)}
+            ${approvalField("service", CATALOG?.serviceCategory || "Not recorded")}
+            ${approvalField("SKU", a.sku)}
             ${approvalField("exact amount", tinybars(a.amountTinybars))}
-            ${approvalField("expected benefit", data.expectedBenefit, true)}
+            ${approvalField("approval reason", a.reason, true)}
             ${approvalField("proposal ID", a.proposalId, true, true)}
             ${approvalField("proposal hash", a.proposalHash, true, true)}
-            ${approvalField("policy / canonical hash", a.policyHash, true, true)}
+            ${approvalField("policy version / hash", `${data.decision?.policyVersion || "Not recorded"} · ${a.policyHash}`, true, true)}
             ${approvalField("valid until", formatTimestamp(a.expiresAt))}
           </div>
           <div class="approval-actions">
@@ -763,50 +1392,6 @@
         </section>`;
       }
 
-      function renderProof(payment, report, audit) {
-        const isLive = payment.mode === "AUTONOMOUS_TESTNET";
-        const explorer = payment.explorerUrl && payment.explorerUrl.startsWith("http")
-          ? `<a href="${esc(payment.explorerUrl)}" target="_blank" rel="noopener">view on HashScan ↗</a>`
-          : "simulation (no on-chain tx)";
-        const topicEvent = (audit || []).find((a) => a.hcsTopicId);
-        const hcsTopic = topicEvent?.hcsTopicId || "not configured · local hash only";
-        const hcsSequences = (audit || [])
-          .map((a) => a.hcsSequenceNumber)
-          .filter((n) => n != null)
-          .join(", ") || "none";
-        const statusLabel = (status) => ({
-          ANCHORED: "ANCHORED",
-          SKIPPED_SIMULATION: "LOCAL HASH · HCS SKIPPED",
-          FAILED: "HCS FAILED · LOCAL HASH KEPT",
-          PENDING: "HCS PENDING",
-        }[status] || status);
-        const auditLines = (audit || [])
-          .map(
-            (a) => `<div class="audit-line"><span class="st-${a.hcsStatus}">●</span><span>${esc(a.eventType)}</span><span class="audit-status">${esc(statusLabel(a.hcsStatus))}${a.hcsSequenceNumber ? " · #" + a.hcsSequenceNumber : ""}</span></div>`,
-          )
-          .join("");
-        const banner = isLive
-          ? `<div class="proof-banner testnet"><b>Verified Hedera testnet transaction</b><span>mirror node verified · policy-gated</span></div>`
-          : `<div class="proof-banner simulation"><b>Simulation only · no real HBAR transfer</b><span>synthetic payment id · local evidence</span></div>`;
-        return `<div class="blk"><div class="lbl">${isLive ? "Hedera proof" : "Local simulation evidence"}</div>
-          ${banner}
-          <div class="proof">
-            ${pf("network", payment.network)}
-            ${pf("mode", payment.mode)}
-            ${pf("amount", tinybars(payment.amountTinybars))}
-            ${pf("vendor", payment.vendorAccountId, true)}
-            ${pf(isLive ? "transaction id" : "synthetic payment id", payment.transactionId, true)}
-            ${pf("memo", payment.memo, true)}
-            ${pf("mirror verification", isLive ? "verified" : "not applicable")}
-            ${pf("HCS topic", hcsTopic, Boolean(topicEvent))}
-            ${pf("HCS sequences", hcsSequences)}
-            ${pf("report hash", report.reportHash, true)}
-            <div class="pf"><div class="k">explorer</div><div class="v">${explorer}</div></div>
-          </div>
-          <div class="audit-wrap"><div class="audit-title">Audit trail · HCS status</div><div class="audit-lines">${auditLines}</div></div>
-        </div>`;
-      }
-
       function renderReport(report) {
         const bandColor = { low: "p-pass", moderate: "p-appr", high: "p-appr", critical: "p-block" }[report.riskBand] || "p-none";
         const maxC = Math.max(...report.factors.map((f) => f.contribution), 1);
@@ -818,6 +1403,7 @@
         const controls = report.recommendedControls.map((c) => `<li>${esc(c)}</li>`).join("");
         return `<div class="blk"><div class="lbl">Premium RouteRisk report</div>
           <div class="score"><span class="n">${report.riskScore}</span><span class="muted">/ 100</span><span class="pill ${bandColor}">${esc(report.riskBand.toUpperCase())}</span></div>
+          <div class="muted mono">policy v${esc(report.policyVersion)} · ${esc(report.policyHash)} · evaluated ${esc(report.evaluatedAt)} · total before cap ${report.totalBeforeCap}</div>
           <div class="factors">${factors}</div>
           <ul class="controls-list">${controls}</ul>
         </div>`;
@@ -826,55 +1412,32 @@
       let LAST = null;
       function render(data, scn) {
         LAST = data;
+        SELECTED_SCENARIO = SCENARIOS.find((scenario) => scenario.id === scn?.id) || SELECTED_SCENARIO || scn;
         const r = $("#result");
         r.classList.remove("is-hidden");
-        let html = `<div class="result-head"><div>${verdictBadge(data.kind)}</div><div class="src-tag">${esc(scn.label)}</div></div>`;
-        html += renderShipmentStrip(data.shipmentId);
+        $("#emptyState").classList.add("is-hidden");
+        $("#archiveCaseBtn").classList.toggle("is-hidden", !SELECTED_SCENARIO?.id || ARCHIVED.has(SELECTED_SCENARIO.id));
+        let html = `<div class="result-head"><div>${verdictBadge(data.kind, SELECTED_SCENARIO?.id)}</div><div class="src-tag">${esc(SELECTED_SCENARIO?.label || scn?.label || "Case result")}</div></div>`;
+        html += renderCaseSummary(SELECTED_SCENARIO, data);
 
-        if (data.rationale) html += `<div class="blk"><div class="lbl">Agent rationale</div><div class="rationale">${esc(data.rationale)}</div></div>`;
-        if (data.kind === "NO_PURCHASE") html += `<div class="blk"><div class="rationale">${esc(data.explanation)}</div></div><div class="muted" style="margin-top:8px">intent source: ${esc(data.intentSource)}</div>`;
+        if (data.rationale) html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.rationale)}</div></div>`;
+        if (data.kind === "NO_PURCHASE") html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.explanation)}</div><div class="muted" style="margin-top:8px">recommendation source: ${esc(data.intentSource)}</div></div>`;
 
         if (data.kind === "APPROVAL_REQUIRED") html += renderApprovalPanel(data);
-        if (data.decision) html += renderGate(data.decision);
-
-        if (data.kind === "BLOCKED") {
-          html += renderTimeline([
-            { label: "Shipment assessed", done: true },
-            { label: "Cargo risk evaluated", done: true },
-            { label: "Report proposed", done: true },
-            { label: "Policy gate blocked", done: true, meta: "no payment authorized" },
-          ]);
-        }
-
-        if (data.kind === "REJECTED") {
-          html += renderApprovalReceipt(data.approval);
-          html += renderTimeline([
-            { label: "Shipment assessed", done: true },
-            { label: "Report proposed", done: true },
-            { label: "Approval requested", done: true },
-            { label: "Purchase rejected", done: true, meta: "no payment authorized" },
-          ]);
-        }
+        if (data.decision) html += renderGate(data.decision, SELECTED_SCENARIO?.id);
+        if (data.kind === "REJECTED") html += renderApprovalReceipt(data.approval);
 
         if (data.kind === "COMPLETED") {
           html += renderApprovalReceipt(data.approval);
-          html += renderTimeline([
-            { label: "Shipment assessed", done: true },
-            { label: "Cargo risk evaluated", done: true },
-            { label: "Report proposed", done: true },
-            { label: "Policy gate passed", done: true },
-            { label: "Budget reserved", done: true },
-            { label: "Payment authorized", done: true, meta: data.payment.mode === "SIMULATION" ? "simulated" : "testnet" },
-            { label: "Report unlocked", done: true },
-            auditTimelineStep(data.auditTrail),
-          ]);
           html += renderReport(data.report);
-          html += renderProof(data.payment, data.report, data.auditTrail);
         }
 
         if (data.kind === "FAILED") {
           html += `<div class="blk"><div class="chk-msg"><b>${esc(data.errorCode)}</b> — ${esc(data.message)}</div></div>`;
         }
+
+        html += renderDecisionTimeline(data);
+        html += renderVerification(data);
 
         r.innerHTML = html;
 
@@ -886,7 +1449,7 @@
       }
 
       async function approve(proposalId) {
-        const mode = $("#liveToggle").checked ? "AUTONOMOUS_TESTNET" : "SIMULATION";
+        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
         setApprovalBusy("Recording approval and executing purchase…");
         const res = await fetch("/api/approvals/" + proposalId, {
           method: "POST",
@@ -894,11 +1457,11 @@
           body: JSON.stringify({ executionMode: mode }),
         });
         const data = await res.json();
-        render(data, { label: "Approved purchase" });
+        render(data, SELECTED_SCENARIO || { label: "Approved purchase" });
       }
 
       async function reject(proposalId) {
-        const mode = $("#liveToggle").checked ? "AUTONOMOUS_TESTNET" : "SIMULATION";
+        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
         setApprovalBusy("Recording rejection…");
         const res = await fetch("/api/approvals/" + proposalId + "/reject", {
           method: "POST",
@@ -906,7 +1469,7 @@
           body: JSON.stringify({ executionMode: mode }),
         });
         const data = await res.json();
-        render(data, { label: "Rejected purchase" });
+        render(data, SELECTED_SCENARIO || { label: "Rejected purchase" });
       }
 
       function setApprovalBusy(message) {
@@ -916,6 +1479,70 @@
         if (rejectButton) rejectButton.disabled = true;
         const actions = document.querySelector(".approval-actions");
         if (actions) actions.insertAdjacentHTML("afterbegin", `<span class="spinner" aria-hidden="true"></span><span class="muted" role="status">${esc(message)}</span>`);
+      }
+
+      function archiveSelectedCase() {
+        if (!SELECTED_SCENARIO?.id || !LAST) return;
+        const archivedAt = new Date().toISOString();
+        ARCHIVED.set(SELECTED_SCENARIO.id, createArchiveRecord(SELECTED_SCENARIO, LAST, archivedAt, executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled), HEALTH.livePaymentsEnabled));
+        LAST = null;
+        SELECTED_SCENARIO = null;
+        $("#result").classList.add("is-hidden");
+        $("#emptyState").classList.remove("is-hidden");
+        $("#archiveCaseBtn").classList.add("is-hidden");
+        renderCaseFilters();
+        renderScenarios();
+        renderArchive();
+        window.activateRouteGuardTab?.("archive");
+      }
+
+      function archiveMatches(record, filter) {
+        if (filter === "all") return true;
+        if (filter === "approved") return record.data.kind === "COMPLETED";
+        if (filter === "blocked") return record.data.kind === "BLOCKED" || record.data.kind === "REJECTED";
+        if (filter === "no-purchase") return record.data.kind === "NO_PURCHASE";
+        if (filter === "verified") return record.verification.key === "verified";
+        if (filter === "simulation") return record.verification.key === "simulation";
+        return true;
+      }
+
+      function renderArchive() {
+        const records = [...ARCHIVED.values()];
+        $("#archiveFilters").innerHTML = ARCHIVE_FILTERS.map(([key, label]) => `<button class="filter-chip" type="button" data-filter="${key}" aria-pressed="${ARCHIVE_FILTER === key}">${esc(label)} <b>${records.filter((record) => archiveMatches(record, key)).length}</b></button>`).join("");
+        document.querySelectorAll("#archiveFilters .filter-chip").forEach((button) => button.onclick = () => { ARCHIVE_FILTER = button.dataset.filter; renderArchive(); });
+        const sort = $("#archiveSort").value;
+        const visible = records.filter((record) => archiveMatches(record, ARCHIVE_FILTER)).sort((a, b) => {
+          if (sort === "shipment") return a.scenario.shipmentId.localeCompare(b.scenario.shipmentId);
+          if (sort === "decision") return statusForScenario(a.scenario.id).localeCompare(statusForScenario(b.scenario.id));
+          if (sort === "verification") return a.verification.badge.localeCompare(b.verification.badge);
+          return Date.parse(b.archivedAt) - Date.parse(a.archivedAt);
+        });
+        if (!visible.length) {
+          $("#archiveList").innerHTML = `<div class="card empty-archive">No archived cases match this filter.</div>`;
+          return;
+        }
+        $("#archiveList").innerHTML = visible.map((record) => `<article class="card archive-record" data-archive-id="${esc(record.scenario.id)}"><div><div class="section-kicker">${esc(statusForScenario(record.scenario.id))}</div><h3>${esc(record.scenario.shipmentId)} · ${esc(record.scenario.label)}</h3><div class="archive-meta"><span>Archived ${esc(formatTimestamp(record.archivedAt))}</span><span>Decision ${esc(formatTimestamp(record.originalDecisionAt))}</span><span>${esc(record.verification.badge)}</span></div></div><div class="archive-actions"><button class="ghost view-archive" type="button">View details</button><button class="restore-archive" type="button">Restore to Active Cases</button></div></article>`).join("");
+        document.querySelectorAll(".archive-record").forEach((card) => {
+          const id = card.dataset.archiveId;
+          card.querySelector(".view-archive").onclick = () => {
+            const record = ARCHIVED.get(id);
+            if (!record) return;
+            SELECTED_SCENARIO = record.scenario;
+            window.activateRouteGuardTab?.("cases");
+            render(record.data, record.scenario);
+          };
+          card.querySelector(".restore-archive").onclick = () => {
+            const record = ARCHIVED.get(id);
+            if (!record) return;
+            ARCHIVED.delete(id);
+            renderCaseFilters();
+            renderScenarios();
+            renderArchive();
+            SELECTED_SCENARIO = record.scenario;
+            window.activateRouteGuardTab?.("cases");
+            render(record.data, record.scenario);
+          };
+        });
       }
 
       function bindCopy() {
@@ -929,7 +1556,8 @@
         });
       }
 
-      boot();
+      globalThis.RouteGuardUIModel = { statusForScenario, executionModeFor, filterCases, sortCases, verificationState, createArchiveRecord };
+      if (typeof document !== "undefined") boot();
     </script>
   </body>
 </html>

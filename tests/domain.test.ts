@@ -141,14 +141,16 @@ describe("mirror payment validation (pure)", () => {
 describe("risk engine determinism", () => {
   it("basic report is stable for the same shipment", () => {
     const s = getShipment("RG-1001")!;
-    expect(generateBasicReport(s)).toEqual(generateBasicReport(s));
+    const options = { evaluatedAt: "2026-06-20T00:00:00.000Z" };
+    expect(generateBasicReport(s, options)).toEqual(generateBasicReport(s, options));
   });
 
-  it("premium report hash is stable given the same tx id", () => {
+  it("premium score is stable for the same policy inputs and evaluation time", () => {
     const s = getShipment("RG-2002")!;
-    const a = generatePremiumReport(s, "0.0.1@1.0");
-    const b = generatePremiumReport(s, "0.0.1@1.0");
-    // reportId + generatedAt differ (uuid/time), but the scoring is deterministic
+    const options = { evaluatedAt: "2026-06-20T00:00:00.000Z" };
+    const a = generatePremiumReport(s, "0.0.1@1.0", options);
+    const b = generatePremiumReport(s, "0.0.1@1.0", options);
+    // UUID, generation time, and final report hash remain report-instance metadata.
     expect(a.riskScore).toBe(b.riskScore);
     expect(a.riskBand).toBe(b.riskBand);
     expect(a.factors).toEqual(b.factors);

@@ -1,0 +1,102 @@
+import { readFileSync } from "node:fs";
+import { Script, createContext } from "node:vm";
+import { describe, expect, it } from "vitest";
+
+type UiModel = {
+  statusForScenario: (scenarioId: string) => string;
+  executionModeFor: (value: string, enabled: boolean) => string;
+  filterCases: (cases: Array<{ id: string }>, filter: string, archivedIds?: string[]) => Array<{ id: string }>;
+  sortCases: (
+    cases: Array<{ id: string; shipmentId: string }>,
+    sort: string,
+    shipments: Map<string, unknown>,
+    scores: Map<string, unknown>,
+  ) => Array<{ id: string }>;
+  verificationState: (data: unknown, selectedMode: string, enabled: boolean) => { key: string; badge: string };
+  createArchiveRecord: (scenario: unknown, data: unknown, archivedAt: string, selectedMode: string, enabled: boolean) => Record<string, unknown>;
+};
+
+const html = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+const scriptSource = html.slice(html.indexOf("<script>") + "<script>".length, html.lastIndexOf("</script>"));
+const context = createContext({ console });
+new Script(scriptSource, { filename: "public/index.html" }).runInContext(context);
+const ui = (context as { RouteGuardUIModel: UiModel }).RouteGuardUIModel;
+
+const cases = [
+  { id: "auto-approved", shipmentId: "RG-1001" },
+  { id: "approval-required", shipmentId: "RG-1001" },
+  { id: "vendor-blocked", shipmentId: "RG-1001" },
+  { id: "budget-exceeded", shipmentId: "RG-2002" },
+  { id: "prompt-injection", shipmentId: "RG-1001" },
+  { id: "no-purchase", shipmentId: "RG-3003" },
+];
+
+const livePayment = {
+  mode: "AUTONOMOUS_TESTNET",
+  transactionId: "0.0.123@1710000000.000000000",
+  result: "SUCCESS",
+  consensusTimestamp: "1710000000.000000000",
+};
+
+describe("RouteGuard interface model", () => {
+  it("exposes the four product workspaces without a separate proof tab", () => {
+    expect(html).toContain(">Active Cases<");
+    expect(html).toContain(">Live Route Intelligence<");
+    expect(html).toContain(">Policy &amp; Governance<");
+    expect(html).toContain(">Archive<");
+    expect(html).not.toMatch(/>Hedera Proof</i);
+  });
+
+  it("keeps all six case outcomes and filters them client-side", () => {
+    expect(cases.map((item) => ui.statusForScenario(item.id))).toEqual([
+      "AUTO-APPROVED",
+      "APPROVAL REQUIRED",
+      "BLOCKED",
+      "BLOCKED",
+      "INJECTION RESISTED",
+      "NO PURCHASE",
+    ]);
+    expect(ui.filterCases(cases, "all")).toHaveLength(6);
+    expect(ui.filterCases(cases, "blocked").map((item) => item.id)).toEqual(["vendor-blocked", "budget-exceeded"]);
+    expect(ui.sortCases(cases, "priority", new Map(), new Map()).map((item) => item.id)).toEqual([
+      "approval-required",
+      "vendor-blocked",
+      "budget-exceeded",
+      "prompt-injection",
+      "auto-approved",
+      "no-purchase",
+    ]);
+  });
+
+  it("removes archived cases from Active Cases and restores them without deleting evidence", () => {
+    expect(ui.filterCases(cases, "all", ["vendor-blocked"])).toHaveLength(5);
+    expect(ui.filterCases(cases, "all", [])).toHaveLength(6);
+    const evidence = { kind: "COMPLETED", payment: livePayment, auditTrail: [{ hcsStatus: "ANCHORED" }] };
+    const record = ui.createArchiveRecord(cases[0], evidence, "2026-06-20T10:00:00.000Z", "AUTONOMOUS_TESTNET", true);
+    expect(record.data).toBe(evidence);
+    expect((record.data as typeof evidence).payment).toBe(livePayment);
+    expect((record.data as typeof evidence).auditTrail).toEqual([{ hcsStatus: "ANCHORED" }]);
+  });
+
+  it("maps the execution selector to the existing API contract and safely clamps disabled testnet", () => {
+    expect(ui.executionModeFor("SIMULATION", true)).toBe("SIMULATION");
+    expect(ui.executionModeFor("AUTONOMOUS_TESTNET", true)).toBe("AUTONOMOUS_TESTNET");
+    expect(ui.executionModeFor("AUTONOMOUS_TESTNET", false)).toBe("SIMULATION");
+    expect(html).toContain('id="testnetMode"');
+    expect(html).toContain("Live testnet execution is not configured on this server.");
+  });
+
+  it("maps every verification evidence state", () => {
+    expect(ui.verificationState({ payment: { mode: "SIMULATION" } }, "SIMULATION", false).key).toBe("simulation");
+    expect(ui.verificationState({}, "AUTONOMOUS_TESTNET", true).key).toBe("ready");
+    expect(ui.verificationState({ payment: { ...livePayment, consensusTimestamp: null } }, "AUTONOMOUS_TESTNET", true).key).toBe("pending");
+    expect(ui.verificationState({ payment: livePayment, auditTrail: [{ hcsStatus: "ANCHORED" }, { hcsStatus: "ANCHORED" }] }, "AUTONOMOUS_TESTNET", true).key).toBe("verified");
+    expect(ui.verificationState({ payment: livePayment, auditTrail: [{ hcsStatus: "FAILED" }] }, "AUTONOMOUS_TESTNET", true).key).toBe("partial");
+    expect(ui.verificationState({ kind: "FAILED", errorCode: "RG_MIRROR_VERIFICATION_FAILED" }, "AUTONOMOUS_TESTNET", true).key).toBe("failed");
+  });
+
+  it("never treats simulation or a selected testnet mode as verified evidence", () => {
+    expect(ui.verificationState({ payment: { mode: "SIMULATION", transactionId: "SIM-123" } }, "AUTONOMOUS_TESTNET", true).badge).toBe("SIMULATION EVIDENCE");
+    expect(ui.verificationState({}, "AUTONOMOUS_TESTNET", true).badge).toBe("TESTNET READY");
+  });
+});

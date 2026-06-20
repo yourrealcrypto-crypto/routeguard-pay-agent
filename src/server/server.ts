@@ -13,6 +13,16 @@ import { getClient } from "../hedera/client.js";
 import { SHIPMENTS, SCENARIOS, type ExecutionMode } from "../store/fixtures.js";
 import { store } from "../store/store.js";
 import { maskAccount } from "../hedera/client.js";
+import { getActiveRiskPolicy } from "../risk/policy.js";
+import { explainRiskScore } from "../risk/engine.js";
+import { getShipment } from "../store/fixtures.js";
+import { baseConfig } from "../policy/engine.js";
+import {
+  governance,
+  GovernanceError,
+  type GovernanceRole,
+  type ProposalInput,
+} from "../governance/service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -93,6 +103,115 @@ app.get("/api/scenarios", (_req, res) =>
   ),
 );
 
+app.get("/api/policies/risk/active", (_req, res) => {
+  res.json(getActiveRiskPolicy());
+});
+
+app.get("/api/policies/risk/explain/:shipmentId", (req, res) => {
+  const shipment = getShipment(req.params.shipmentId ?? "");
+  if (!shipment)
+    return res.status(404).json({
+      errorCode: "RG_GOVERNANCE_SHIPMENT_NOT_FOUND",
+      message: "Unknown synthetic shipment.",
+    });
+  res.json(explainRiskScore(shipment));
+});
+
+app.get("/api/policies/payment/active", (_req, res) => {
+  const payment = baseConfig();
+  res.json({
+    policyVersion: payment.policyVersion,
+    status: "LOCKED",
+    mutableThroughGovernance: false,
+    network: payment.network,
+    liveExecutionEnabled: payment.liveExecutionEnabled,
+    enableHederaTx: config.ENABLE_HEDERA_TX,
+    liveTestnetPaymentsEnabled: config.LIVE_TESTNET_PAYMENTS_ENABLED,
+    approvalAuthConfigured,
+    vendorId: config.vendor.vendorId,
+    vendorAccountId: config.HEDERA_VENDOR_ACCOUNT_ID
+      ? maskAccount(config.HEDERA_VENDOR_ACCOUNT_ID)
+      : "not configured",
+    sku: config.vendor.sku,
+    catalogPriceTinybars: config.CATALOG_PRICE_TINYBARS,
+    maxPerPurchaseTinybars: payment.maxPerPurchaseTinybars,
+    autoApproveAtOrBelowTinybars: payment.autoApproveAtOrBelowTinybars,
+    dailyBudgetTinybars: payment.dailyBudgetTinybars,
+    approvalAuthenticationRequiredForLiveTestnet: true,
+    immutableRules: [
+      "Hedera testnet only",
+      "Both live-payment kill switches must be explicitly enabled",
+      "Vendor, account, SKU, amount, and network are server-controlled",
+      "Hard payment cap cannot be overridden by approval",
+      "Replay and transaction-integrity policies always execute",
+      "Secrets are never exposed to browser governance",
+    ],
+  });
+});
+
+app.get("/api/policy-proposals", (_req, res) => {
+  res.json({
+    proposals: governance.list(),
+    history: governance.history(),
+    governance: governance.getConfiguration(),
+  });
+});
+
+function governanceFailure(res: Response, error: unknown): void {
+  if (error instanceof GovernanceError) {
+    res.status(error.statusCode).json({ errorCode: error.code, message: error.message });
+    return;
+  }
+  res.status(500).json({
+    errorCode: "RG_GOVERNANCE_INTERNAL",
+    message: "Governance simulation failed safely.",
+  });
+}
+
+app.post("/api/policy-proposals/preview", (req, res) => {
+  try {
+    res.json({ impactPreview: governance.preview(req.body as ProposalInput) });
+  } catch (error) {
+    governanceFailure(res, error);
+  }
+});
+
+app.post("/api/policy-proposals", (req, res) => {
+  try {
+    res.status(201).json(governance.submit(req.body as ProposalInput));
+  } catch (error) {
+    governanceFailure(res, error);
+  }
+});
+
+app.post("/api/policy-proposals/:proposalId/approve", (req, res) => {
+  try {
+    res.json(
+      governance.approve(
+        req.params.proposalId ?? "",
+        req.body?.role as GovernanceRole,
+        String(req.body?.proposalHash ?? ""),
+      ),
+    );
+  } catch (error) {
+    governanceFailure(res, error);
+  }
+});
+
+app.post("/api/policy-proposals/:proposalId/reject", (req, res) => {
+  try {
+    res.json(
+      governance.reject(
+        req.params.proposalId ?? "",
+        req.body?.role as GovernanceRole,
+        String(req.body?.proposalHash ?? ""),
+      ),
+    );
+  } catch (error) {
+    governanceFailure(res, error);
+  }
+});
+
 app.post("/api/agent/run", liveRateLimit, async (req, res) => {
   try {
     const { shipmentId, scenarioId, executionMode } = req.body ?? {};
@@ -156,6 +275,7 @@ app.get("/api/purchases/:proposalId", (req, res) => {
 
 app.post("/api/sandbox/reset", (_req, res) => {
   store.reset();
+  governance.reset();
   serviceCache.clear();
   res.json({ ok: true, message: "Local demo state reset. On-chain history is never deleted." });
 });

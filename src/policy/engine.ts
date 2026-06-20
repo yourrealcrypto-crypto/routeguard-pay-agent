@@ -8,6 +8,7 @@ import {
   sha256,
 } from "../domain/index.js";
 import { config } from "../config/index.js";
+import { getActiveRiskPolicy } from "../risk/policy.js";
 
 /**
  * The policy engine is pure, deterministic TypeScript. It runs with no LLM, no
@@ -225,7 +226,11 @@ function shipmentContextPolicy(ctx: PolicyContext): PolicyCheck {
   // Deterministic NEED conditions. The LLM rationale alone is never sufficient.
   const reasons: string[] = [];
   if (s.cargoValueEur >= 50_000) reasons.push("cargo_value>=50000");
-  if (s.freeAssessmentConfidence < 0.75) reasons.push("low_free_confidence");
+  if (
+    s.freeAssessmentConfidence <
+    getActiveRiskPolicy().confidence.minimumUsableConfidence
+  )
+    reasons.push("low_free_confidence");
   if (s.riskSignals.length > 0) reasons.push("risk_signals_present");
   if (
     s.cargoType === "temperature_controlled" ||
