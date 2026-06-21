@@ -47,6 +47,7 @@
           var(--bg);
         -webkit-font-smoothing: antialiased;
       }
+      h1, h2, h3, h4, h5, h6, section, .card, .main-tabs { scroll-margin-top: 80px; }
       body::before {
         content: "";
         position: fixed;
@@ -392,7 +393,8 @@
       .legal { max-width: 90ch; color: #69758a; font-size: 9.5px; }
 
       .main-tabs { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; margin: 18px 0; padding: 6px; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: rgba(10,16,26,.82); scrollbar-width: thin; backdrop-filter: blur(18px); }
-      .main-tab { flex: 0 1 240px; min-width: max-content; border: 1px solid transparent; background: transparent; color: var(--muted); text-align: center; }
+      .main-tab { flex: 0 1 240px; min-width: max-content; border: 1px solid transparent; background: transparent; color: var(--muted); text-align: center; transition: background .15s ease, color .15s ease; }
+      .main-tab:hover:not([aria-selected="true"]) { background: rgba(255,255,255,.03); color: var(--text); }
       .main-tab[aria-selected="true"] { color: var(--text); background: var(--surface-2); border-color: var(--line-strong); box-shadow: inset 0 -3px var(--amber); }
       .tab-view[hidden] { display: none; }
       .governance-shell { display: grid; gap: 14px; }
@@ -885,57 +887,62 @@
             <details><summary>View scoring details</summary><div class="muted">Advanced weights and thresholds remain available via the Active Risk Policy section below and /api endpoints.</div></details>
           </section>
 
-          <section class="card gov-card full" aria-labelledby="activePolicyHeading">
-            <div class="section-head"><div><div class="section-kicker">Public scoring contract</div><h2 id="activePolicyHeading">Active Risk Policy</h2></div><span class="pill p-pass" id="riskPolicyStatus">loading</span></div>
-            <div id="activePolicyContent" class="muted">Loading active risk policy…</div>
-            <div class="simulation-notice">Demonstration thresholds, not universal transport-safety standards.</div>
-          </section>
-
-          <section class="card gov-card" aria-labelledby="explainHeading">
-            <div class="section-head"><div><div class="section-kicker">Reproducible evidence</div><h2 id="explainHeading">Explain This Score</h2></div></div>
-            <label class="lbl" for="explainShipment">Synthetic shipment</label>
-            <select id="explainShipment" aria-label="Select shipment to explain"></select>
-            <div id="scoreExplanation" class="muted">Choose a shipment to inspect canonical scoring evidence.</div>
-          </section>
-
-          <section class="card gov-card" aria-labelledby="proposeHeading">
-            <div class="section-head"><div><div class="section-kicker">Bounded change request</div><h2 id="proposeHeading">Propose Change</h2></div></div>
-            <form id="proposalForm" class="gov-form">
-              <label>Editable field<select id="proposalField" required></select></label>
-              <label>Current value<input id="proposalCurrent" type="text" readonly /></label>
-              <label>Proposed value<input id="proposalValue" type="number" required /></label>
-              <label>Simulated proposer role<select id="proposerRole" required></select></label>
-              <label class="wide">Stated reason<textarea id="proposalReason" minlength="10" maxlength="500" required placeholder="Explain why this bounded demonstration threshold should change."></textarea></label>
-              <div class="wide gov-actions">
-                <button type="button" class="ghost" id="previewProposalBtn">Preview impact</button>
-                <button type="submit">Submit proposal</button>
-              </div>
-            </form>
-            <output id="proposalStatus" class="gov-status" aria-live="polite"></output>
-            <div id="impactPreview"></div>
-          </section>
-
           <section class="card gov-card full" aria-labelledby="queueHeading">
             <div class="section-head"><div><div class="section-kicker">Two-role quorum</div><h2 id="queueHeading">Governance Queue</h2></div><span class="section-count" id="queueCount">0 proposals</span></div>
             <div class="simulation-notice">Governance simulation · role identity is not authenticated · public governance metadata is held in memory and resets on restart.</div>
             <div id="governanceQueue" class="queue"></div>
           </section>
 
-          <section class="card gov-card" aria-labelledby="historyHeading">
-            <div class="section-head"><div><div class="section-kicker">Immutable lineage</div><h2 id="historyHeading">Policy History</h2></div></div>
-            <div id="policyHistory"></div>
-          </section>
+          <details class="technical-evidence compact" style="grid-column: 1 / -1; margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 14px;">
+            <summary style="font-size: 13px; font-weight: 600; color: var(--ink);">Advanced Policy Configuration &amp; Diagnostics</summary>
+            <div class="governance-grid" style="margin-top: 14px;">
+              <section class="card gov-card full" aria-labelledby="activePolicyHeading">
+                <div class="section-head"><div><div class="section-kicker">Public scoring contract</div><h2 id="activePolicyHeading">Active Risk Policy</h2></div><span class="pill p-pass" id="riskPolicyStatus">loading</span></div>
+                <div id="activePolicyContent" class="muted">Loading active risk policy…</div>
+                <div class="simulation-notice">Demonstration thresholds, not universal transport-safety standards.</div>
+              </section>
 
-          <section class="card gov-card" aria-labelledby="lockedHeading">
-            <div class="section-head"><div><div class="section-kicker">Outside governance authority</div><h2 id="lockedHeading">Locked Payment Safety Policy</h2></div><span class="pill p-block">IMMUTABLE</span></div>
-            <div id="lockedPaymentPolicy" class="muted">Loading locked safeguards…</div>
-          </section>
+              <section class="card gov-card" aria-labelledby="explainHeading">
+                <div class="section-head"><div><div class="section-kicker">Reproducible evidence</div><h2 id="explainHeading">Explain This Score</h2></div></div>
+                <label class="lbl" for="explainShipment">Synthetic shipment</label>
+                <select id="explainShipment" aria-label="Select shipment to explain"></select>
+                <div id="scoreExplanation" class="muted">Choose a shipment to inspect canonical scoring evidence.</div>
+              </section>
 
-          <section class="card gov-card full" aria-labelledby="roadmapHeading">
-            <div class="section-head"><div><div class="section-kicker">Production path</div><h2 id="roadmapHeading">Production governance path</h2></div></div>
-            <p class="rationale">A production design could map authorized approvers to allowlisted Hedera accounts or cryptographic identities, have each approver sign the exact proposal hash, verify quorum before activation, and anchor proposal, approval, and activation events to HCS. HCS can prove event order and consensus timestamps; it does not by itself prove that a person holds a corporate role.</p>
-            <p class="muted">No wallet login, OAuth, smart contract, DAO, or cryptographic role authentication is implemented in this simulation.</p>
-          </section>
+              <section class="card gov-card" aria-labelledby="proposeHeading">
+                <div class="section-head"><div><div class="section-kicker">Bounded change request</div><h2 id="proposeHeading">Propose Change</h2></div></div>
+                <form id="proposalForm" class="gov-form">
+                  <label>Editable field<select id="proposalField" required></select></label>
+                  <label>Current value<input id="proposalCurrent" type="text" readonly /></label>
+                  <label>Proposed value<input id="proposalValue" type="number" required /></label>
+                  <label>Simulated proposer role<select id="proposerRole" required></select></label>
+                  <label class="wide">Stated reason<textarea id="proposalReason" minlength="10" maxlength="500" required placeholder="Explain why this bounded demonstration threshold should change."></textarea></label>
+                  <div class="wide gov-actions">
+                    <button type="button" class="ghost" id="previewProposalBtn">Preview impact</button>
+                    <button type="submit">Submit proposal</button>
+                  </div>
+                </form>
+                <output id="proposalStatus" class="gov-status" aria-live="polite"></output>
+                <div id="impactPreview"></div>
+              </section>
+
+              <section class="card gov-card" aria-labelledby="historyHeading">
+                <div class="section-head"><div><div class="section-kicker">Immutable lineage</div><h2 id="historyHeading">Policy History</h2></div></div>
+                <div id="policyHistory"></div>
+              </section>
+
+              <section class="card gov-card" aria-labelledby="lockedHeading">
+                <div class="section-head"><div><div class="section-kicker">Outside governance authority</div><h2 id="lockedHeading">Locked Payment Safety Policy</h2></div><span class="pill p-block">IMMUTABLE</span></div>
+                <div id="lockedPaymentPolicy" class="muted">Loading locked safeguards…</div>
+              </section>
+
+              <section class="card gov-card full" aria-labelledby="roadmapHeading">
+                <div class="section-head"><div><div class="section-kicker">Production path</div><h2 id="roadmapHeading">Production governance path</h2></div></div>
+                <p class="rationale">A production design could map authorized approvers to allowlisted Hedera accounts or cryptographic identities, have each approver sign the exact proposal hash, verify quorum before activation, and anchor proposal, approval, and activation events to HCS. HCS can prove event order and consensus timestamps; it does not by itself prove that a person holds a corporate role.</p>
+                <p class="muted">No wallet login, OAuth, smart contract, DAO, or cryptographic role authentication is implemented in this simulation.</p>
+              </section>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -972,6 +979,7 @@
         return e;
       };
       const esc = (s) => String(s).replaceAll(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+      const truncHash = (s, len = 8) => { const str = String(s || ""); return str.length > len * 2 ? str.slice(0, len) + "…" + str.slice(-4) : str; };
       const tinybars = (t) => (t / 1e8).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 }) + " HBAR";
 
       let HEALTH = {};
@@ -1364,6 +1372,7 @@
               tab.focus();
             }
           });
+          window.scrollTo({ top: 0, behavior: "smooth" });
           if (name === "archive") {
             renderArchive();
           }
@@ -1514,8 +1523,9 @@
       }
 
       function routeTrack(route) {
-        const checkpoints = route.checkpoints.map((checkpoint) => routePoint(checkpoint)).join("");
-        return `<div class="route-track" style="--checkpoint-count:${route.checkpoints.length}" aria-label="Route checkpoints">${checkpoints}</div>`;
+        const points = [route.origin, ...route.checkpoints.map(c => c.name), route.destination];
+        const checkpoints = points.map((p) => `<div class="route-point"><span>${esc(p)}</span></div>`).join("");
+        return `<div class="route-track corridor-view" style="--checkpoint-count:${points.length}" aria-label="Route checkpoints">${checkpoints}</div>`;
       }
 
       function routePoint(checkpoint) {
@@ -1925,7 +1935,7 @@
           const queueActions = proposal.status === "PENDING"
             ? `<div class="queue-actions"><select class="queue-role" aria-label="Simulated role for proposal action">${roleOptions}</select><button class="approve-policy">Approve proposal</button><button class="ghost reject-policy">Reject proposal</button></div>`
             : "";
-          return `<article class="proposal-card" data-proposal-id="${esc(proposal.proposalId)}" data-proposal-hash="${esc(proposal.proposalHash)}"><div class="proposal-head"><div><div class="section-kicker">${esc(proposal.status)}</div><h3>${esc(proposal.field)}: ${proposal.oldValue} → ${proposal.proposedValue}</h3></div><span class="pill ${statusClass}">${esc(proposal.status)}</span></div><p>${esc(proposal.reason)}</p><div class="gov-meta"><div><span>proposal ID</span><b>${esc(proposal.proposalId)}</b></div><div><span>proposer</span><b>${esc(proposal.proposerRole)} · simulated</b></div><div><span>base / expiry</span><b>v${esc(proposal.basePolicyVersion)} · ${esc(proposal.expiresAt)}</b></div><div><span>approvals</span><b>${approvals} · ${proposal.approvals.length}/${proposal.quorumRequired}</b></div></div><p class="proposal-hash">${esc(proposal.proposalHash)}</p><div class="proposal-impact"></div>${queueActions}</article>`;
+          return `<article class="proposal-card" data-proposal-id="${esc(proposal.proposalId)}" data-proposal-hash="${esc(proposal.proposalHash)}"><div class="proposal-head"><div><div class="section-kicker">${esc(proposal.status)}</div><h3>${esc(proposal.field)}: ${proposal.oldValue} → ${proposal.proposedValue}</h3></div><span class="pill ${statusClass}">${esc(proposal.status)}</span></div><p>${esc(proposal.reason)}</p><div class="gov-meta"><div><span>proposal ID</span><b>${esc(proposal.proposalId)}</b></div><div><span>proposer</span><b>${esc(proposal.proposerRole)} · simulated</b></div><div><span>base / expiry</span><b>v${esc(proposal.basePolicyVersion)} · ${esc(proposal.expiresAt)}</b></div><div><span>approvals</span><b>${approvals} · ${proposal.approvals.length}/${proposal.quorumRequired}</b></div></div><p class="proposal-hash" title="${esc(proposal.proposalHash)}">${truncHash(proposal.proposalHash)} <button type="button" class="copy" data-copy="${esc(proposal.proposalHash)}">copy</button></p><div class="proposal-impact"></div>${queueActions}</article>`;
         }).join("");
         proposals.forEach((proposal) => {
           const card = document.querySelector(`[data-proposal-id="${proposal.proposalId}"]`);
@@ -2262,7 +2272,7 @@
           evidenceGroup("Report Integrity", [evidenceRow("Report hash", verification?.reportHash, true), evidenceRow("Policy hash", verification?.policyHash || decision?.canonicalHash, true), evidenceRow("Policy version", verification?.policyVersion || decision?.policyVersion), evidenceRow("Failure code", verification?.failureCode), evidenceRow("Failure reason", verification?.failureReason)]),
         ];
         const copyLines = copy.map((line) => `<span>${esc(line)}</span>`).join("");
-        return `<section class="verification" aria-labelledby="verificationHeading"><div class="verification-head"><div><div class="section-kicker">Permanent case evidence</div><h3 id="verificationHeading">Verification &amp; Audit</h3><div class="verification-copy">${copyLines}</div></div><span class="evidence-badge ${state.key}">${state.badge}</span></div><div class="evidence-groups">${groups.join("")}</div><details><summary>How Hedera Verification Works</summary><ol><li>RouteGuard records the policy decision.</li><li>A controlled HBAR transaction may execute.</li><li>Mirror Node confirms the transaction record.</li><li>HCS anchors ordered lifecycle events.</li><li>Policy and report hashes preserve integrity.</li></ol></details></section>`;
+        return `<section class="verification" aria-labelledby="verificationHeading"><div class="verification-head"><div><div class="section-kicker">Permanent case evidence</div><h3 id="verificationHeading">Verification &amp; Audit</h3><div class="verification-copy">${copyLines}</div></div><span class="evidence-badge ${state.key}">${state.badge}</span></div><details class="technical-evidence compact" style="margin: 0 14px; border: none;"><summary>View Raw Technical Evidence</summary><div class="evidence-groups" style="padding: 10px 0;">${groups.join("")}</div></details><details><summary>How Hedera Verification Works</summary><ol><li>RouteGuard records the policy decision.</li><li>A controlled HBAR transaction may execute.</li><li>Mirror Node confirms the transaction record.</li><li>HCS anchors ordered lifecycle events.</li><li>Policy and report hashes preserve integrity.</li></ol></details></section>`;
       }
 
       function selectScenario(id) {
@@ -2645,7 +2655,9 @@
 
       function approvalField(label, value, wide = false, copy = false) {
         const copyButton = copy ? `<button class="copy" data-copy="${esc(value)}">copy</button>` : "";
-        return `<div class="approval-field ${wide ? "wide" : ""}"><div class="k">${esc(label)}</div><div class="v">${esc(value)}${copyButton}</div></div>`;
+        const isHash = label.toLowerCase().includes("hash") || label.toLowerCase().includes("account") || label.toLowerCase().includes("transaction");
+        const displayValue = isHash ? truncHash(value) : value;
+        return `<div class="approval-field ${wide ? "wide" : ""}"><div class="k">${esc(label)}</div><div class="v" title="${isHash ? esc(value) : ""}">${esc(displayValue)}${copyButton}</div></div>`;
       }
 
       function renderApprovalPanel(data) {
@@ -2814,7 +2826,8 @@
         const r = $("#result");
         r.classList.remove("is-hidden");
         $("#emptyState").classList.add("is-hidden");
-        $("#archiveCaseBtn").classList.toggle("is-hidden", !SELECTED_SCENARIO?.id || ARCHIVED.has(SELECTED_SCENARIO.id));
+        const isTerminal = data && ["COMPLETED", "NO_PURCHASE", "BLOCKED", "REJECTED"].includes(data.kind);
+        $("#archiveCaseBtn").classList.toggle("is-hidden", !SELECTED_SCENARIO?.id || ARCHIVED.has(SELECTED_SCENARIO.id) || !isTerminal);
         let html = `<div class="result-head"><div>${verdictBadge(data.kind, SELECTED_SCENARIO?.id)}</div><div class="src-tag">${esc(SELECTED_SCENARIO?.label || scn?.label || "Case result")}</div></div>`;
         html += renderCaseSummary(SELECTED_SCENARIO, data);
 
