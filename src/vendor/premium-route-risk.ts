@@ -94,18 +94,20 @@ export class PremiumRouteRiskVendorService {
         RGError.ENTITLEMENT_NOT_FOUND,
         "The premium entitlement was not found.",
       );
-    if (Date.parse(record.expiresAt) <= now.getTime()) {
-      record.status = "EXPIRED";
-      throw new RouteGuardError(
-        RGError.ENTITLEMENT_EXPIRED,
-        "The premium entitlement has expired.",
-      );
-    }
-    if (record.status !== "ISSUED")
-      throw new RouteGuardError(
-        RGError.ENTITLEMENT_REPLAYED,
-        "The premium entitlement has already been redeemed or consumed.",
-      );
+  if (record.status !== "ISSUED") {
+  throw new RouteGuardError(
+    RGError.ENTITLEMENT_REPLAYED,
+    "The premium entitlement has already been redeemed or consumed.",
+  );
+}
+
+if (Date.parse(record.expiresAt) <= now.getTime()) {
+  record.status = "EXPIRED";
+  throw new RouteGuardError(
+    RGError.ENTITLEMENT_EXPIRED,
+    "The premium entitlement has expired.",
+  );
+}
 
     const proposal = store.proposals.get(record.proposalId);
     const purchase = store.purchases.get(record.proposalId);

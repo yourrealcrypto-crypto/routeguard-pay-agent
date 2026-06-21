@@ -5,6 +5,13 @@ import { describe, expect, it } from "vitest";
 type UiModel = {
   statusForScenario: (scenarioId: string) => string;
   executionModeFor: (value: string, enabled: boolean) => string;
+  executionModeSelection: (value: string, enabled: boolean) => {
+    mode: string;
+    allowed: boolean;
+    label: string;
+    helper: string;
+    safetyCopy: string;
+  };
   filterCases: (cases: Array<{ id: string }>, filter: string, archivedIds?: string[]) => Array<{ id: string }>;
   sortCases: (
     cases: Array<{ id: string; shipmentId: string }>,
@@ -18,6 +25,15 @@ type UiModel = {
   approvalTimelineState: (kind: string, approval?: unknown) => string;
   policyDecisionLabel: (scenarioLabel: string, decision: string) => string;
   archiveMatches: (record: { data: { kind: string }; verification: { key: string } }, filter: string) => boolean;
+  readablePolicyReason: (code: string) => string;
+  readableCheckReasons: (check: Record<string, unknown>) => string[];
+  buildReportExportModel: (data: Record<string, unknown>, catalog?: Record<string, unknown>) => Record<string, any> | null;
+  buildReportSummary: (model: Record<string, any> | null) => string;
+  buildMailtoLink: (model: Record<string, any> | null) => string;
+  buildStandaloneReportHtml: (model: Record<string, any>) => string;
+  hasReportExportActions: (data: Record<string, unknown>) => boolean;
+  renderReportActions: (data: Record<string, unknown>) => string;
+  renderGate: (decision: Record<string, unknown>, scenarioId?: string, reportHash?: string) => string;
 };
 
 const html = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
@@ -40,6 +56,63 @@ const livePayment = {
   transactionId: "0.0.123@1710000000.000000000",
   result: "SUCCESS",
   consensusTimestamp: "1710000000.000000000",
+};
+
+const completedReport = {
+  kind: "COMPLETED",
+  report: {
+    reportType: "SHIPMENT",
+    shipmentId: "RG-1001",
+    route: { origin: "Rotterdam, NL", destination: "Leipzig, DE" },
+    cargoType: "high_value",
+    declaredCargoValueEur: 480000,
+    generatedAt: "2026-06-21T12:00:00.000Z",
+    riskScore: 86,
+    riskBand: "critical",
+    confidence: 0.9,
+    recommendedControls: ["Increase schedule buffer."],
+    mitigationRecommendations: ["Verify border documents."],
+    operationalRecommendations: ["Monitor hand-offs."],
+    factors: [{ code: "MODE", label: "Mode risk", contribution: 11, explanation: "Road exposure." }],
+    privateProviderReliabilitySignal: {
+      providerAlias: "PRV-001",
+      providerDisplayName: "PRIVATE PROVIDER NAME MUST NOT EXPORT",
+      rawDocumentText: "RAW PRIVATE DOCUMENT MUST NOT EXPORT",
+      sampleSize: 2,
+      onTimeRate: 50,
+      averageDelayMinutes: 120,
+      trackingCompletenessPercent: 80,
+      issueRate: 10,
+      confidence: 0.5,
+      reliabilityBand: "MIXED_OBSERVED_RELIABILITY",
+      reasonCodes: ["LIMITED_SAMPLE_SIZE"],
+      evidenceHashes: ["e".repeat(64)],
+      scopeLabel: "Customer-specific · not shared across customers",
+      ratingLabel: "Not a public carrier rating",
+    },
+    etaReliabilityRisk: { onTimeRiskBand: "MODERATE", schedulePressure: "10 policy points", delayExposureMinutes: 120, explanation: "Measured factors affect ETA.", contributingFactors: ["Schedule pressure"] },
+    insuranceSupportEvidence: { disclaimer: "Insurance-support evidence only. This report does not sell, price, approve, or determine insurance.", evidenceHashes: ["e".repeat(64)] },
+    alternativeRouteOrMitigationRecommendation: { recommendation: "Review an alternative route.", basis: ["Border exposure"] },
+    policyVersion: "1.0.0",
+    policyHash: "p".repeat(64),
+    reportHash: "r".repeat(64),
+    disclaimer: "Decision-support only.",
+  },
+  decision: {
+    policyVersion: "1.0",
+    canonicalHash: "c".repeat(64),
+    checks: [{ policyId: "shipment-context", name: "Shipment Context", outcome: "PASS", reasonCode: "SHIPMENT_ELIGIBLE", publicMessage: "Shipment is eligible.", evidence: { needConditions: ["cargo_value>=50000", "low_free_confidence"] } }],
+  },
+  entitlement: {
+    entitlementId: "11111111-1111-4111-8111-111111111111",
+    status: "REDEEMED",
+    issuedAt: "2026-06-21T11:59:00.000Z",
+    redeemedAt: "2026-06-21T12:00:00.000Z",
+    token: "RAW_ENTITLEMENT_TOKEN_MUST_NOT_EXPORT",
+    tokenHash: "SECRET_TOKEN_HASH_MUST_NOT_EXPORT",
+  },
+  payment: { mode: "SIMULATION", transactionId: "simulated-transaction" },
+  verification: { status: "SIMULATION_EVIDENCE", mirrorNodeConfirmation: "NOT_APPLICABLE", hcsAnchoringStatus: "NOT_APPLICABLE", hcsSequenceNumbers: [] },
 };
 
 describe("RouteGuard interface model", () => {
@@ -80,6 +153,77 @@ describe("RouteGuard interface model", () => {
     expect(html).not.toContain("public leaderboard");
     expect(html).not.toContain("bad carrier");
     expect(html).not.toContain("blacklist");
+  });
+
+  it("replaces prominent raw need conditions with readable policy reasons", () => {
+    const check = (completedReport.decision.checks[0] as unknown) as Record<string, unknown>;
+    const reasons = ui.readableCheckReasons(check);
+    expect(reasons).toContain("Declared cargo value exceeds the premium-analysis threshold.");
+    expect(reasons).toContain("Free assessment confidence is below the policy threshold.");
+    expect(reasons.join(" ")).not.toContain('needConditions=["cargo_value');
+    expect(ui.readablePolicyReason("unknown_code")).toBe(
+      "Technical policy condition: unknown_code",
+    );
+    const gate = ui.renderGate(completedReport.decision);
+    const prominent = gate.slice(0, gate.indexOf('<details class="technical-evidence">'));
+    expect(prominent).toContain(
+      "Declared cargo value exceeds the premium-analysis threshold.",
+    );
+    expect(prominent).not.toContain("cargo_value&gt;=50000");
+    expect(gate).toContain("cargo_value&gt;=50000");
+  });
+
+  it("retains raw policy evidence only in collapsed technical sections", () => {
+    expect(html).toContain('<details class="technical-evidence">');
+    expect(html).toContain("View raw policy evidence");
+    expect(html).not.toContain('class="ev"');
+    const model = ui.buildReportExportModel(completedReport, { vendorId: "route-risk-labs", sku: "premium-route-risk-v1" })!;
+    const downloaded = ui.buildStandaloneReportHtml(model);
+    expect(downloaded).toContain("Technical evidence appendix");
+    expect(downloaded).toContain("cargo_value&gt;=50000");
+  });
+
+  it("shows export actions only when a premium report exists", () => {
+    expect(ui.hasReportExportActions(completedReport)).toBe(true);
+    expect(ui.renderReportActions(completedReport)).toContain("Download report");
+    expect(ui.renderReportActions(completedReport)).toContain("Print / Save PDF");
+    expect(ui.renderReportActions(completedReport)).toContain("Open email draft");
+    expect(ui.renderReportActions(completedReport)).toContain("Copy report summary");
+    for (const kind of ["BLOCKED", "NO_PURCHASE"]) {
+      const data = { kind };
+      expect(ui.hasReportExportActions(data)).toBe(false);
+      expect(ui.renderReportActions(data)).toBe(
+        '<div class="report-export-empty">No premium report available for export.</div>',
+      );
+    }
+    expect(html).toContain("globalThis.print()");
+  });
+
+  it("builds a mailto draft without claiming that a PDF is attached", () => {
+    const model = ui.buildReportExportModel(completedReport, { vendorId: "route-risk-labs", sku: "premium-route-risk-v1" })!;
+    const mailto = decodeURIComponent(ui.buildMailtoLink(model));
+    expect(mailto).toMatch(/^mailto:\?subject=/);
+    expect(mailto).toContain("saved as PDF from RouteGuard");
+    expect(mailto.toLowerCase()).not.toContain("attached");
+    expect(mailto.toLowerCase()).not.toContain("attachment");
+  });
+
+  it("keeps copied and downloaded exports privacy-safe while retaining hashes", () => {
+    const model = ui.buildReportExportModel(completedReport, { vendorId: "route-risk-labs", sku: "premium-route-risk-v1" })!;
+    const summary = ui.buildReportSummary(model);
+    const downloaded = ui.buildStandaloneReportHtml(model);
+    for (const output of [summary, downloaded, JSON.stringify(model)]) {
+      expect(output).not.toContain("RAW_ENTITLEMENT_TOKEN_MUST_NOT_EXPORT");
+      expect(output).not.toContain("SECRET_TOKEN_HASH_MUST_NOT_EXPORT");
+      expect(output).not.toContain("RAW PRIVATE DOCUMENT MUST NOT EXPORT");
+      expect(output).not.toContain("PRIVATE PROVIDER NAME MUST NOT EXPORT");
+    }
+    expect(downloaded).toContain("r".repeat(64));
+    expect(downloaded).toContain("p".repeat(64));
+    expect(downloaded).toContain("Why premium analysis was justified");
+    expect(downloaded).toContain(
+      "Declared cargo value exceeds the premium-analysis threshold.",
+    );
   });
 
   it("uses native outputs for dynamic status messages and keeps one authoritative tab style", () => {
@@ -157,6 +301,58 @@ describe("RouteGuard interface model", () => {
     expect(ui.executionModeFor("AUTONOMOUS_TESTNET", false)).toBe("SIMULATION");
     expect(html).toContain('id="testnetMode"');
     expect(html).toContain("Live testnet execution is not configured on this server.");
+  });
+
+  it("uses a clickable hero selector backed by the existing execution mode", () => {
+    expect(html).toContain('id="heroModeTrigger"');
+    expect(html).toContain('aria-haspopup="listbox"');
+    expect(html).toContain('id="heroModeMenu" role="listbox"');
+    expect(html).toContain('$("#executionMode").value = state.mode');
+    expect(html).toContain('$("#executionMode").onchange = () => applyExecutionMode');
+    expect(html).toContain('applyExecutionMode(option.dataset.mode)');
+  });
+
+  it("selects simulation and permits testnet only through the existing live guard", () => {
+    const simulation = ui.executionModeSelection("SIMULATION", false);
+    expect(simulation.mode).toBe("SIMULATION");
+    expect(simulation.allowed).toBe(true);
+    expect(simulation.safetyCopy).toBe(
+      "Simulation selected · no real HBAR transfer.",
+    );
+    expect(ui.executionModeSelection("AUTONOMOUS_TESTNET", false).mode).toBe(
+      "SIMULATION",
+    );
+    const testnet = ui.executionModeSelection("AUTONOMOUS_TESTNET", true);
+    expect(testnet.mode).toBe("AUTONOMOUS_TESTNET");
+    expect(testnet.allowed).toBe(true);
+    expect(testnet.safetyCopy).toContain("real testnet HBAR may move");
+  });
+
+  it("shows production payment context as disabled and cannot enable execution", () => {
+    const production = ui.executionModeSelection("LIVE_NETWORK_PAYMENTS", true);
+    expect(production.mode).toBe("SIMULATION");
+    expect(production.allowed).toBe(false);
+    expect(production.safetyCopy).toBe(
+      "Production payment mode is visible for product context but disabled in this demo.",
+    );
+    expect(html).toContain("Live network payments");
+    expect(html).toContain('id="heroLiveNetworkMode" role="option" aria-selected="false" disabled');
+    expect(html).not.toContain('data-mode="LIVE_NETWORK_PAYMENTS"');
+    expect(html).not.toContain('value="MAINNET"');
+    expect(html).not.toContain("/api/mainnet");
+  });
+
+  it("shows selected and disabled visual states plus the official Agent Kit link", () => {
+    expect(html).toContain('.hero-mode-trigger[data-mode="AUTONOMOUS_TESTNET"]');
+    expect(html).toContain('.hero-mode-option[aria-selected="true"]');
+    expect(html).toContain(".hero-mode-option:disabled");
+    expect(html).toContain("disabled in demo");
+    expect(html).toContain(
+      'href="https://docs.hedera.com/hedera/open-source-solutions/ai-studio-on-hedera/hedera-ai-agent-kit"',
+    );
+    expect(html).toContain('target="_blank" rel="noopener noreferrer">Hedera Agent Kit</a>');
+    expect(html).toContain('<path class="route-corridor"');
+    expect(html).toContain('class="route-checkpoint"');
   });
 
   it("maps every verification evidence state", () => {
