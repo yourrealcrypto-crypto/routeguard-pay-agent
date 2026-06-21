@@ -141,8 +141,8 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/POLICY_MODEL.md](docs
 
 | Resource | URL |
 |---|---|
-| Live demo | TODO_LIVE_DEMO_URL |
-| GitHub repo | TODO_GITHUB_REPO_URL |
+| Live demo | https://www.route-guard.online |
+| GitHub repo | https://github.com/yourrealcrypto-crypto/routeguard-pay-agent |
 | Feedback issue | https://github.com/hashgraph/hedera-agent-kit-js/issues/955 |
 
 Copy-ready submission notes: [public/SUBMISSION_PACKAGE.md](public/SUBMISSION_PACKAGE.md)

@@ -20,8 +20,8 @@ RouteGuard Pay Agent is a policy-gated AI procurement demo for logistics risk. T
 ## Current focus / Next tasks
 
 1. File Hedera Agent Kit feedback issue — https://github.com/hashgraph/hedera-agent-kit-js/issues/955
-2. Publish live demo URL — TODO_LIVE_DEMO_URL
-3. Publish GitHub repo URL — TODO_GITHUB_REPO_URL
+2. Publish live demo URL — https://www.route-guard.online
+3. Publish GitHub repo URL — https://github.com/yourrealcrypto-crypto/routeguard-pay-agent
 
 ## Submission readiness checklist
 
@@ -35,8 +35,8 @@ RouteGuard Pay Agent is a policy-gated AI procurement demo for logistics risk. T
 - [x] Archive with Restore to Active Cases
 - [x] README with thesis, bounty fit, run instructions, and submission placeholders
 - [x] SUBMISSION_PACKAGE.md and FEEDBACK_ISSUE_DRAFT.md
-- [ ] Fill in TODO_LIVE_DEMO_URL once deployed
-- [ ] Fill in TODO_GITHUB_REPO_URL once pushed
+- [ ] Fill in https://www.route-guard.online once deployed
+- [ ] Fill in https://github.com/yourrealcrypto-crypto/routeguard-pay-agent once pushed
 - [ ] File feedback issue and fill in https://github.com/hashgraph/hedera-agent-kit-js/issues/955
 
 ## Notes / Known issues

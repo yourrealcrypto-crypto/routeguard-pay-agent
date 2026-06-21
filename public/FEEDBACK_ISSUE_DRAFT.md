@@ -63,7 +63,7 @@ The project drives the core Agent Kit API directly.
 
 ## Links
 
-* RouteGuard repo: TODO_GITHUB_REPO_URL
-* Live demo: TODO_LIVE_DEMO_URL
+* RouteGuard repo: https://github.com/yourrealcrypto-crypto/routeguard-pay-agent
+* Live demo: https://www.route-guard.online
 
 After this issue is filed, I will add the issue URL back into the RouteGuard submission docs.
