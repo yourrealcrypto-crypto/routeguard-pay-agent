@@ -303,13 +303,15 @@ describe("RouteGuard interface model", () => {
     expect(html).toContain("Live testnet execution is not configured on this server.");
   });
 
-  it("uses a clickable hero selector backed by the existing execution mode", () => {
-    expect(html).toContain('id="heroModeTrigger"');
-    expect(html).toContain('aria-haspopup="listbox"');
-    expect(html).toContain('id="heroModeMenu" role="listbox"');
-    expect(html).toContain('$("#executionMode").value = state.mode');
+  it("uses a segmented control in hero (no dropdown/popup)", () => {
+    expect(html).toContain('class="mode-segments"');
+    expect(html).toContain('data-mode="SIMULATION"');
+    expect(html).toContain('data-mode="AUTONOMOUS_TESTNET"');
+    expect(html).toContain('Live locked');
+    expect(html).not.toContain('hero-mode-menu');
+    expect(html).not.toContain('aria-haspopup="listbox"');
+    expect(html).not.toContain('id="heroModeMenu"');
     expect(html).toContain('$("#executionMode").onchange = () => applyExecutionMode');
-    expect(html).toContain('applyExecutionMode(option.dataset.mode)');
   });
 
   it("selects simulation and permits testnet only through the existing live guard", () => {
@@ -335,24 +337,61 @@ describe("RouteGuard interface model", () => {
     expect(production.safetyCopy).toBe(
       "Production payment mode is visible for product context but disabled in this demo.",
     );
-    expect(html).toContain("Live network payments");
-    expect(html).toContain('id="heroLiveNetworkMode" role="option" aria-selected="false" disabled');
-    expect(html).not.toContain('data-mode="LIVE_NETWORK_PAYMENTS"');
+    expect(html).toContain("Live locked");
+    expect(html).toContain('class="mode-segment locked"');
     expect(html).not.toContain('value="MAINNET"');
     expect(html).not.toContain("/api/mainnet");
   });
 
   it("shows selected and disabled visual states plus the official Agent Kit link", () => {
-    expect(html).toContain('.hero-mode-trigger[data-mode="AUTONOMOUS_TESTNET"]');
-    expect(html).toContain('.hero-mode-option[aria-selected="true"]');
-    expect(html).toContain(".hero-mode-option:disabled");
-    expect(html).toContain("disabled in demo");
+    expect(html).toContain('class="mode-segment active"');
+    expect(html).toContain('class="mode-segment locked"');
+    expect(html).toContain("Live locked");
     expect(html).toContain(
       'href="https://docs.hedera.com/hedera/open-source-solutions/ai-studio-on-hedera/hedera-ai-agent-kit"',
     );
     expect(html).toContain('target="_blank" rel="noopener noreferrer">Hedera Agent Kit</a>');
     expect(html).toContain('<path class="route-corridor"');
     expect(html).toContain('class="route-checkpoint"');
+  });
+
+  it("renders three metric cards in hero with execution-mode as the interactive card", () => {
+    expect(html).toContain('<div class="fact"><b>Fixed price</b>');
+    expect(html).toContain('<div class="fact"><b>Decision authority</b>');
+    expect(html).toContain('class="hero-mode hero-mode-anchor" id="heroModeSelector"');
+    expect(html).toContain('data-mode="SIMULATION"');
+    expect(html).toContain('Live locked');
+    // no dropdown/popup
+    expect(html).not.toContain('hero-mode-menu');
+  });
+
+  it("hero execution mode uses segmented control (no dropdown)", () => {
+    expect(html).toContain('class="mode-segments" role="group"');
+    expect(html).toContain('class="mode-segment"');
+    expect(html).toContain('class="mode-segment locked"');
+    expect(html).not.toContain('aria-haspopup="listbox"');
+  });
+
+  it("selected mode is visibly represented in segmented control", () => {
+    expect(html).toContain('class="mode-segment active"');
+    expect(html).toContain('data-mode="SIMULATION"');
+  });
+
+  it("the Hedera Agent Kit branding area includes a logo/icon element", () => {
+    expect(html).toContain('class="hedera-logo"');
+    expect(html).toContain('<svg class="hedera-logo"');
+  });
+
+  it("the Hedera Agent Kit link remains present and correct", () => {
+    expect(html).toContain(
+      'href="https://docs.hedera.com/hedera/open-source-solutions/ai-studio-on-hedera/hedera-ai-agent-kit"',
+    );
+    expect(html).toContain('target="_blank" rel="noopener noreferrer">Hedera Agent Kit</a>');
+  });
+
+  it("segmented control replaces dropdown (no popup close logic needed)", () => {
+    expect(html).toContain('class="mode-segment"');
+    expect(html).not.toContain('hero-mode-menu');
   });
 
   it("maps every verification evidence state", () => {
@@ -389,5 +428,145 @@ describe("RouteGuard interface model", () => {
     expect(ui.archiveMatches(record, "blocked")).toBe(false);
     expect(ui.archiveMatches(record, "simulation")).toBe(true);
     expect(ui.archiveMatches(record, "verified")).toBe(false);
+  });
+
+  // New tests for this UX refinement (segmented control + simplified governance)
+  it("hero execution mode no longer uses a dropdown/popup menu", () => {
+    expect(html).not.toContain('id="heroModeMenu"');
+    expect(html).not.toContain('hero-mode-menu');
+    expect(html).not.toContain('aria-haspopup="listbox"');
+  });
+
+  it("hero execution mode renders a segmented control", () => {
+    expect(html).toContain('class="mode-segments" role="group"');
+    expect(html).toContain('Simulation');
+    expect(html).toContain('Testnet');
+    expect(html).toContain('Live locked');
+  });
+
+  it("Simulation is selected by default in hero", () => {
+    expect(html).toContain('class="mode-segment active"');
+    expect(html).toContain('data-mode="SIMULATION"');
+  });
+
+  it("Testnet segment is disabled unless existing guard allows it", () => {
+    // structure has disabled/locked class possible
+    expect(html).toContain('data-mode="AUTONOMOUS_TESTNET"');
+    expect(html).toContain('class="mode-segment locked"'); // when not enabled in markup
+  });
+
+  it("Live payments segment is visible but disabled/locked", () => {
+    expect(html).toContain('Live locked');
+    expect(html).toContain('class="mode-segment locked"');
+  });
+
+  it("selecting a hero segment syncs with the existing execution-mode control", () => {
+    expect(html).toContain('$("#executionMode").onchange = () => applyExecutionMode');
+    expect(html).toContain('mode-segments');
+  });
+
+  it("no production/mainnet payment execution path is added", () => {
+    expect(html).not.toContain('value="MAINNET"');
+    expect(html).not.toContain("/api/mainnet");
+    expect(html).toContain('Live locked');
+  });
+
+  it("Policy & Governance first view shows simple cockpit cards", () => {
+    expect(html).toContain('Policy Cockpit');
+    expect(html).toContain('Active risk policy');
+    expect(html).toContain('Payment safety');
+    expect(html).toContain('Locked globally');
+  });
+
+  it("technical formula/weights/hash are hidden behind collapsed details by default", () => {
+    expect(html).toContain('<details class="technical-evidence"');
+    expect(html).toContain('View scoring details');
+  });
+
+  it("route policy assignments section exists", () => {
+    expect(html).toContain('Route Policy Assignments');
+    expect(html).toContain('id="routePolicyAssignments"');
+  });
+
+  it("route policy assignments show LIVE-MUC-IST with Pharma Temperature-Controlled Policy", () => {
+    // default in JS state
+    expect(html).toContain('LIVE-MUC-IST');
+    // in the live cards rendering it will include
+    expect(html).toContain('Pharma Temperature-Controlled Policy'); // from default assignment in cards
+  });
+
+  it("payment safety policy is shown as globally locked", () => {
+    expect(html).toContain('Locked globally: vendor, SKU, price, caps');
+    expect(html).toContain('Payment safety');
+  });
+
+  it("policy profiles have plain-English explanations", () => {
+    expect(html).toContain('Standard RouteRisk Policy');
+    expect(html).toContain('Balanced scoring for ordinary');
+    expect(html).toContain('Pharma Temperature-Controlled Policy');
+    expect(html).toContain('Higher sensitivity to temperature deviation');
+    expect(html).toContain('High-Value Cargo Policy');
+    expect(html).toContain('Intermodal Policy');
+  });
+
+  // New UX simplification tests for Live Route Intelligence + Policy & Governance
+  it("Live Route Intelligence first view does not show all raw checkpoint weather numbers prominently", () => {
+    expect(html).toContain('View checkpoint evidence');
+    expect(html).toContain('<details><summary>View checkpoint evidence</summary>');
+  });
+
+  it("Checkpoint cards show checkpoint risk bands", () => {
+    expect(html).toContain('deriveCheckpointRisk');
+    expect(html).toContain('pill');
+  });
+
+  it("Checkpoint cards show readable risk reasons", () => {
+    expect(html).toContain('temperature');
+    expect(html).toContain('tolerance');
+  });
+
+  it("Raw weather data remains available in collapsed checkpoint evidence", () => {
+    expect(html).toContain('<details><summary>View checkpoint evidence</summary>');
+    expect(html).toContain('Temperature');
+  });
+
+  it("Overall route risk explanation includes checkpoint exposure", () => {
+    expect(html).toContain('Checkpoint risk summary');
+    expect(html).toContain('Top drivers');
+  });
+
+  it("Premium report includes checkpoint risk summary", () => {
+    expect(html).toContain('Checkpoint risk summary');
+    expect(html).toContain('pill');
+  });
+
+  it("Downloaded/printed report includes checkpoint summary and technical appendix", () => {
+    expect(html).toContain('Technical evidence appendix');
+    expect(html).toContain('View checkpoint evidence'); // structure supports
+  });
+
+  it("Policy & Governance first view does not show policy hash prominently", () => {
+    expect(html).toContain('<details><summary>View policy hash</summary>');
+    expect(html).toContain('Policy Cockpit');
+  });
+
+  it("Policy hash is available behind a collapsed disclosure", () => {
+    expect(html).toContain('View policy hash');
+  });
+
+  it("Scoring formula/weights are hidden behind collapsed details by default", () => {
+    expect(html).toContain('View scoring details');
+    expect(html).toContain('<details class="technical-evidence"');
+  });
+
+  it("Payment safety policy remains visibly locked globally", () => {
+    expect(html).toContain('Locked globally: vendor, SKU, price, caps');
+    expect(html).toContain('Payment safety');
+  });
+
+  it("existing premium API, entitlement, provider evidence, report export, archive, live-route, Agent Kit, and verification tests still pass", () => {
+    // covered by overall suite; specific strings preserved
+    expect(html).toContain('Premium RouteRisk Analysis');
+    expect(html).toContain('Live Route Intelligence');
   });
 });

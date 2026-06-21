@@ -130,6 +130,8 @@
       .attribution a { color: inherit; text-decoration: underline; text-decoration-color: rgba(109,180,255,.35); text-underline-offset: 3px; }
       .attribution a:hover { color: var(--blue); text-decoration-color: currentColor; }
       .attribution a:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 3px; }
+      .attribution .hedera-logo { width: 12px; height: 12px; margin-right: 4px; vertical-align: -1px; opacity: 0.82; }
+      .attribution:hover .hedera-logo { opacity: 0.95; }
       .hero-grid {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -153,34 +155,33 @@
       }
       .fact b { display: block; color: var(--ink); font-size: 11.5px; }
       .fact span { display: block; margin-top: 2px; color: var(--ink-faint); font: 10px/1.35 var(--mono); }
-      .hero-mode { position: relative; min-width: 248px; }
-      .hero-mode-trigger { width: 100%; min-height: 58px; padding: 9px 12px; border: 1px solid rgba(109,180,255,.65); border-radius: 10px; background: rgba(12,23,37,.92); color: var(--ink); cursor: pointer; text-align: left; box-shadow: 0 0 0 1px rgba(109,180,255,.08), 0 8px 24px rgba(0,0,0,.2); }
-      .hero-mode-trigger:hover { border-color: var(--blue); background: #14263b; }
-      .hero-mode-trigger:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
-      .hero-mode-trigger[data-mode="AUTONOMOUS_TESTNET"] { border-color: rgba(94,227,154,.72); box-shadow: 0 0 0 1px rgba(94,227,154,.1), 0 8px 24px rgba(0,0,0,.2); }
-      .hero-mode-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-      .hero-mode-label { font-size: 11.5px; font-weight: 750; }
-      .hero-mode-helper { display: block; margin-top: 4px; color: var(--ink-faint); font: 9.5px/1.35 var(--mono); }
-      .mode-status { padding: 3px 6px; border: 1px solid rgba(109,180,255,.4); border-radius: 999px; color: var(--blue); font: 700 8px/1 var(--mono); text-transform: uppercase; }
-      .hero-mode-trigger[data-mode="AUTONOMOUS_TESTNET"] .mode-status { color: var(--green); border-color: rgba(94,227,154,.4); }
-      .hero-mode-menu { position: absolute; z-index: 30; top: calc(100% + 7px); right: 0; width: min(330px, 88vw); padding: 7px; border: 1px solid var(--line-strong); border-radius: 11px; background: #0d1623; box-shadow: 0 18px 40px rgba(0,0,0,.42); }
-      .hero-mode-menu[hidden] { display: none; }
-      .hero-mode-option { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 10px; width: 100%; padding: 10px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
-      .hero-mode-option:hover:not(:disabled) { border-color: rgba(109,180,255,.45); background: var(--blue-soft); }
-      .hero-mode-option:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
-      .hero-mode-option[aria-selected="true"] { border-color: var(--blue); background: var(--blue-soft); }
-      .hero-mode-option[data-mode="AUTONOMOUS_TESTNET"][aria-selected="true"] { border-color: var(--green); background: var(--green-soft); }
-      .hero-mode-option:disabled { cursor: not-allowed; opacity: .55; border-color: rgba(245,185,66,.22); }
-      .hero-mode-option b { font-size: 11px; }
-      .hero-mode-option small { grid-column: 1; color: var(--ink-faint); font: 9px/1.35 var(--mono); }
-      .hero-mode-option .mode-status { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: var(--ink-faint); border-color: var(--line-strong); }
-      .hero-mode-option:disabled .mode-status { color: var(--amber); border-color: rgba(245,185,66,.35); }
-      .route-motif { position: absolute; right: 3%; bottom: 8px; width: 39%; height: 70px; opacity: .28; pointer-events: none; }
+      .hero-mode { min-width: 248px; }
+      .hero-mode-label { font-size: 11.5px; font-weight: 750; margin-bottom: 6px; }
+      .hero-mode-helper { display: block; margin-top: 6px; color: var(--ink-faint); font: 9.5px/1.35 var(--mono); }
+      .mode-segments { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: rgba(8,12,18,.35); }
+      .mode-segment { flex: 1; padding: 6px 8px; font: 700 9.5px/1 var(--mono); text-transform: uppercase; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; transition: background .1s, color .1s; }
+      .mode-segment + .mode-segment { border-left: 1px solid var(--line); }
+      .mode-segment:hover:not(:disabled) { background: rgba(109,180,255,.1); color: var(--ink); }
+      .mode-segment.active { background: var(--blue-soft); color: var(--blue); font-weight: 750; }
+      .mode-segment.active[data-mode="AUTONOMOUS_TESTNET"] { background: var(--green-soft); color: var(--green); }
+      .mode-segment.locked, .mode-segment:disabled { cursor: not-allowed; opacity: .6; background: rgba(8,12,18,.5); color: var(--ink-faint); }
+      .mode-segment.locked::after { content: " 🔒"; font-size: 8px; }
+      .route-motif { position: absolute; right: 4%; bottom: 6px; width: 36%; height: 62px; opacity: .18; pointer-events: none; }
       .route-motif svg { display: block; width: 100%; height: 100%; overflow: visible; }
-      .route-corridor { fill: none; stroke: url(#routeGradient); stroke-width: 1.5; }
-      .route-corridor-guide { fill: none; stroke: rgba(109,180,255,.38); stroke-width: 1; stroke-dasharray: 5 7; }
-      .route-checkpoint { fill: var(--panel); stroke: var(--amber); stroke-width: 1.5; }
+      /* Cleaner logistics/route motif: straighter purposeful corridors + subtle path/grid nodes (reduced clutter) */
+      .route-corridor { fill: none; stroke: url(#routeGradient); stroke-width: 1.25; }
+      .route-corridor-guide { fill: none; stroke: rgba(109,180,255,.25); stroke-width: 0.75; stroke-dasharray: 3 6; }
+      .route-checkpoint { fill: var(--panel); stroke: var(--amber); stroke-width: 1.25; }
       .route-terminal { fill: var(--amber); stroke: var(--amber); }
+
+      /* three uniform metric cards in hero; segmented mode control (no dropdown) */
+      .hero-facts .fact,
+      .hero-mode {
+        min-height: 58px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
 
       /* Layout */
       .cols { display: grid; grid-template-columns: minmax(300px, 350px) minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -591,7 +592,6 @@
         .hero-facts { display: grid; grid-template-columns: repeat(2, 1fr); }
         .fact:last-child { grid-column: 1 / -1; }
         .hero-mode { grid-column: 1 / -1; min-width: 0; }
-        .hero-mode-menu { left: 0; right: auto; width: min(330px, calc(100vw - 48px)); }
         .scenarios, .process-preview, .gate, .tl, .factors, .proof, .audit-lines, .approval-grid, .receipt-grid { grid-template-columns: 1fr; }
         .approval-field.wide { grid-column: auto; }
         .shipment-strip { grid-template-columns: 1fr 1fr; }
@@ -639,7 +639,7 @@
             <span class="logo"><span class="logo-mark">RG</span>RouteGuard Pay Agent</span>
             <span class="net-badge" id="netBadge">Policy control active</span>
           </div>
-          <div class="attribution">Built with <a href="https://docs.hedera.com/hedera/open-source-solutions/ai-studio-on-hedera/hedera-ai-agent-kit" target="_blank" rel="noopener noreferrer">Hedera Agent Kit</a></div>
+          <div class="attribution"><svg class="hedera-logo" width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 5.2v5.6M10.5 5.2v5.6M5.5 8h5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> Built with <a href="https://docs.hedera.com/hedera/open-source-solutions/ai-studio-on-hedera/hedera-ai-agent-kit" target="_blank" rel="noopener noreferrer">Hedera Agent Kit</a></div>
         </div>
         <div class="hero-grid">
           <div>
@@ -653,25 +653,24 @@
           <div class="hero-facts" aria-label="RouteGuard control summary">
             <div class="fact"><b>Fixed price</b><span>0.05 HBAR</span></div>
             <div class="fact"><b>Decision authority</b><span>deterministic policy</span></div>
-            <div class="hero-mode" id="heroModeSelector">
-              <button type="button" class="hero-mode-trigger" id="heroModeTrigger" data-mode="SIMULATION" aria-haspopup="listbox" aria-expanded="false" aria-controls="heroModeMenu">
-                <span class="hero-mode-head"><span class="hero-mode-label" id="heroModeLabel">Simulation</span><span class="mode-status">selected</span></span>
-                <span class="hero-mode-helper" id="heroModeHelper">No real HBAR transfer</span>
-              </button>
-              <div class="hero-mode-menu" id="heroModeMenu" role="listbox" aria-label="Execution mode" hidden>
-                <button type="button" class="hero-mode-option" data-mode="SIMULATION" role="option" aria-selected="true"><b>Simulation</b><small>No real HBAR transfer</small><span class="mode-status">selected</span></button>
-                <button type="button" class="hero-mode-option" data-mode="AUTONOMOUS_TESTNET" id="heroTestnetMode" role="option" aria-selected="false" disabled><b>Hedera testnet</b><small id="heroTestnetHelper">Unavailable · server live-testnet guard is disabled</small><span class="mode-status">unavailable</span></button>
-                <button type="button" class="hero-mode-option" id="heroLiveNetworkMode" role="option" aria-selected="false" disabled><b>Live network payments</b><small>Production HBAR/USDC payments · disabled in this demo</small><span class="mode-status">disabled in demo</span></button>
+            <div class="hero-mode hero-mode-anchor" id="heroModeSelector">
+              <div class="hero-mode-label">Execution mode</div>
+              <div class="mode-segments" role="group" aria-label="Execution mode">
+                <button type="button" class="mode-segment active" data-mode="SIMULATION" aria-pressed="true">Simulation</button>
+                <button type="button" class="mode-segment" data-mode="AUTONOMOUS_TESTNET" aria-pressed="false">Testnet</button>
+                <button type="button" class="mode-segment locked" data-mode="LIVE_NETWORK_PAYMENTS" disabled aria-pressed="false">Live locked</button>
               </div>
+              <div class="hero-mode-helper" id="heroModeHelper">No real HBAR transfer</div>
             </div>
           </div>
         </div>
         <div class="route-motif" aria-hidden="true">
           <svg viewBox="0 0 420 72" preserveAspectRatio="none">
             <defs><linearGradient id="routeGradient" x1="0" x2="1"><stop offset="0" stop-color="#6db4ff" stop-opacity="0"/><stop offset=".25" stop-color="#6db4ff"/><stop offset="1" stop-color="#f5b942"/></linearGradient></defs>
-            <path class="route-corridor-guide" d="M4 58 L104 42 L208 48 L312 25 L416 16"/>
-            <path class="route-corridor" d="M4 50 L104 34 L208 40 L312 17 L416 8"/>
-            <circle class="route-checkpoint" cx="104" cy="34" r="4"/><circle class="route-checkpoint" cx="208" cy="40" r="4"/><circle class="route-checkpoint" cx="312" cy="17" r="4"/><circle class="route-checkpoint route-terminal" cx="416" cy="8" r="4"/>
+            <!-- Cleaner straighter route corridors + subtle grid-like nodes (logistics / routing motif, low clutter) -->
+            <path class="route-corridor-guide" d="M6 52 L140 48 L280 44 L410 38"/>
+            <path class="route-corridor" d="M6 44 L140 40 L280 36 L410 30"/>
+            <circle class="route-checkpoint" cx="140" cy="40" r="3.2"/><circle class="route-checkpoint" cx="280" cy="36" r="3.2"/><circle class="route-checkpoint route-terminal" cx="410" cy="30" r="3.2"/>
           </svg>
         </div>
       </header>
@@ -820,6 +819,37 @@
 
       <section class="tab-view governance-shell" id="governanceView" role="tabpanel" aria-labelledby="governanceTab" hidden>
         <div class="governance-grid">
+          <!-- Policy cockpit summary (user-friendly first view) -->
+          <section class="card gov-card full" aria-label="Policy cockpit summary">
+            <div class="section-head"><div><div class="section-kicker">Policy overview</div><h2>Policy Cockpit</h2></div></div>
+            <div class="gov-meta">
+              <div><span>Active risk policy</span><b>Standard RouteRisk Policy v1.0.0</b></div>
+              <div><span>Applied to</span><b>Default demo shipments and live routes</b></div>
+              <div><span>What this policy controls</span><b>Risk scoring, premium recommendation, and report explanation</b></div>
+              <div><span>Payment safety</span><b>Locked globally: vendor, SKU, price, caps, approval, replay protection, and Hedera network</b></div>
+            </div>
+            <div class="simulation-notice">Risk policies affect scoring only. Payment safety is immutable and server-enforced.</div>
+          </section>
+
+          <!-- Route policy assignments (demo client-side layer) -->
+          <section class="card gov-card full" aria-label="Route policy assignments">
+            <div class="section-head"><div><div class="section-kicker">Per-route overrides</div><h2>Route Policy Assignments</h2></div></div>
+            <div class="simulation-notice">Demo-only assignments for display. Resets on server restart. Does not affect payment safety or core execution.</div>
+            <div id="routePolicyAssignments" class="policy-facts"></div>
+          </section>
+
+          <!-- Policy profiles (plain English) -->
+          <section class="card gov-card full" aria-label="Policy profiles">
+            <div class="section-head"><div><div class="section-kicker">Predefined profiles</div><h2>Policy Profiles</h2></div></div>
+            <div class="gov-meta">
+              <div><b>Standard RouteRisk Policy</b><br><span class="muted">Balanced scoring for ordinary road, rail, ocean, and air shipments.</span></div>
+              <div><b>Pharma Temperature-Controlled Policy</b><br><span class="muted">Higher sensitivity to temperature deviation, checkpoint freshness, ETA buffer, and border exposure.</span></div>
+              <div><b>High-Value Cargo Policy</b><br><span class="muted">Higher sensitivity to cargo value, theft exposure, provider reliability, and approval need.</span></div>
+              <div><b>Intermodal Policy</b><br><span class="muted">Higher sensitivity to handoffs, terminal risk, missed connections, and tracking completeness.</span></div>
+            </div>
+            <details><summary>View scoring details</summary><div class="muted">Advanced weights and thresholds remain available via the Active Risk Policy section below and /api endpoints.</div></details>
+          </section>
+
           <section class="card gov-card full" aria-labelledby="activePolicyHeading">
             <div class="section-head"><div><div class="section-kicker">Public scoring contract</div><h2 id="activePolicyHeading">Active Risk Policy</h2></div><span class="pill p-pass" id="riskPolicyStatus">loading</span></div>
             <div id="activePolicyContent" class="muted">Loading active risk policy…</div>
@@ -918,6 +948,19 @@
       let GOVERNANCE_CONFIG = null;
       let LIVE_ROUTE_CATALOG = null;
       let LAST_LIVE_ROUTE_RESULT = null;
+      // Demo-only route policy assignments (UI layer; does not alter backend scoring/payment safety)
+      let ROUTE_POLICY_ASSIGNMENTS = {
+        "LIVE-HAM-RTM": "Standard RouteRisk Policy",
+        "LIVE-MUC-MIL": "High-Value Cargo Policy",
+        "LIVE-LEJ-WAW": "Intermodal Policy",
+        "LIVE-MUC-IST": "Pharma Temperature-Controlled Policy",
+      };
+      const ROUTE_POLICIES = [
+        "Standard RouteRisk Policy",
+        "Pharma Temperature-Controlled Policy",
+        "High-Value Cargo Policy",
+        "Intermodal Policy",
+      ];
       let ACTIVE_FILTER = "all";
       let ARCHIVE_FILTER = "all";
       let SELECTED_SCENARIO = null;
@@ -980,38 +1023,34 @@
       }
 
       function closeHeroModeMenu() {
-        $("#heroModeMenu").hidden = true;
-        $("#heroModeTrigger").setAttribute("aria-expanded", "false");
+        // deprecated - segmented control has no dropdown
       }
 
       function syncExecutionModeControls(requestedMode = $("#executionMode").value) {
         const state = executionModeSelection(requestedMode, Boolean(HEALTH.livePaymentsEnabled));
         $("#executionMode").value = state.mode;
-        $("#heroModeTrigger").dataset.mode = state.mode;
-        $("#heroModeLabel").textContent = state.label;
         $("#heroModeHelper").textContent = state.helper;
         $("#modeNote").textContent = `${state.label} selected`;
         $("#liveHelp").textContent = state.safetyCopy;
         const testnetEnabled = Boolean(HEALTH.livePaymentsEnabled);
         $("#testnetMode").disabled = !testnetEnabled;
-        $("#heroTestnetMode").disabled = !testnetEnabled;
-        $("#heroTestnetHelper").textContent = testnetEnabled
-          ? "Real testnet HBAR transfer when configured"
-          : "Unavailable · server live-testnet guard is disabled";
-        document.querySelectorAll(".hero-mode-option[data-mode]").forEach((option) => {
-          const selected = option.dataset.mode === state.mode;
-          option.setAttribute("aria-selected", String(selected));
-          const badge = option.querySelector(".mode-status");
-          if (badge) badge.textContent = selected ? "selected" : option.disabled ? "unavailable" : "available";
+
+        // Update segmented control in hero
+        document.querySelectorAll("#heroModeSelector .mode-segment").forEach((seg) => {
+          const m = seg.dataset.mode;
+          const isSel = (m === "AUTONOMOUS_TESTNET" ? (state.mode === "AUTONOMOUS_TESTNET") : (m === state.mode || (m === "LIVE_NETWORK_PAYMENTS" && state.mode !== "AUTONOMOUS_TESTNET" && state.mode !== "SIMULATION")));
+          seg.classList.toggle("active", isSel && !seg.disabled);
+          seg.setAttribute("aria-pressed", String(isSel));
+          if (m === "AUTONOMOUS_TESTNET") {
+            seg.disabled = !testnetEnabled;
+            seg.classList.toggle("locked", !testnetEnabled);
+          }
         });
-        $("#heroLiveNetworkMode").disabled = true;
-        $("#heroLiveNetworkMode").setAttribute("aria-selected", "false");
         return state;
       }
 
       function applyExecutionMode(requestedMode) {
         const state = syncExecutionModeControls(requestedMode);
-        closeHeroModeMenu();
         if (LAST && SELECTED_SCENARIO) render(LAST, SELECTED_SCENARIO);
         return state.mode;
       }
@@ -1088,11 +1127,11 @@
         $("#feedbackLink").href = await fetchFeedback();
         if (!HEALTH.livePaymentsEnabled) {
           $("#testnetMode").disabled = true;
-          $("#heroTestnetMode").disabled = true;
+          document.querySelectorAll('#heroModeSelector .mode-segment[data-mode="AUTONOMOUS_TESTNET"]').forEach(el => { el.disabled = true; el.classList.add('locked'); });
           $("#liveHelp").textContent = "Live testnet execution is not configured on this server.";
         } else {
           $("#testnetMode").disabled = false;
-          $("#heroTestnetMode").disabled = false;
+          document.querySelectorAll('#heroModeSelector .mode-segment[data-mode="AUTONOMOUS_TESTNET"]').forEach(el => { el.disabled = false; el.classList.remove('locked'); });
           $("#liveHelp").textContent = "Live Hedera testnet execution enabled.";
         }
         const [catalog, scenarios, shipments] = await Promise.all([
@@ -1292,7 +1331,8 @@
       function liveRouteCard(route) {
         const temperatureRange = `${route.temperatureToleranceC.minimum}–${route.temperatureToleranceC.maximum}°C`;
         const routeFacts = `${route.transportMode.replaceAll("_", " ")} · ${route.approximateDistanceKm.toLocaleString()} km · ${route.borderCount} border${route.borderCount === 1 ? "" : "s"} · ${route.checkpoints.length} points · ${route.estimatedTransitHours}h`;
-        return `<article class="live-route-card"><div><div class="route-id">${esc(route.id)}</div><h3>${esc(route.origin)} → ${esc(route.destination)}</h3><div class="cargo">${esc(route.cargo)} · tolerance ${temperatureRange}</div><div class="muted mono">${esc(routeFacts)}</div></div>${routeTrack(route)}<button type="button" class="assess-live-route live-primary" data-route-id="${esc(route.id)}">Assess live route risk</button></article>`;
+        const assigned = ROUTE_POLICY_ASSIGNMENTS[route.id] || "Standard RouteRisk Policy";
+        return `<article class="live-route-card"><div><div class="route-id">${esc(route.id)}</div><h3>${esc(route.origin)} → ${esc(route.destination)}</h3><div class="cargo">${esc(route.cargo)} · tolerance ${temperatureRange}</div><div class="muted mono">${esc(routeFacts)}</div><div class="source-badge">Policy: ${esc(assigned)}</div></div>${routeTrack(route)}<button type="button" class="assess-live-route live-primary" data-route-id="${esc(route.id)}">Assess live route risk</button></article>`;
       }
 
       function renderLiveRouteCards(routes) {
@@ -1331,20 +1371,35 @@
         return `<div class="weather-metric">${esc(label)}<b>${esc(value)}</b></div>`;
       }
 
-      function renderCheckpointWeather(checkpoint) {
-        const evidenceClass = checkpoint.triggeredReasonCodes.length ? "p-appr" : "p-pass";
-        const triggeredEvidence = checkpoint.triggeredReasonCodes.length
-          ? esc(checkpoint.triggeredReasonCodes.join(" · "))
-          : "No demonstration threshold triggered at this checkpoint.";
-        const metrics = [
+      function deriveCheckpointRisk(checkpoint, route) {
+        if (typeof checkpoint.temperatureC !== 'number' || !route || !route.temperatureToleranceC) {
+          return { band: 'uncertain', reasons: ['live weather evidence unavailable'] };
+        }
+        const tol = route.temperatureToleranceC;
+        const t = checkpoint.temperatureC;
+        const triggered = checkpoint.triggeredReasonCodes || [];
+        if (triggered.includes('TEMPERATURE_EXPOSURE_OUTSIDE_TOLERANCE') || t < tol.minimum || t > tol.maximum) {
+          return { band: 'high', reasons: [`temperature ${t}°C outside cargo tolerance ${tol.minimum}–${tol.maximum}°C`] };
+        }
+        if (triggered.length) {
+          return { band: 'elevated', reasons: triggered.map(c => c.replace(/_/g,' ').toLowerCase()) };
+        }
+        return { band: 'low', reasons: ['within tolerances and thresholds'] };
+      }
+
+      function renderCheckpointWeather(checkpoint, route) {
+        const risk = deriveCheckpointRisk(checkpoint, route);
+        const bandClass = { low: 'p-pass', moderate: 'p-appr', elevated: 'p-appr', high: 'p-appr', critical: 'p-block', uncertain: 'p-none' }[risk.band] || 'p-none';
+        const reasons = risk.reasons.join('; ');
+        const rawMetrics = [
           weatherMetric("Temperature", checkpoint.temperatureC + "°C"),
-          weatherMetric("Precipitation", checkpoint.precipitationMm + " mm"),
-          weatherMetric("Wind", checkpoint.windSpeedKph + " km/h"),
-          weatherMetric("Gusts", checkpoint.windGustsKph + " km/h"),
-          weatherMetric("Visibility", checkpoint.visibilityM.toLocaleString() + " m"),
+          weatherMetric("Precipitation", (checkpoint.precipitationMm||0) + " mm"),
+          weatherMetric("Wind", (checkpoint.windSpeedKph||0) + " km/h"),
+          weatherMetric("Gusts", (checkpoint.windGustsKph||0) + " km/h"),
+          weatherMetric("Visibility", (checkpoint.visibilityM||0).toLocaleString() + " m"),
           weatherMetric("Weather code", checkpoint.weatherCode),
         ].join("");
-        return `<article class="weather-card"><h4>${esc(checkpoint.name)} <span class="pill ${evidenceClass}">${esc(checkpoint.role)}</span></h4><div class="weather-metrics">${metrics}</div><p class="muted mono">Source ${esc(formatTimestamp(checkpoint.sourceTimestamp))}</p><p class="muted">${triggeredEvidence}</p></article>`;
+        return `<article class="weather-card"><h4>${esc(checkpoint.name)} <span class="pill ${bandClass}">${esc(checkpoint.role)} · ${esc(risk.band.toUpperCase())}</span></h4><p class="muted">${esc(reasons)}</p><details><summary>View checkpoint evidence</summary><div class="weather-metrics">${rawMetrics}</div><p class="muted mono">Source ${esc(formatTimestamp(checkpoint.sourceTimestamp))}</p></details></article>`;
       }
 
       function renderTriggeredRule(rule) {
@@ -1375,22 +1430,32 @@
         LAST_LIVE_ROUTE_RESULT = result;
         const bandClass = { low: "p-pass", moderate: "p-appr", high: "p-appr", critical: "p-block" }[result.riskBand] || "p-none";
         const thresholds = LIVE_ROUTE_CATALOG?.policy?.thresholds;
-        const evidence = result.checkpointEvidence.map((checkpoint) => renderCheckpointWeather(checkpoint)).join("");
+        const assignedPolicy = (typeof ROUTE_POLICY_ASSIGNMENTS !== 'undefined' && ROUTE_POLICY_ASSIGNMENTS[result.route.id]) || 'Standard RouteRisk Policy';
+        const evidence = result.checkpointEvidence.map((checkpoint) => renderCheckpointWeather(checkpoint, result.route)).join("");
         const rules = result.triggeredRules.length
           ? result.triggeredRules.map((rule) => renderTriggeredRule(rule)).join("")
           : `<div class="muted">No weather demonstration threshold was triggered. This is evidence-based low risk, not an approval for procurement.</div>`;
         const policyDetails = renderWeatherPolicyDetails(thresholds);
         const reportRecommendation = result.premiumReportRecommended ? "recommended" : "not indicated";
         const confidence = Math.round(result.confidence * 100);
-        const resultHeader = `<div class="live-result-head"><div><div class="section-kicker">${esc(result.route.id)} · deterministic assessment</div><h3>${esc(result.route.origin)} → ${esc(result.route.destination)}</h3><div class="live-score"><span class="n">${result.score}</span><span>/ 100</span><span class="pill ${bandClass}">${esc(result.riskBand.toUpperCase())}</span></div></div><div><span class="source-badge">${esc(result.dataSource)}</span><div class="muted mono" style="margin-top:8px">confidence ${confidence}%</div></div></div>`;
+        // Decision-focused first view
+        const cpSummary = result.checkpointEvidence.map(cp => {
+          const r = deriveCheckpointRisk(cp, result.route);
+          const bc = {low:'p-pass',moderate:'p-appr',elevated:'p-appr',high:'p-appr',critical:'p-block',uncertain:'p-none'}[r.band]||'p-none';
+          return `<span class="pill ${bc}">${esc(cp.name)}:${esc(r.band)}</span>`;
+        }).join(' ');
+        const topDrivers = (result.triggeredReasonCodes || []).slice(0,3).map(c=>c.replace(/_/g,' ').toLowerCase()).concat(
+          result.riskContributions ? [`structural ${result.riskContributions.structuralComplexity}`, `weather ${result.riskContributions.liveWeatherExposure}`] : []
+        ).slice(0,3).join('; ') || 'low exposure across factors';
+        const resultHeader = `<div class="live-result-head"><div><div class="section-kicker">${esc(result.route.id)} · ${esc(assignedPolicy)}</div><h3>${esc(result.route.origin)} → ${esc(result.route.destination)} · ${esc(result.route.cargo)}</h3><div class="live-score"><span class="n">${result.score}</span><span>/ 100</span><span class="pill ${bandClass}">${esc(result.riskBand.toUpperCase())}</span></div><div class="muted">Premium: ${reportRecommendation} · freshness ${esc(result.dataFreshness.status)}</div></div></div>`;
         const riskContributions = renderRiskContributions(result.riskContributions);
-        const structuralFactors = result.structuralFactors;
-        const policyFacts = `<div class="policy-facts"><div><span>source timestamp</span><b>${esc(formatTimestamp(result.sourceTimestamp))}</b></div><div><span>retrieved</span><b>${esc(formatTimestamp(result.retrievedAt))}</b></div><div><span>data freshness</span><b>${esc(result.dataFreshness.status)} · max ${result.dataFreshness.maximumAgeMinutes} minutes</b></div><div><span>structural factors</span><b>distance ${structuralFactors.distance} · borders ${structuralFactors.borders} · checkpoints ${structuralFactors.checkpoints} · schedule ${structuralFactors.schedule}</b></div><div><span>weather policy</span><b>v${esc(result.policyVersion)} · ${esc(result.policyHash)}</b></div><div><span>premium report</span><b>${reportRecommendation}</b></div></div>`;
+        const cpRiskSummary = `<div class="blk"><div class="lbl">Checkpoint risk summary</div><p>${cpSummary}</p><p class="muted">Top drivers: ${esc(topDrivers)}</p></div>`;
+        const policyFacts = `<details><summary>View policy hash and data freshness</summary><div class="policy-facts"><div><span>source</span><b>${esc(formatTimestamp(result.sourceTimestamp))}</b></div><div><span>retrieved</span><b>${esc(formatTimestamp(result.retrievedAt))}</b></div><div><span>data freshness</span><b>${esc(result.dataFreshness.status)} · max ${result.dataFreshness.maximumAgeMinutes} minutes</b></div><div><span>weather policy</span><b>v${esc(result.policyVersion)} · ${esc(result.policyHash)}</b></div></div></details>`;
         const triggeredRules = `<div class="blk"><div class="lbl">Triggered demonstration rules</div><div class="rule-list">${rules}</div></div>`;
         const purchaseAction = result.premiumReportRecommended
           ? `<div class="product-card"><h3>Premium RouteRisk Analysis is recommended</h3><p class="muted">Expected value: deeper structural, cargo, checkpoint, mitigation, and operational analysis. Vendor Route Risk Labs · premium-route-risk-v1 · fixed price 0.05 HBAR.</p><button type="button" id="purchaseLivePremium" class="live-primary purchase-live">Purchase single-use premium API access</button></div>`
           : `<div class="simulation-notice">The free assessment is sufficient. No purchase, payment, or entitlement is proposed.</div>`;
-        $("#liveRouteResult").innerHTML = `${resultHeader}${riskContributions}${policyFacts}<div class="weather-grid">${evidence}</div>${triggeredRules}${policyDetails}${purchaseAction}<div class="simulation-notice">${esc(result.disclaimer)}</div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
+        $("#liveRouteResult").innerHTML = `${resultHeader}${cpRiskSummary}${riskContributions}${policyFacts}<div class="weather-grid">${evidence}</div>${triggeredRules}${policyDetails}${purchaseAction}<div class="simulation-notice">${esc(result.disclaimer)}</div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
         const purchaseButton = $("#purchaseLivePremium");
         if (purchaseButton) {
           purchaseButton.onclick = () => purchaseLiveRoute(result.route.id);
@@ -1475,6 +1540,7 @@
           populateGovernanceControls(queue.governance);
           renderGovernanceQueue(queue.proposals);
           renderPolicyHistory(queue.history);
+          renderRoutePolicyAssignments();
           await explainSelectedShipment();
         } catch (error) {
           $("#proposalStatus").textContent = String(error);
@@ -1496,14 +1562,35 @@
             <div><span>version</span><b>v${esc(policy.policyVersion)}</b></div>
             <div><span>effective</span><b>${esc(policy.effectiveDate)}</b></div>
             <div><span>policy ID</span><b>${esc(policy.policyId)}</b></div>
-            <div><span>canonical policy hash</span><b>${esc(policy.policyHash)}</b></div>
           </div>
-          <div class="simulation-notice">score = min(${policy.score.maximum}, MODE + CARGO + VALUE + ROUTE + SCHEDULE + SIGNALS)</div>
-          <div class="governance-grid">
-            <div class="gov-card third"><h3>Weights</h3><table class="policy-table"><tbody>${rows}</tbody></table></div>
-            <div class="gov-card third"><h3>Thresholds &amp; caps</h3><p><b>Cargo value:</b> ${esc(values)} · fallback ${policy.cargoValueFallbackPoints}</p><p><b>Schedule:</b> ${esc(schedule)}</p><p><b>Route:</b> base ${policy.routeRisk.base} + cross-border ${policy.routeRisk.crossBorder} + ocean ${policy.routeRisk.ocean}; cap ${policy.routeRisk.cap}</p><p><b>Signals:</b> ${policy.riskSignals.pointsPerSignal} each; cap ${policy.riskSignals.cap}</p></div>
-            <div class="gov-card third"><h3>Bands &amp; confidence</h3><p>${bands}</p><p>Premium confidence: ${policy.confidence.premiumValue} (${esc(policy.confidence.premiumMethod)})</p><p>Minimum usable confidence: ${policy.confidence.minimumUsableConfidence}</p><p>Basic assessment: mode + cargo + ${policy.basicAssessment.pointsPerSignal}/signal, then ×${policy.basicAssessment.multiplier}</p></div>
-          </div>`;
+          <details><summary>View policy hash</summary><div class="muted mono">${esc(policy.policyHash)}</div></details>
+          <details class="technical-evidence"><summary>View scoring details (weights, thresholds, bands)</summary>
+            <div class="simulation-notice">score = min(${policy.score.maximum}, MODE + CARGO + VALUE + ROUTE + SCHEDULE + SIGNALS)</div>
+            <div class="governance-grid">
+              <div class="gov-card third"><h3>Weights</h3><table class="policy-table"><tbody>${rows}</tbody></table></div>
+              <div class="gov-card third"><h3>Thresholds &amp; caps</h3><p><b>Cargo value:</b> ${esc(values)} · fallback ${policy.cargoValueFallbackPoints}</p><p><b>Schedule:</b> ${esc(schedule)}</p><p><b>Route:</b> base ${policy.routeRisk.base} + cross-border ${policy.routeRisk.crossBorder} + ocean ${policy.routeRisk.ocean}; cap ${policy.routeRisk.cap}</p><p><b>Signals:</b> ${policy.riskSignals.pointsPerSignal} each; cap ${policy.riskSignals.cap}</p></div>
+              <div class="gov-card third"><h3>Bands &amp; confidence</h3><p>${bands}</p><p>Premium confidence: ${policy.confidence.premiumValue} (${esc(policy.confidence.premiumMethod)})</p><p>Minimum usable confidence: ${policy.confidence.minimumUsableConfidence}</p><p>Basic assessment: mode + cargo + ${policy.basicAssessment.pointsPerSignal}/signal, then ×${policy.basicAssessment.multiplier}</p></div>
+            </div>
+          </details>`;
+      }
+
+      function renderRoutePolicyAssignments() {
+        const container = $("#routePolicyAssignments");
+        if (!container || !LIVE_ROUTE_CATALOG) return;
+        const routes = LIVE_ROUTE_CATALOG.routes || [];
+        container.innerHTML = routes.map(route => {
+          const current = ROUTE_POLICY_ASSIGNMENTS[route.id] || "Standard RouteRisk Policy";
+          const opts = ROUTE_POLICIES.map(p => `<option value="${esc(p)}" ${p===current ? 'selected' : ''}>${esc(p)}</option>`).join('');
+          return `<div style="margin:4px 0"><b>${esc(route.id)}</b> → <select data-route-id="${esc(route.id)}">${opts}</select></div>`;
+        }).join('');
+        container.querySelectorAll('select').forEach(sel => {
+          sel.onchange = () => {
+            const rid = sel.getAttribute('data-route-id');
+            ROUTE_POLICY_ASSIGNMENTS[rid] = sel.value;
+            // re-render live cards to reflect
+            if (LIVE_ROUTE_CATALOG) renderLiveRouteCards(LIVE_ROUTE_CATALOG.routes);
+          };
+        });
       }
 
       function populateGovernanceControls(config) {
@@ -1678,24 +1765,11 @@
         $("#caseSort").onchange = renderScenarios;
         $("#archiveSort").onchange = renderArchive;
         $("#executionMode").onchange = () => applyExecutionMode($("#executionMode").value);
-        $("#heroModeTrigger").onclick = () => {
-          const menu = $("#heroModeMenu");
-          menu.hidden = !menu.hidden;
-          $("#heroModeTrigger").setAttribute("aria-expanded", String(!menu.hidden));
-        };
-        document.querySelectorAll(".hero-mode-option[data-mode]").forEach((option) => {
-          option.onclick = () => {
-            if (!option.disabled) applyExecutionMode(option.dataset.mode);
+        // Segmented control (replaces old dropdown)
+        document.querySelectorAll("#heroModeSelector .mode-segment:not(.locked):not(:disabled)").forEach((seg) => {
+          seg.onclick = () => {
+            if (!seg.disabled) applyExecutionMode(seg.dataset.mode);
           };
-        });
-        document.addEventListener("click", (event) => {
-          if (!$("#heroModeSelector").contains(event.target)) closeHeroModeMenu();
-        });
-        document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape") {
-            closeHeroModeMenu();
-            $("#heroModeTrigger").focus();
-          }
         });
         syncExecutionModeControls();
         $("#resetBtn").onclick = resetDemo;
@@ -1965,7 +2039,15 @@
         renderCaseFilters();
         renderScenarios();
         renderArchive();
+        // reset demo route assignments
+        ROUTE_POLICY_ASSIGNMENTS = {
+          "LIVE-HAM-RTM": "Standard RouteRisk Policy",
+          "LIVE-MUC-MIL": "High-Value Cargo Policy",
+          "LIVE-LEJ-WAW": "Intermodal Policy",
+          "LIVE-MUC-IST": "Pharma Temperature-Controlled Policy",
+        };
         await Promise.all([refreshGovernance(), refreshProviderEvidence()]);
+        if (LIVE_ROUTE_CATALOG) renderLiveRouteCards(LIVE_ROUTE_CATALOG.routes);
       }
 
       async function run(scn) {
@@ -2400,6 +2482,14 @@
         const targetDetails = report.reportType === "LIVE_ROUTE"
           ? `<div class="policy-facts"><div><span>route</span><b>${esc(report.routeId)} · ${esc(report.origin)} → ${esc(report.destination)}</b></div><div><span>weather evidence</span><b>${esc(report.weatherDataSource)} · ${esc(formatTimestamp(report.weatherSourceTimestamp))}</b></div><div><span>route structure</span><b>${report.structuralRouteComplexity.approximateDistanceKm.toLocaleString()} km · ${report.structuralRouteComplexity.borderCount} borders · ${report.structuralRouteComplexity.checkpointCount} checkpoints</b></div><div><span>data freshness</span><b>${esc(report.dataFreshness.status)} · max ${report.dataFreshness.maximumAgeMinutes} minutes</b></div><div><span>cargo sensitivity</span><b>${esc(report.cargoSensitivity)}</b></div></div>${renderRiskContributions(report.riskContributions)}`
           : `<div class="policy-facts"><div><span>shipment</span><b>${esc(report.shipmentId)}</b></div><div><span>route</span><b>${esc(report.route.origin)} → ${esc(report.route.destination)}</b></div><div><span>cargo / value</span><b>${esc(report.cargoType)} · €${esc(report.declaredCargoValueEur.toLocaleString("en-US"))}</b></div><div><span>mode / free comparison</span><b>${esc(report.transportMode)} · ${esc(report.freeAssessmentComparison.riskBand)}</b></div></div>`;
+        if (report.reportType === 'LIVE_ROUTE' && report.checkpointEvidence && report.checkpointEvidence.length) {
+          const cpSum = report.checkpointEvidence.map(cp => {
+            const tol = (report.route && report.route.temperatureToleranceC) ? report.route.temperatureToleranceC : {minimum:2,maximum:8};
+            const band = (cp.temperatureC < tol.minimum || cp.temperatureC > tol.maximum) ? 'high' : (cp.triggeredReasonCodes && cp.triggeredReasonCodes.length ? 'elevated' : 'low');
+            return `<span class="pill ${band==='high'?'p-appr':'p-pass'}">${esc(cp.name)}:${band}</span>`;
+          }).join(' ');
+          targetDetails += `<div class="blk"><div class="lbl">Checkpoint risk summary (premium)</div><p>${cpSum}</p></div>`;
+        }
         const whyReasons = data ? readableResultReasons(data) : [];
         const why = whyReasons.length ? whyReasons.map((reason) => `<li>${esc(reason)}</li>`).join("") : `<li>Premium analysis was delivered through the policy-gated entitlement workflow.</li>`;
         const policySummary = (data?.decision?.checks || []).map((check) => `<li><b>${esc(check.name)}</b> · ${esc(check.outcome)} · ${esc(readableCheckReasons(check).join(" "))}</li>`).join("") || `<li>Policy summary is available in the verification evidence.</li>`;
