@@ -52,6 +52,34 @@ describe("RouteGuard interface model", () => {
     expect(html).toContain("Weather data by Open-Meteo");
     expect(html).toContain('apiJson("/api/live-route-risk"');
     expect(html).not.toContain("api.open-meteo.com");
+    expect(html).toContain("Premium RouteRisk Analysis");
+    expect(html).toContain("Single-use API entitlement");
+    expect(html).toContain('apiJson("/api/agent/live-route/run"');
+    expect(html).toContain("Assess live route risk");
+    expect(html).toContain("Retrieving live weather…");
+    expect(html).toContain("Refresh route assessment");
+    expect(html).toContain("Purchase single-use premium API access");
+    expect(html).toContain("Structural route complexity");
+    expect(html).toContain("Live weather exposure");
+    expect(html).toContain("Cargo sensitivity");
+    expect(html).toContain("Data uncertainty");
+    expect(html).not.toContain("tokenHash");
+    expect(html).not.toContain("entitlement.token");
+  });
+
+  it("presents provider evidence as private decision-support, never a public rating", () => {
+    expect(html).toContain("Private Provider Evidence");
+    expect(html).toContain("Customer-specific · not shared across customers");
+    expect(html).toContain("Raw provider records are not written to Hedera");
+    expect(html).toContain("Privacy-preserving Hedera audit model");
+    expect(html).toContain("Simulation evidence · not written to Hedera");
+    expect(html).toContain(
+      "Production use requires privacy, contract, retention, and data-governance controls",
+    );
+    expect(html).toContain("Not a public carrier rating");
+    expect(html).not.toContain("public leaderboard");
+    expect(html).not.toContain("bad carrier");
+    expect(html).not.toContain("blacklist");
   });
 
   it("uses native outputs for dynamic status messages and keeps one authoritative tab style", () => {
@@ -69,6 +97,27 @@ describe("RouteGuard interface model", () => {
     expect(ui.nextTabIndex("End", 1, 4)).toBe(3);
     expect(ui.nextTabIndex("ArrowRight", 3, 4)).toBe(0);
     expect(ui.nextTabIndex("ArrowLeft", 0, 4)).toBe(3);
+  });
+
+  it("gives live-route primary actions distinct interactive and loading states", () => {
+    expect(html).toContain('class="assess-live-route live-primary"');
+    expect(html).toContain('class="live-primary purchase-live"');
+    expect(html).toContain(".live-primary:hover:not(:disabled)");
+    expect(html).toContain(".live-primary:focus-visible");
+    expect(html).toContain(".live-primary:active:not(:disabled)");
+    expect(html).toContain(".live-primary.is-loading");
+    expect(html).toContain(".live-primary:disabled");
+    expect(html).toContain('.purchase-live:hover:not(:disabled)::after { content: " \\2192"; }');
+  });
+
+  it("shows the eight truthful premium purchase lifecycle stages", () => {
+    expect(html).toContain('["Premium analysis proposed", proposed]');
+    expect(html).toContain('["API entitlement issued", entitlement]');
+    expect(html).toContain('["Premium API accessed", entitlement]');
+    expect(html).toContain('["Premium report delivered", fulfillment]');
+    expect(html).toContain("Simulation entitlement issued");
+    expect(html).toContain("No real HBAR transfer");
+    expect(html).toContain("Premium API redeemed in simulation");
   });
 
   it("keeps all six case outcomes and filters them client-side", () => {

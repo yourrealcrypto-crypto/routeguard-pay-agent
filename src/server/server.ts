@@ -29,6 +29,13 @@ import {
   UnknownLiveRouteError,
 } from "../live-routes/service.js";
 import { WeatherDataUnavailableError } from "../live-routes/open-meteo.js";
+import { LiveRouteId, RouteGuardError } from "../domain/index.js";
+import { premiumRouteRiskVendor } from "../vendor/premium-route-risk.js";
+import {
+  DEMO_TENANT_ID,
+  PROVIDER_EVIDENCE_SCOPE,
+  providerEvidenceService,
+} from "../provider-evidence/service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -111,6 +118,72 @@ app.get("/api/scenarios", (_req, res) =>
 
 app.get("/api/live-routes", (_req, res) => {
   res.json(liveRouteCatalog());
+});
+
+function providerEvidenceResponse() {
+  const evidence = providerEvidenceService.list(DEMO_TENANT_ID);
+  const aliases = [...new Set(evidence.map((record) => record.providerAlias))];
+  return {
+    scopeLabel: PROVIDER_EVIDENCE_SCOPE,
+    persistenceNotice: "The in-memory provider evidence vault resets when the server restarts.",
+    evidence,
+    reliabilitySignals: aliases.map((alias) =>
+      providerEvidenceService.reliabilitySignal(DEMO_TENANT_ID, alias),
+    ),
+  };
+}
+
+function providerEvidenceFailure(res: Response, error: unknown) {
+  if (error instanceof RouteGuardError) {
+    const statusByCode: Record<string, number> = {
+      RG_PROVIDER_EVIDENCE_INVALID: 400,
+      RG_PROVIDER_EVIDENCE_TOO_LARGE: 413,
+      RG_PROVIDER_EVIDENCE_UNKNOWN_FIELD: 400,
+      RG_PROVIDER_EVIDENCE_NOT_FOUND: 404,
+    };
+    return res.status(statusByCode[error.code] ?? 400).json({
+      errorCode: error.code,
+      message: error.publicMessage,
+    });
+  }
+  return res.status(500).json({
+    errorCode: "RG_PROVIDER_EVIDENCE_INVALID",
+    message: "Provider evidence failed safely.",
+  });
+}
+
+app.get("/api/provider-evidence", (_req, res) => {
+  res.json(providerEvidenceResponse());
+});
+
+app.post("/api/provider-evidence", (req, res) => {
+  try {
+    const evidence = providerEvidenceService.create(DEMO_TENANT_ID, req.body);
+    return res.status(201).json({
+      evidence,
+      reliabilitySignal: providerEvidenceService.recalculate(
+        DEMO_TENANT_ID,
+        evidence.evidenceId,
+      ),
+      scopeLabel: PROVIDER_EVIDENCE_SCOPE,
+    });
+  } catch (error) {
+    return providerEvidenceFailure(res, error);
+  }
+});
+
+app.post("/api/provider-evidence/:evidenceId/recalculate", (req, res) => {
+  try {
+    return res.json({
+      reliabilitySignal: providerEvidenceService.recalculate(
+        DEMO_TENANT_ID,
+        req.params.evidenceId ?? "",
+      ),
+      scopeLabel: PROVIDER_EVIDENCE_SCOPE,
+    });
+  } catch (error) {
+    return providerEvidenceFailure(res, error);
+  }
 });
 
 app.post("/api/live-route-risk", async (req, res) => {
@@ -305,6 +378,73 @@ app.get("/api/purchases/:proposalId", (req, res) => {
   const approval = store.approvals.get(proposalId);
   if (!proposal) return res.status(404).json({ error: "not found" });
   res.json({ proposal, decision, purchase, approval });
+});
+
+app.post("/api/agent/live-route/run", liveRateLimit, async (req, res) => {
+  try {
+    const parsedRouteId = LiveRouteId.safeParse(req.body?.routeId);
+    if (!parsedRouteId.success)
+      return res.status(400).json({
+        kind: "FAILED",
+        errorCode: "UNKNOWN_LIVE_ROUTE",
+        message: "The requested live route is not allowlisted.",
+      });
+    const mode: ExecutionMode =
+      req.body?.executionMode === "AUTONOMOUS_TESTNET" &&
+      liveHederaConfigured
+        ? "AUTONOMOUS_TESTNET"
+        : "SIMULATION";
+    const svc = makeService();
+    const result = await svc.runLiveRoute({
+      routeId: parsedRouteId.data,
+      executionMode: mode,
+    });
+    if ("proposalId" in result && result.proposalId)
+      serviceCache.set(result.proposalId, svc);
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({
+      kind: "FAILED",
+      errorCode: "RG_VENDOR_API_FAILED",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Live-route purchase failed safely.",
+    });
+  }
+});
+
+app.post("/api/vendor/premium-route-risk/redeem", (req, res) => {
+  try {
+    const keys =
+      req.body && typeof req.body === "object" ? Object.keys(req.body) : [];
+    if (keys.length !== 1 || keys[0] !== "token")
+      throw new RouteGuardError(
+        "RG_ENTITLEMENT_REQUIRED",
+        "The vendor API accepts only an opaque entitlement token.",
+      );
+    res.json(premiumRouteRiskVendor.redeem(req.body.token));
+  } catch (error) {
+    if (error instanceof RouteGuardError) {
+      const statusByCode: Record<string, number> = {
+        RG_ENTITLEMENT_REQUIRED: 400,
+        RG_ENTITLEMENT_NOT_FOUND: 404,
+        RG_ENTITLEMENT_EXPIRED: 410,
+        RG_ENTITLEMENT_REPLAYED: 409,
+        RG_ENTITLEMENT_MISMATCH: 409,
+        RG_PURCHASE_NOT_COMPLETED: 409,
+      };
+      const status = statusByCode[error.code] ?? 500;
+      return res.status(status).json({
+        errorCode: error.code,
+        message: error.publicMessage,
+      });
+    }
+    return res.status(500).json({
+      errorCode: "RG_VENDOR_API_FAILED",
+      message: "Premium vendor API failed safely.",
+    });
+  }
 });
 
 app.post("/api/sandbox/reset", (_req, res) => {

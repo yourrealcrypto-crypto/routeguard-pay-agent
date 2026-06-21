@@ -9,6 +9,10 @@ import {
   type MirrorNodeConfirmation,
   type SubmittedTransactionEvidence,
   type VerificationResult,
+  type BasicReport,
+  type LiveRouteRiskResult,
+  type PremiumEntitlementRecord,
+  type ProviderEvidenceRecord,
 } from "../domain/index.js";
 
 /**
@@ -36,7 +40,13 @@ export interface PurchaseRecord {
   report?: PremiumReport;
   auditTrail: AuditAnchor[];
   verification: VerificationResult;
+  target?: PurchaseTargetSnapshot;
+  entitlementId?: string;
 }
+
+export type PurchaseTargetSnapshot =
+  | { type: "SHIPMENT"; id: string; freeAssessment: BasicReport }
+  | { type: "LIVE_ROUTE"; id: string; freeAssessment: LiveRouteRiskResult };
 
 export interface BudgetReservation {
   proposalId: string;
@@ -67,6 +77,11 @@ class Store {
   redemptions = new Map<string, string>();
   approvalBindings = new Map<string, ApprovalBinding>();
   approvals = new Map<string, ApprovalRecord>();
+  purchaseTargets = new Map<string, PurchaseTargetSnapshot>();
+  entitlements = new Map<string, PremiumEntitlementRecord>();
+  entitlementTokens = new Map<string, string>();
+  /** Private tenant evidence. Public APIs return redacted views only. */
+  providerEvidence = new Map<string, ProviderEvidenceRecord>();
 
   private utcDate(): string {
     return new Date().toISOString().slice(0, 10);
@@ -139,6 +154,22 @@ class Store {
     return true;
   }
 
+  registerEntitlement(record: PremiumEntitlementRecord): boolean {
+    if (
+      this.entitlements.has(record.entitlementId) ||
+      this.entitlementTokens.has(record.tokenHash)
+    )
+      return false;
+    this.entitlements.set(record.entitlementId, record);
+    this.entitlementTokens.set(record.tokenHash, record.entitlementId);
+    return true;
+  }
+
+  entitlementForTokenHash(tokenHash: string): PremiumEntitlementRecord | undefined {
+    const entitlementId = this.entitlementTokens.get(tokenHash);
+    return entitlementId ? this.entitlements.get(entitlementId) : undefined;
+  }
+
   recordApproval(record: ApprovalRecord): boolean {
     if (this.approvals.has(record.proposalId)) return false;
     this.approvals.set(record.proposalId, record);
@@ -171,6 +202,10 @@ class Store {
     this.redemptions.clear();
     this.approvalBindings.clear();
     this.approvals.clear();
+    this.purchaseTargets.clear();
+    this.entitlements.clear();
+    this.entitlementTokens.clear();
+    this.providerEvidence.clear();
   }
 }
 

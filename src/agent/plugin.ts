@@ -10,6 +10,10 @@ import {
   type ExecuteResult,
 } from "./execute-tool.js";
 import { TransactionIntegrityPolicy } from "./transaction-integrity-policy.js";
+import {
+  ProposeLiveRouteRiskPurchaseTool,
+  PROPOSE_LIVE_ROUTE_TOOL,
+} from "./propose-live-route-tool.js";
 import { RouteGuardObservabilityHook } from "./observability-hook.js";
 import { store } from "../store/store.js";
 import { getShipment, type ExecutionMode } from "../store/fixtures.js";
@@ -17,6 +21,7 @@ import {
   type PolicyProfile,
   type PolicyDecisionResult,
   type PurchaseProposal,
+  type LiveRouteId,
 } from "../domain/index.js";
 
 /**
@@ -29,7 +34,7 @@ export const RouteGuardPlugin = {
   version: "1.0.0",
   description:
     "Policy-gated logistics procurement: propose + execute a Premium RouteRisk purchase under deterministic Hedera Agent Kit policies.",
-  tools: [PROPOSE_TOOL, EXECUTE_TOOL],
+  tools: [PROPOSE_TOOL, PROPOSE_LIVE_ROUTE_TOOL, EXECUTE_TOOL],
 };
 
 /**
@@ -40,6 +45,7 @@ export const RouteGuardPlugin = {
 export class RouteGuardOrchestrator {
   private proposeTool = new ProposeRouteRiskPurchaseTool();
   private executeTool = new ExecuteRouteRiskPurchaseTool();
+  private proposeLiveRouteTool = new ProposeLiveRouteRiskPurchaseTool();
   public hook = new RouteGuardObservabilityHook();
   private integrityPolicy = new TransactionIntegrityPolicy();
 
@@ -88,6 +94,22 @@ export class RouteGuardOrchestrator {
       proposalId,
       executionMode,
     })) as ExecuteResult;
+  }
+
+  async proposeLiveRoute(
+    routeId: LiveRouteId,
+  ): Promise<{ proposal: PurchaseProposal; decision: PolicyDecisionResult }> {
+    const created = (await this.proposeLiveRouteTool.execute(
+      this.client,
+      this.context(),
+      { routeId, policyProfile: "standard" },
+    )) as { proposal: PurchaseProposal; decisionId: string } | undefined;
+    const proposalId = created?.proposal?.id;
+    const proposal = proposalId ? store.proposals.get(proposalId) : undefined;
+    const decision = proposalId ? store.decisions.get(proposalId) : undefined;
+    if (!proposal || !decision)
+      throw new Error("Live-route propose tool did not return a proposal.");
+    return { proposal, decision };
   }
 
   recordApproval(proposalId: string): void {

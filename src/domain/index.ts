@@ -69,6 +69,7 @@ export const LiveRouteId = z.enum([
   "LIVE-HAM-RTM",
   "LIVE-MUC-MIL",
   "LIVE-LEJ-WAW",
+  "LIVE-MUC-IST",
 ]);
 export type LiveRouteId = z.infer<typeof LiveRouteId>;
 
@@ -96,8 +97,12 @@ export const LiveFreightRouteSchema = z.object({
   destination: z.string(),
   cargo: z.string(),
   cargoProfile: LiveCargoProfile,
+  transportMode: z.literal("ROAD_FREIGHT"),
+  approximateDistanceKm: z.number().int().positive(),
+  borderCount: z.number().int().nonnegative(),
+  estimatedTransitHours: z.number().positive(),
   temperatureToleranceC: z.object({ minimum: z.number(), maximum: z.number() }),
-  checkpoints: z.array(LiveRouteCheckpointSchema).length(3),
+  checkpoints: z.array(LiveRouteCheckpointSchema).min(3).max(6),
 });
 export type LiveFreightRoute = z.infer<typeof LiveFreightRouteSchema>;
 
@@ -125,6 +130,30 @@ export type WeatherRiskRuleResult = z.infer<
   typeof WeatherRiskRuleResultSchema
 >;
 
+export const LiveRiskContributionsSchema = z.object({
+  structuralComplexity: z.number().int().min(0).max(100),
+  liveWeatherExposure: z.number().int().min(0).max(100),
+  cargoSensitivity: z.number().int().min(0).max(100),
+  dataUncertainty: z.number().int().min(0).max(100),
+  total: z.number().int().min(0).max(100),
+});
+export type LiveRiskContributions = z.infer<
+  typeof LiveRiskContributionsSchema
+>;
+
+export const StructuralRiskFactorsSchema = z.object({
+  distance: z.number().int().nonnegative(),
+  borders: z.number().int().nonnegative(),
+  checkpoints: z.number().int().nonnegative(),
+  schedule: z.number().int().nonnegative(),
+});
+
+export const WeatherDataFreshnessSchema = z.object({
+  maximumAgeMinutes: z.number().nonnegative(),
+  status: z.enum(["FRESH", "STALE", "VERY_STALE"]),
+  fromCache: z.boolean(),
+});
+
 export const LiveRouteRiskResultSchema = z.object({
   route: LiveFreightRouteSchema,
   status: z.literal("AVAILABLE"),
@@ -136,11 +165,14 @@ export const LiveRouteRiskResultSchema = z.object({
   confidence: z.number().min(0).max(1),
   triggeredReasonCodes: z.array(z.string()),
   triggeredRules: z.array(WeatherRiskRuleResultSchema),
-  checkpointEvidence: z.array(WeatherCheckpointEvidenceSchema).length(3),
+  checkpointEvidence: z.array(WeatherCheckpointEvidenceSchema).min(3).max(6),
+  riskContributions: LiveRiskContributionsSchema,
+  structuralFactors: StructuralRiskFactorsSchema,
+  dataFreshness: WeatherDataFreshnessSchema,
   policyVersion: z.string(),
   policyHash: z.string().regex(/^[0-9a-f]{64}$/),
   premiumReportRecommended: z.boolean(),
-  purchaseMode: z.literal("SIMULATION_ONLY"),
+  purchaseMode: z.literal("POLICY_GATED"),
   disclaimer: z.string(),
 });
 export type LiveRouteRiskResult = z.infer<
@@ -198,6 +230,7 @@ export type ProposalStatus = z.infer<typeof ProposalStatus>;
 export const PurchaseProposalSchema = z.object({
   id: z.string().uuid(),
   shipmentId: z.string(),
+  liveRouteId: LiveRouteId.nullable().optional(),
   requestedSku: z.literal("premium-route-risk-v1"),
   rationale: z.string().min(20).max(800),
   expectedBenefit: z.string().min(10).max(500),
@@ -206,6 +239,9 @@ export const PurchaseProposalSchema = z.object({
   createdAt: z.string().datetime(),
 });
 export type PurchaseProposal = z.infer<typeof PurchaseProposalSchema>;
+
+export const PurchaseTargetType = z.enum(["SHIPMENT", "LIVE_ROUTE"]);
+export type PurchaseTargetType = z.infer<typeof PurchaseTargetType>;
 
 export type ApprovalMode =
   | "SIMULATED_DEMO"
@@ -347,15 +383,161 @@ export const VerificationResultSchema = z.object({
 export type VerificationResult = z.infer<typeof VerificationResultSchema>;
 
 /* -------------------------------------------------------------------------- */
+/*  Private, customer-specific provider evidence                              */
+/* -------------------------------------------------------------------------- */
+
+export const ProviderAliasSchema = z.string().regex(/^PRV-\d{3,6}$/);
+export const ProviderTransportModeSchema = z.enum([
+  "road",
+  "ocean",
+  "air",
+  "rail",
+]);
+export const ProviderExtractedFactSchema = z.enum([
+  "DOCUMENT_SUMMARY_PRESENT",
+  "DELAY_MENTIONED",
+  "CANCELLATION_OR_ISSUE_MENTIONED",
+  "TEMPERATURE_EXCURSION_MENTIONED",
+  "DOCUMENT_ISSUE_MENTIONED",
+  "DAMAGE_CLAIM_MENTIONED",
+  "ON_TIME_DELIVERY_MENTIONED",
+]);
+
+export const ProviderEvidenceInputSchema = z
+  .object({
+    providerAlias: ProviderAliasSchema,
+    providerDisplayName: z.string().trim().min(1).max(120).optional(),
+    lane: z.string().trim().min(3).max(120),
+    transportMode: ProviderTransportModeSchema,
+    shipmentReference: z.string().trim().min(1).max(50).optional(),
+    promisedDeliveryAt: z.string().datetime().optional(),
+    actualDeliveryAt: z.string().datetime().optional(),
+    delayMinutes: z.number().int().min(0).max(10_080).optional(),
+    deliveredOnTime: z.boolean(),
+    trackingCompletenessPercent: z.number().min(0).max(100),
+    cancellationOrIssue: z.boolean(),
+    temperatureExcursion: z.boolean(),
+    documentIssue: z.boolean(),
+    damageClaim: z.boolean(),
+    customerRating: z.number().min(1).max(5).optional(),
+    documentType: z.string().trim().min(1).max(40).optional(),
+    documentSummary: z.string().max(1_000).optional(),
+    confidence: z.number().min(0).max(1),
+  })
+  .strict();
+export type ProviderEvidenceInput = z.infer<
+  typeof ProviderEvidenceInputSchema
+>;
+
+export const ProviderEvidenceRecordSchema = z.object({
+  evidenceId: z.string().uuid(),
+  tenantId: z.string(),
+  providerAlias: ProviderAliasSchema,
+  /** Private customer input. Never included in public views, hashes, or reports. */
+  providerDisplayName: z.string().nullable(),
+  lane: z.string(),
+  transportMode: ProviderTransportModeSchema,
+  shipmentReference: z.string().nullable(),
+  promisedDeliveryAt: z.string().datetime().nullable(),
+  actualDeliveryAt: z.string().datetime().nullable(),
+  delayMinutes: z.number().int().min(0).max(10_080),
+  deliveredOnTime: z.boolean(),
+  trackingCompletenessPercent: z.number().min(0).max(100),
+  cancellationOrIssue: z.boolean(),
+  temperatureExcursion: z.boolean(),
+  documentIssue: z.boolean(),
+  damageClaim: z.boolean(),
+  customerRating: z.number().min(1).max(5).nullable(),
+  documentType: z.string().nullable(),
+  extractedFacts: z.array(ProviderExtractedFactSchema),
+  confidence: z.number().min(0).max(1),
+  evidenceHash: z.string().regex(/^[0-9a-f]{64}$/),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type ProviderEvidenceRecord = z.infer<
+  typeof ProviderEvidenceRecordSchema
+>;
+
+export const ProviderEvidencePublicViewSchema = ProviderEvidenceRecordSchema.omit({
+  tenantId: true,
+  providerDisplayName: true,
+}).extend({
+  scopeLabel: z.literal("Customer-specific · not shared across customers"),
+});
+export type ProviderEvidencePublicView = z.infer<
+  typeof ProviderEvidencePublicViewSchema
+>;
+
+export const ProviderReliabilityBandSchema = z.enum([
+  "INSUFFICIENT_EVIDENCE",
+  "HIGHER_OBSERVED_RELIABILITY",
+  "MIXED_OBSERVED_RELIABILITY",
+  "ELEVATED_OPERATIONAL_ATTENTION",
+]);
+
+export const ProviderReliabilitySignalSchema = z.object({
+  providerAlias: ProviderAliasSchema,
+  sampleSize: z.number().int().positive(),
+  onTimeRate: z.number().min(0).max(100),
+  averageDelayMinutes: z.number().nonnegative(),
+  trackingCompletenessPercent: z.number().min(0).max(100),
+  issueRate: z.number().min(0).max(100),
+  temperatureExcursionRate: z.number().min(0).max(100),
+  documentIssueRate: z.number().min(0).max(100),
+  damageClaimRate: z.number().min(0).max(100),
+  reliabilityScore: z.number().min(0).max(100),
+  reliabilityBand: ProviderReliabilityBandSchema,
+  confidence: z.number().min(0).max(1),
+  reasonCodes: z.array(z.string()),
+  evidenceHashes: z.array(z.string().regex(/^[0-9a-f]{64}$/)),
+  scopeLabel: z.literal("Customer-specific · not shared across customers"),
+  evidenceLabel: z.literal("Customer-specific evidence only"),
+  sharingLabel: z.literal("Not shared across customers"),
+  ratingLabel: z.literal("Not a public carrier rating"),
+});
+export type ProviderReliabilitySignal = z.infer<
+  typeof ProviderReliabilitySignalSchema
+>;
+
+const EtaReliabilityRiskSchema = z.object({
+  schedulePressure: z.string(),
+  delayExposureMinutes: z.number().nonnegative().nullable(),
+  contributingFactors: z.array(z.string()),
+  onTimeRiskBand: z.enum(["LOW", "MODERATE", "HIGH"]),
+  explanation: z.string(),
+});
+
+const InsuranceSupportEvidenceSchema = z.object({
+  route: z.string(),
+  cargo: z.string(),
+  eta: z.string(),
+  providerAlias: ProviderAliasSchema.nullable(),
+  providerReliabilityBand: ProviderReliabilityBandSchema.nullable(),
+  policyVersion: z.string(),
+  evidenceHashes: z.array(z.string().regex(/^[0-9a-f]{64}$/)),
+  evaluatedAt: z.string().datetime(),
+  generatedAt: z.string().datetime(),
+  disclaimer: z.literal(
+    "Insurance-support evidence only. This report does not sell, price, approve, or determine insurance.",
+  ),
+});
+
+const AlternativeMitigationSchema = z.object({
+  recommendation: z.string(),
+  basis: z.array(z.string()),
+  exactTravelTimeEstimated: z.literal(false),
+});
+
+/* -------------------------------------------------------------------------- */
 /*  Premium report                                                            */
 /* -------------------------------------------------------------------------- */
 
 export const RiskBand = z.enum(["low", "moderate", "high", "critical"]);
 export type RiskBand = z.infer<typeof RiskBand>;
 
-export const PremiumReportSchema = z.object({
+const PremiumReportCommonSchema = z.object({
   reportId: z.string().uuid(),
-  shipmentId: z.string(),
   riskScore: z.number().int().min(0).max(100),
   riskBand: RiskBand,
   confidence: z.number().min(0).max(1),
@@ -371,14 +553,123 @@ export const PremiumReportSchema = z.object({
   totalBeforeCap: z.number().nonnegative(),
   evaluatedAt: z.string().datetime(),
   generatedAt: z.string().datetime(),
-  algorithmVersion: z.literal("route-risk-1.0"),
+  algorithmVersion: z.enum(["route-risk-1.0", "live-route-premium-1.1"]),
   policyVersion: z.string(),
   policyHash: z.string().regex(/^[0-9a-f]{64}$/),
   paymentTransactionId: z.string(),
   reportHash: z.string(),
+  triggeredReasonCodes: z.array(z.string()),
+  mitigationRecommendations: z.array(z.string()),
+  operationalRecommendations: z.array(z.string()),
+  privateProviderReliabilitySignal: ProviderReliabilitySignalSchema.nullable(),
+  providerEvidenceScopeLabel: z.literal(
+    "Private customer-specific provider score · Not shared across customers · Not a public carrier rating",
+  ),
+  etaReliabilityRisk: EtaReliabilityRiskSchema,
+  insuranceSupportEvidence: InsuranceSupportEvidenceSchema,
+  alternativeRouteOrMitigationRecommendation: AlternativeMitigationSchema,
   disclaimer: z.string(),
 });
+
+export const ShipmentPremiumReportSchema = PremiumReportCommonSchema.extend({
+  reportType: z.literal("SHIPMENT"),
+  shipmentId: z.string(),
+  route: z.object({
+    origin: z.string(),
+    destination: z.string(),
+  }),
+  cargoType: z.string(),
+  declaredCargoValueEur: z.number().nonnegative(),
+  transportMode: z.string(),
+  riskSignals: z.array(z.string()),
+  freeAssessmentComparison: z.object({
+    riskBand: RiskBand,
+    confidence: z.number().min(0).max(1),
+    policyVersion: z.string(),
+    policyHash: z.string(),
+  }),
+});
+
+export const LiveRoutePremiumReportSchema = PremiumReportCommonSchema.extend({
+  reportType: z.literal("LIVE_ROUTE"),
+  routeId: LiveRouteId,
+  origin: z.string(),
+  destination: z.string(),
+  checkpoints: z.array(LiveRouteCheckpointSchema),
+  checkpointEvidence: z.array(WeatherCheckpointEvidenceSchema),
+  weatherSourceTimestamp: z.string().datetime(),
+  weatherDataSource: z.enum(["LIVE", "CACHE"]),
+  structuralRouteComplexity: z.object({
+    checkpointCount: z.number().int().positive(),
+    crossBorder: z.boolean(),
+    alpineExposure: z.boolean(),
+    approximateDistanceKm: z.number().int().positive(),
+    borderCount: z.number().int().nonnegative(),
+    estimatedTransitHours: z.number().positive(),
+    structuralScore: z.number().int().nonnegative(),
+  }),
+  riskContributions: LiveRiskContributionsSchema,
+  dataFreshness: WeatherDataFreshnessSchema,
+  cargoSensitivity: z.string(),
+  temperatureToleranceAnalysis: z.object({
+    minimumC: z.number(),
+    maximumC: z.number(),
+    exposedCheckpointIds: z.array(z.string()),
+  }),
+  borderAndCheckpointExposure: z.array(z.string()),
+  freeAssessmentComparison: z.object({
+    score: z.number().int().min(0).max(100),
+    riskBand: RiskBand,
+    confidence: z.number().min(0).max(1),
+  }),
+});
+
+export const PremiumReportSchema = z.discriminatedUnion("reportType", [
+  ShipmentPremiumReportSchema,
+  LiveRoutePremiumReportSchema,
+]);
 export type PremiumReport = z.infer<typeof PremiumReportSchema>;
+
+/* -------------------------------------------------------------------------- */
+/*  Single-use premium API entitlement                                        */
+/* -------------------------------------------------------------------------- */
+
+export const EntitlementStatus = z.enum([
+  "ISSUED",
+  "REDEEMING",
+  "REDEEMED",
+  "EXPIRED",
+  "FAILED",
+]);
+export type EntitlementStatus = z.infer<typeof EntitlementStatus>;
+
+export const PremiumEntitlementRecordSchema = z.object({
+  entitlementId: z.string().uuid(),
+  tokenHash: z.string().regex(/^[0-9a-f]{64}$/),
+  bindingHash: z.string().regex(/^[0-9a-f]{64}$/),
+  proposalId: z.string().uuid(),
+  targetType: PurchaseTargetType,
+  shipmentId: z.string().nullable(),
+  liveRouteId: LiveRouteId.nullable(),
+  vendorId: z.literal("route-risk-labs"),
+  vendorAccountId: z.string(),
+  sku: z.literal("premium-route-risk-v1"),
+  amountTinybars: z.number().int().positive(),
+  executionMode: z.enum(["SIMULATION", "AUTONOMOUS_TESTNET"]),
+  paymentReference: z.string(),
+  issuedAt: z.string().datetime(),
+  expiresAt: z.string().datetime(),
+  redeemedAt: z.string().datetime().nullable(),
+  status: EntitlementStatus,
+});
+export type PremiumEntitlementRecord = z.infer<
+  typeof PremiumEntitlementRecordSchema
+>;
+
+export type PremiumEntitlementView = Omit<
+  PremiumEntitlementRecord,
+  "tokenHash" | "bindingHash"
+>;
 
 export const BasicReportSchema = z.object({
   shipmentId: z.string(),
@@ -451,6 +742,16 @@ export const RGError = {
   APPROVAL_BINDING_MISMATCH: "RG_APPROVAL_BINDING_MISMATCH",
   APPROVAL_REPLAYED: "RG_APPROVAL_REPLAYED",
   APPROVAL_REJECTED: "RG_APPROVAL_REJECTED",
+  ENTITLEMENT_REQUIRED: "RG_ENTITLEMENT_REQUIRED",
+  ENTITLEMENT_NOT_FOUND: "RG_ENTITLEMENT_NOT_FOUND",
+  ENTITLEMENT_EXPIRED: "RG_ENTITLEMENT_EXPIRED",
+  ENTITLEMENT_REPLAYED: "RG_ENTITLEMENT_REPLAYED",
+  ENTITLEMENT_MISMATCH: "RG_ENTITLEMENT_MISMATCH",
+  PURCHASE_NOT_COMPLETED: "RG_PURCHASE_NOT_COMPLETED",
+  PROVIDER_EVIDENCE_INVALID: "RG_PROVIDER_EVIDENCE_INVALID",
+  PROVIDER_EVIDENCE_TOO_LARGE: "RG_PROVIDER_EVIDENCE_TOO_LARGE",
+  PROVIDER_EVIDENCE_UNKNOWN_FIELD: "RG_PROVIDER_EVIDENCE_UNKNOWN_FIELD",
+  PROVIDER_EVIDENCE_NOT_FOUND: "RG_PROVIDER_EVIDENCE_NOT_FOUND",
 } as const;
 export type RGErrorCode = (typeof RGError)[keyof typeof RGError];
 

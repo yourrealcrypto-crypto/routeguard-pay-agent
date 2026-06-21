@@ -3,10 +3,16 @@ import { BaseTool } from "@hashgraph/hedera-agent-kit";
 import type { Client } from "@hiero-ledger/sdk";
 import { config } from "../config/index.js";
 import { getShipment } from "../store/fixtures.js";
-import { store, type PurchaseRecord } from "../store/store.js";
+import {
+  store,
+  type PurchaseRecord,
+  type PurchaseTargetSnapshot,
+} from "../store/store.js";
 import {
   configForProfile,
   evaluatePolicies,
+  evaluateLiveRoutePolicies,
+  type LiveRoutePolicyContext,
   type PolicyContext,
 } from "../policy/engine.js";
 import {
@@ -16,6 +22,7 @@ import {
   type PremiumReport,
   type AuditAnchor,
   type VerificationResult,
+  type PremiumEntitlementView,
   RouteGuardError,
   RGError,
   sha256,
@@ -27,9 +34,9 @@ import {
 } from "../hedera/payment.js";
 import { verifyPaymentOnMirror } from "../hedera/mirror.js";
 import { anchorAuditEvent } from "../hedera/hcs.js";
-import { generatePremiumReport } from "../risk/engine.js";
 import type { ExecutionPlan } from "./transaction-integrity-policy.js";
 import { buildVerificationResult } from "../verification/result.js";
+import { premiumRouteRiskVendor } from "../vendor/premium-route-risk.js";
 
 /**
  * execute_route_risk_purchase — a transaction BaseTool.
@@ -62,6 +69,7 @@ interface ExecuteNormalised {
   profile: PolicyProfile;
   humanApproved: boolean;
   policyHash: string;
+  target: PurchaseTargetSnapshot;
 }
 
 function serverCatalogItem(): ServiceCatalogItem {
@@ -113,6 +121,12 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
 
     const catalogItem = serverCatalogItem();
     const memo = `RG:${proposal.id.slice(0, 8)}`;
+    const target = store.purchaseTargets.get(proposal.id);
+    if (!target)
+      throw new RouteGuardError(
+        RGError.MODEL_OUTPUT_INVALID,
+        "The proposal has no server-owned analysis target.",
+      );
 
     return {
       proposalId: proposal.id,
@@ -126,6 +140,7 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
       humanApproved: store.isApprovalAuthorizedForExecution(proposal.id),
       policyHash:
         store.decisions.get(proposal.id)?.canonicalHash ?? "unknown",
+      target,
     };
   }
 
@@ -149,12 +164,10 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
       };
     }
 
-    const shipment = getShipment(n.shipmentId)!;
     const cfg = configForProfile(n.profile);
 
     // MANDATORY re-evaluation at execution time (budget/catalog may have changed).
-    const ctx: PolicyContext = {
-      shipment,
+    const common = {
       catalogItem: n.catalogItem,
       proposedVendorAccountId: n.vendorAccountId,
       profile: n.profile,
@@ -168,7 +181,22 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
       existingMemo: store.memoExists(n.memo) ? n.memo : null,
       candidateMemo: n.memo,
     };
-    const decision = evaluatePolicies(ctx, cfg);
+    const decision =
+      n.target.type === "LIVE_ROUTE"
+        ? evaluateLiveRoutePolicies(
+            {
+              ...common,
+              assessment: n.target.freeAssessment,
+            } satisfies LiveRoutePolicyContext,
+            cfg,
+          )
+        : evaluatePolicies(
+            {
+              ...common,
+              shipment: getShipment(n.target.id)!,
+            } satisfies PolicyContext,
+            cfg,
+          );
     store.decisions.set(n.proposalId, decision);
     if (decision.decision === "BLOCK") {
       const blocking = decision.checks.find((c) => c.outcome === "BLOCK");
@@ -267,6 +295,7 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
         configuredHcsTopicId: config.HCS_AUDIT_TOPIC_ID ?? null,
         decision: store.decisions.get(n.proposalId),
       }),
+      target: store.purchaseTargets.get(n.proposalId),
     };
     store.purchases.set(n.proposalId, record);
     this.setProposalStatus(n.proposalId, "EXECUTING");
@@ -312,12 +341,12 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
     );
     refreshVerification(record);
 
-    // 2) Unlock the report (independent step — ret1ryable without repaying).
+    // 2) Issue and redeem the single-use premium API entitlement.
     const report = await this.unlockAndStore(record, n, payment);
     return buildResult(record, report);
   }
 
-  /** Vendor-side verification + report generation + single-use redemption. */
+  /** Mirror verification, entitlement issuance, and vendor API redemption. */
   private async unlockAndStore(
     record: PurchaseRecord,
     n: ExecuteNormalised,
@@ -355,20 +384,10 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
       refreshVerification(record);
     }
 
-    // Single-use redemption: a transaction can unlock exactly one report.
-    const redeemed = store.redeem(payment.transactionId, n.proposalId);
-    if (!redeemed)
-      throw new RouteGuardError(
-        RGError.VENDOR_PAYMENT_REPLAYED,
-        "This payment has already been redeemed for a different purchase.",
-      );
-
-    const report = generatePremiumReport(
-      getShipment(n.shipmentId)!,
-      payment.transactionId,
-    );
-    record.report = report;
-    record.state = "COMPLETED";
+    const issued = premiumRouteRiskVendor.issueForCompletedPurchase(record);
+    this.setProposalStatus(n.proposalId, "API_UNLOCKED");
+    const redeemed = premiumRouteRiskVendor.redeem(issued.token);
+    const report = redeemed.report;
     this.setProposalStatus(n.proposalId, "COMPLETED");
 
     record.auditTrail.push(
@@ -378,6 +397,8 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
         txId: payment.transactionId,
         reportHash: report.reportHash,
         mode: payment.mode,
+        entitlementId: redeemed.entitlement.entitlementId,
+        sku: n.catalogItem.sku,
       }),
     );
     record.auditTrail.push(
@@ -387,6 +408,8 @@ Re-evaluates all policies, builds the exact transfer, runs the transaction-integ
         txId: payment.transactionId,
         reportHash: report.reportHash,
         mode: payment.mode,
+        entitlementId: redeemed.entitlement.entitlementId,
+        sku: n.catalogItem.sku,
       }),
     );
     refreshVerification(record);
@@ -418,6 +441,7 @@ export interface ExecuteResult {
   report: PremiumReport | undefined;
   auditTrail: AuditAnchor[];
   verification: VerificationResult;
+  entitlement: PremiumEntitlementView | undefined;
 }
 
 function buildResult(
@@ -431,6 +455,7 @@ function buildResult(
     report,
     auditTrail: record.auditTrail,
     verification: record.verification,
+    entitlement: premiumRouteRiskVendor.view(record.entitlementId),
   };
 }
 

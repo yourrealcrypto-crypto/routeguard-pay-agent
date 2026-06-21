@@ -5,6 +5,7 @@ import {
   type PolicyProfile,
   type Shipment,
   type ServiceCatalogItem,
+  type LiveRouteRiskResult,
   sha256,
 } from "../domain/index.js";
 import { config } from "../config/index.js";
@@ -35,8 +36,7 @@ export interface BudgetView {
   spentTinybars: number;
 }
 
-export interface PolicyContext {
-  shipment: Shipment;
+export interface FinancialPolicyContext {
   catalogItem: ServiceCatalogItem;
   /** The vendor account actually present in the proposal context (may be spoofed in demos). */
   proposedVendorAccountId: string;
@@ -51,6 +51,14 @@ export interface PolicyContext {
   alreadyPurchasedForShipment: boolean;
   existingMemo: string | null;
   candidateMemo: string;
+}
+
+export interface PolicyContext extends FinancialPolicyContext {
+  shipment: Shipment;
+}
+
+export interface LiveRoutePolicyContext extends FinancialPolicyContext {
+  assessment: LiveRouteRiskResult;
 }
 
 const VENDOR_ACCOUNT =
@@ -140,7 +148,7 @@ function requireApproval(
 /* --------------------------- individual policies -------------------------- */
 
 function allowedVendorPolicy(
-  ctx: PolicyContext,
+  ctx: FinancialPolicyContext,
   cfg: PolicyConfig,
 ): PolicyCheck {
   const id = "allowed-vendor";
@@ -171,7 +179,7 @@ function allowedVendorPolicy(
 }
 
 function serviceCatalogPolicy(
-  ctx: PolicyContext,
+  ctx: FinancialPolicyContext,
   cfg: PolicyConfig,
 ): PolicyCheck {
   const id = "service-catalog";
@@ -258,7 +266,7 @@ function shipmentContextPolicy(ctx: PolicyContext): PolicyCheck {
 }
 
 function perPurchaseCapPolicy(
-  ctx: PolicyContext,
+  ctx: FinancialPolicyContext,
   cfg: PolicyConfig,
 ): PolicyCheck {
   const id = "per-purchase-cap";
@@ -286,7 +294,7 @@ function perPurchaseCapPolicy(
   );
 }
 
-function approvalPolicy(ctx: PolicyContext, cfg: PolicyConfig): PolicyCheck {
+function approvalPolicy(ctx: FinancialPolicyContext, cfg: PolicyConfig): PolicyCheck {
   const id = "approval";
   const name = "Approval Threshold";
   const needsApproval =
@@ -325,7 +333,7 @@ function approvalPolicy(ctx: PolicyContext, cfg: PolicyConfig): PolicyCheck {
   );
 }
 
-function dailyBudgetPolicy(ctx: PolicyContext, cfg: PolicyConfig): PolicyCheck {
+function dailyBudgetPolicy(ctx: FinancialPolicyContext, cfg: PolicyConfig): PolicyCheck {
   const id = "daily-budget";
   const name = "Daily Budget";
   const projected = ctx.budget.spentTinybars + ctx.amountTinybars;
@@ -347,7 +355,7 @@ function dailyBudgetPolicy(ctx: PolicyContext, cfg: PolicyConfig): PolicyCheck {
   });
 }
 
-function replayProtectionPolicy(ctx: PolicyContext): PolicyCheck {
+function replayProtectionPolicy(ctx: FinancialPolicyContext): PolicyCheck {
   const id = "replay-protection";
   const name = "Replay Protection";
   if (ctx.existingMemo && ctx.existingMemo === ctx.candidateMemo)
@@ -390,24 +398,52 @@ export function evaluatePolicies(
     dailyBudgetPolicy(effectiveCtx, cfg),
     replayProtectionPolicy(effectiveCtx),
   ];
-  const decision = aggregate(checks);
-  const evaluatedAt = new Date().toISOString();
-  const canonicalHash = sha256({
-    decision,
-    checks: checks.map((c) => ({
-      policyId: c.policyId,
-      outcome: c.outcome,
-      reasonCode: c.reasonCode,
-    })),
-    policyVersion: "1.0",
-  });
-  return {
-    decision,
-    checks,
-    policyVersion: "1.0",
-    canonicalHash,
-    evaluatedAt,
-  };
+  return decisionResult(checks);
+}
+
+export function evaluateLiveRoutePolicies(
+  ctx: LiveRoutePolicyContext,
+  cfg: PolicyConfig,
+): PolicyDecisionResult {
+  const effectiveCtx = applyProfileOverrides(ctx);
+  const assessment = effectiveCtx.assessment;
+  const contextCheck = effectiveCtx.alreadyPurchasedForShipment
+    ? block(
+        "live-route-context",
+        "Live Route Context",
+        "ALREADY_PURCHASED",
+        "A premium report already exists for this live route assessment.",
+        { routeId: assessment.route.id },
+      )
+    : assessment.premiumReportRecommended
+      ? pass(
+          "live-route-context",
+          "Live Route Context",
+          "LIVE_ROUTE_ELIGIBLE",
+          "The deterministic weather assessment recommends deeper analysis.",
+          {
+            routeId: assessment.route.id,
+            reasonCodes: assessment.triggeredReasonCodes,
+            cargoProfile: assessment.route.cargoProfile,
+          },
+        )
+      : block(
+          "live-route-context",
+          "Live Route Context",
+          "SHIPMENT_INELIGIBLE",
+          "The free live-route assessment is sufficient; premium access is not warranted.",
+          { routeId: assessment.route.id },
+        );
+  const checks: PolicyCheck[] = [
+    allowedVendorPolicy(effectiveCtx, cfg),
+    serviceCatalogPolicy(effectiveCtx, cfg),
+    contextCheck,
+    perPurchaseCapPolicy(effectiveCtx, cfg),
+    approvalPolicy(effectiveCtx, cfg),
+    dailyBudgetPolicy(effectiveCtx, cfg),
+    replayProtectionPolicy(effectiveCtx),
+  ];
+  return decisionResult(checks);
 }
 
 /**
@@ -416,7 +452,7 @@ export function evaluatePolicies(
  *  - blocked_vendor: substitute a non-allowlisted vendor account into context.
  *  - budget_exhausted: report the daily budget as already fully spent.
  */
-function applyProfileOverrides(ctx: PolicyContext): PolicyContext {
+function applyProfileOverrides<T extends FinancialPolicyContext>(ctx: T): T {
   if (ctx.profile === "blocked_vendor") {
     return { ...ctx, proposedVendorAccountId: "0.0.000000" };
   }
@@ -427,4 +463,25 @@ function applyProfileOverrides(ctx: PolicyContext): PolicyContext {
     };
   }
   return ctx;
+}
+
+function decisionResult(checks: PolicyCheck[]): PolicyDecisionResult {
+  const decision = aggregate(checks);
+  const evaluatedAt = new Date().toISOString();
+  const canonicalHash = sha256({
+    decision,
+    checks: checks.map((check) => ({
+      policyId: check.policyId,
+      outcome: check.outcome,
+      reasonCode: check.reasonCode,
+    })),
+    policyVersion: "1.0",
+  });
+  return {
+    decision,
+    checks,
+    policyVersion: "1.0",
+    canonicalHash,
+    evaluatedAt,
+  };
 }

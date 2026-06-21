@@ -23,6 +23,9 @@ export interface AuditPayload {
   policyHash: string;
   txId: string | null;
   reportHash: string | null;
+  entitlement: string | null;
+  sku: string | null;
+  paymentRef: string | null;
   ts: string;
 }
 
@@ -33,6 +36,8 @@ export async function anchorAuditEvent(
     policyHash: string;
     txId?: string | null;
     reportHash?: string | null;
+    entitlementId?: string | null;
+    sku?: string | null;
     mode: "SIMULATION" | "AUTONOMOUS_TESTNET";
   },
 ): Promise<AuditAnchor> {
@@ -43,6 +48,9 @@ export async function anchorAuditEvent(
     policyHash: data.policyHash,
     txId: data.txId ?? null,
     reportHash: data.reportHash ?? null,
+    entitlement: data.entitlementId ?? null,
+    sku: data.sku ?? null,
+    paymentRef: data.txId ? sha256(data.txId).slice(0, 16) : null,
     ts: new Date().toISOString(),
   };
   const payloadHash = sha256(payload);

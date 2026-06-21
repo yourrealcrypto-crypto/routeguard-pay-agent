@@ -17,11 +17,14 @@ import {
   type ApprovalRecord,
   type PurchaseProposal,
   type VerificationResult,
+  type PremiumEntitlementView,
   RouteGuardError,
   RGError,
   sha256,
 } from "../domain/index.js";
 import { buildVerificationResult } from "../verification/result.js";
+import { assessLiveRouteRisk } from "../live-routes/service.js";
+import type { LiveRouteId, LiveRouteRiskResult } from "../domain/index.js";
 
 /**
  * Orchestration algorithm (deterministic app code owns state; the LLM only
@@ -83,12 +86,63 @@ export type AgentRunResult =
       report: PremiumReport;
       auditTrail: AuditAnchor[];
       verification: VerificationResult;
+      entitlement: PremiumEntitlementView;
       lifecycle: ReturnType<RouteGuardOrchestrator["lifecycleEvents"]>;
       approval?: ApprovalRecord;
     }
   | {
       kind: "FAILED";
       shipmentId: string;
+      proposalId?: string;
+      errorCode: string;
+      message: string;
+      verification?: VerificationResult;
+    };
+
+export type LiveRouteRunResult =
+  | {
+      kind: "NO_PURCHASE";
+      routeId: LiveRouteId;
+      freeAssessment: LiveRouteRiskResult;
+      explanation: string;
+    }
+  | {
+      kind: "BLOCKED";
+      routeId: LiveRouteId;
+      proposalId: string;
+      freeAssessment: LiveRouteRiskResult;
+      rationale: string;
+      decision: PolicyDecisionResult;
+      auditTrail: AuditAnchor[];
+    }
+  | {
+      kind: "APPROVAL_REQUIRED";
+      routeId: LiveRouteId;
+      proposalId: string;
+      freeAssessment: LiveRouteRiskResult;
+      rationale: string;
+      expectedBenefit: string;
+      decision: PolicyDecisionResult;
+      approvalRequest: ApprovalRequestView;
+    }
+  | {
+      kind: "COMPLETED";
+      routeId: LiveRouteId;
+      proposalId: string;
+      freeAssessment: LiveRouteRiskResult;
+      rationale: string;
+      decision: PolicyDecisionResult;
+      payment: PaymentProof;
+      report: PremiumReport;
+      entitlement: PremiumEntitlementView;
+      auditTrail: AuditAnchor[];
+      verification: VerificationResult;
+      lifecycle: ReturnType<RouteGuardOrchestrator["lifecycleEvents"]>;
+      approval?: ApprovalRecord;
+    }
+  | {
+      kind: "FAILED";
+      routeId: LiveRouteId;
       proposalId?: string;
       errorCode: string;
       message: string;
@@ -192,6 +246,11 @@ export class AgentService {
         proposalId,
         createApprovalBinding(proposed.proposal, decision),
       );
+      store.purchaseTargets.set(proposalId, {
+        type: "SHIPMENT",
+        id: shipment.id,
+        freeAssessment: basic,
+      });
     } catch (err) {
       return failure(shipment.id, undefined, err);
     }
@@ -261,12 +320,90 @@ export class AgentService {
     );
   }
 
+  async runLiveRoute(input: {
+    routeId: LiveRouteId;
+    executionMode: ExecutionMode;
+  }): Promise<LiveRouteRunResult> {
+    const freeAssessment = await assessLiveRouteRisk(input.routeId);
+    if (!freeAssessment.premiumReportRecommended)
+      return {
+        kind: "NO_PURCHASE",
+        routeId: input.routeId,
+        freeAssessment,
+        explanation:
+          "The deterministic free assessment is sufficient; premium API access was not proposed.",
+      };
+
+    const proposed = await this.orch.proposeLiveRoute(input.routeId);
+    const proposalId = proposed.proposal.id;
+    const decision = proposed.decision;
+    store.approvalBindings.set(
+      proposalId,
+      createApprovalBinding(proposed.proposal, decision),
+    );
+    await anchorAuditEvent("PURCHASE_PROPOSED", {
+      proposalId,
+      policyHash: decision.canonicalHash,
+      mode: input.executionMode,
+    });
+    if (decision.decision === "BLOCK") {
+      await anchorAuditEvent("POLICY_BLOCKED", {
+        proposalId,
+        policyHash: decision.canonicalHash,
+        mode: input.executionMode,
+      });
+      return {
+        kind: "BLOCKED",
+        routeId: input.routeId,
+        proposalId,
+        freeAssessment,
+        rationale: proposed.proposal.rationale,
+        decision,
+        auditTrail: [],
+      };
+    }
+    if (decision.decision === "REQUIRE_APPROVAL") {
+      await anchorAuditEvent("POLICY_APPROVAL_REQUIRED", {
+        proposalId,
+        policyHash: decision.canonicalHash,
+        mode: input.executionMode,
+      });
+      return {
+        kind: "APPROVAL_REQUIRED",
+        routeId: input.routeId,
+        proposalId,
+        freeAssessment,
+        rationale: proposed.proposal.rationale,
+        expectedBenefit: proposed.proposal.expectedBenefit,
+        decision,
+        approvalRequest: approvalRequestView(
+          store.approvalBindings.get(proposalId)!,
+          decision,
+          input.executionMode,
+        ),
+      };
+    }
+    await anchorAuditEvent("POLICY_AUTO_APPROVED", {
+      proposalId,
+      policyHash: decision.canonicalHash,
+      mode: input.executionMode,
+    });
+    return this.executeLiveApproved(
+      input.routeId,
+      proposalId,
+      freeAssessment,
+      proposed.proposal.rationale,
+      decision,
+      input.executionMode,
+    );
+  }
+
   /** Called after a human taps Approve. Re-evaluates policy inside the execute tool. */
   async approveAndExecute(
     proposalId: string,
     executionMode: ExecutionMode,
     approverContext: VerifiedApproverContext = {},
-  ): Promise<AgentRunResult> {
+  ): Promise<AgentRunResult | LiveRouteRunResult> {
     const proposal = store.proposals.get(proposalId);
     let approvalUseStarted = false;
     try {
@@ -298,6 +435,27 @@ export class AgentService {
         policyHash: binding.policyHash,
         mode: executionMode,
       });
+      if (proposal!.liveRouteId) {
+        const target = store.purchaseTargets.get(proposalId);
+        if (!target || target.type !== "LIVE_ROUTE")
+          throw new RouteGuardError(
+            RGError.APPROVAL_BINDING_MISMATCH,
+            "The live-route assessment bound to this approval is unavailable.",
+          );
+        const result = await this.executeLiveApproved(
+          proposal!.liveRouteId,
+          proposalId,
+          target.freeAssessment,
+          proposal!.rationale,
+          decision,
+          executionMode,
+        );
+        store.finishApprovalUse(proposalId);
+        approvalUseStarted = false;
+        return result.kind === "COMPLETED"
+          ? { ...result, approval: store.approvals.get(proposalId) }
+          : result;
+      }
       const basic = generateBasicReport(getShipment(proposal!.shipmentId)!);
       const result = await this.executeApproved(
         proposal!.shipmentId,
@@ -450,7 +608,7 @@ export class AgentService {
   ): Promise<AgentRunResult> {
     try {
       const result = await this.orch.execute(proposalId, executionMode);
-      if (!result.payment || !result.report)
+      if (!result.payment || !result.report || !result.entitlement)
         return {
           kind: "FAILED",
           shipmentId,
@@ -470,10 +628,68 @@ export class AgentService {
         report: result.report,
         auditTrail: result.auditTrail,
         verification: result.verification,
+        entitlement: result.entitlement,
         lifecycle: this.orch.lifecycleEvents(),
       };
     } catch (err) {
       return failure(shipmentId, proposalId, err);
+    }
+  }
+
+  private async executeLiveApproved(
+    routeId: LiveRouteId,
+    proposalId: string,
+    freeAssessment: LiveRouteRiskResult,
+    rationale: string,
+    decision: PolicyDecisionResult,
+    executionMode: ExecutionMode,
+  ): Promise<LiveRouteRunResult> {
+    try {
+      const result = await this.orch.execute(proposalId, executionMode);
+      if (!result.payment || !result.report || !result.entitlement)
+        return {
+          kind: "FAILED",
+          routeId,
+          proposalId,
+          errorCode: RGError.VENDOR_API_FAILED,
+          message: "Payment, entitlement, or report missing after execution.",
+          verification: result.verification,
+        };
+      return {
+        kind: "COMPLETED",
+        routeId,
+        proposalId,
+        freeAssessment,
+        rationale,
+        decision: store.decisions.get(proposalId) ?? decision,
+        payment: result.payment,
+        report: result.report,
+        entitlement: result.entitlement,
+        auditTrail: result.auditTrail,
+        verification: result.verification,
+        lifecycle: this.orch.lifecycleEvents(),
+      };
+    } catch (error) {
+      if (error instanceof RouteGuardError)
+        return {
+          kind: "FAILED",
+          routeId,
+          proposalId,
+          errorCode: error.code,
+          message: error.publicMessage,
+          verification: verificationAfterFailure(
+            proposalId,
+            error.code,
+            error.publicMessage,
+          ),
+        };
+      return {
+        kind: "FAILED",
+        routeId,
+        proposalId,
+        errorCode: RGError.HEDERA_SUBMISSION_FAILED,
+        message: String(error),
+      };
     }
   }
 }
@@ -485,6 +701,7 @@ function proposalApprovalHash(
   return sha256({
     proposalId: proposal.id,
     shipmentId: proposal.shipmentId,
+    liveRouteId: proposal.liveRouteId ?? null,
     requestedSku: proposal.requestedSku,
     rationale: proposal.rationale,
     expectedBenefit: proposal.expectedBenefit,

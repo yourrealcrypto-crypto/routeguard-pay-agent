@@ -401,6 +401,12 @@
       .score-explain { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
       .score-total { font: 700 26px var(--mono); color: var(--green); }
       .gov-status { display: block; min-height: 20px; color: var(--muted); margin-top: 10px; }
+      .product-card { display: grid; gap: 8px; margin-top: 12px; padding: 13px; border: 1px solid rgba(109,180,255,.26); border-radius: 10px; background: var(--blue-soft); }
+      .product-card h3 { margin: 0; color: var(--blue); font-size: 14px; }
+      .product-facts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; font-size: 9.5px; }
+      .product-facts b { display: block; color: var(--ink-faint); font: 8px var(--mono); text-transform: uppercase; }
+      .entitlement-card { margin: 14px 0; padding: 13px; border: 1px solid rgba(94,227,154,.3); border-radius: 10px; background: var(--green-soft); }
+      .entitlement-card h4 { margin: 0 0 8px; color: var(--green); }
 
       /* Product shell */
       .workspace-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end; margin-bottom: 14px; }
@@ -419,7 +425,7 @@
       .summary-item .k { color: var(--ink-faint); font: 8px/1.3 var(--mono); letter-spacing: .07em; text-transform: uppercase; }
       .summary-item .v { margin-top: 4px; overflow-wrap: anywhere; color: var(--ink); font-size: 11px; }
       .summary-item.mono .v { font-family: var(--mono); }
-      .timeline-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+      .timeline-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
       .timeline-card { min-height: 96px; padding: 9px; border: 1px solid var(--line); border-top: 3px solid var(--ink-faint); border-radius: 8px; background: var(--panel-soft); }
       .timeline-card[data-state="Completed"] { border-top-color: var(--green); }
       .timeline-card[data-state="Pending"] { border-top-color: var(--amber); }
@@ -458,12 +464,12 @@
       .live-intel-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 16px; }
       .live-intel-head h2 { margin: 4px 0 6px; font-size: 20px; }
       .weather-attribution { flex: none; color: var(--blue); font: 10px var(--mono); }
-      .live-route-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .live-route-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
       .live-route-card { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-soft); }
       .live-route-card h3 { margin: 2px 0 0; font-size: 15px; }
       .live-route-card .route-id { color: var(--amber); font: 700 10px var(--mono); }
       .live-route-card .cargo { color: var(--ink-dim); font-size: 11px; }
-      .route-track { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 12px; }
+      .route-track { position: relative; display: grid; grid-template-columns: repeat(var(--checkpoint-count, 3), 1fr); gap: 8px; padding-top: 12px; }
       .route-track::before { content: ""; position: absolute; top: 16px; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, var(--blue), var(--amber)); }
       .route-point { position: relative; z-index: 1; min-width: 0; text-align: center; color: var(--ink-faint); font: 8px/1.35 var(--mono); }
       .route-point::before { content: ""; display: block; width: 9px; height: 9px; margin: 0 auto 7px; border: 2px solid var(--blue); border-radius: 50%; background: var(--panel); }
@@ -473,6 +479,19 @@
       .live-score { display: flex; align-items: baseline; gap: 8px; }
       .live-score .n { color: var(--ink); font: 750 38px/1 var(--mono); }
       .source-badge { padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--blue); font: 700 9px var(--mono); }
+      .live-primary { border-color: rgba(109,180,255,.7); background: linear-gradient(120deg, #3979df, #7058d9); color: #fff; cursor: pointer; font-weight: 750; box-shadow: 0 6px 18px rgba(57,121,223,.22); transition: transform .14s ease, box-shadow .14s ease, filter .14s ease; }
+      .live-primary:hover:not(:disabled) { filter: brightness(1.12); box-shadow: 0 8px 24px rgba(112,88,217,.34); transform: translateY(-1px); }
+      .live-primary:focus-visible { outline: 3px solid rgba(109,180,255,.42); outline-offset: 3px; }
+      .live-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 3px 10px rgba(57,121,223,.2); }
+      .live-primary.is-loading { cursor: progress; filter: saturate(.7); }
+      .live-primary:disabled { border-color: var(--line); background: rgba(255,255,255,.07); color: var(--ink-faint); cursor: not-allowed; box-shadow: none; opacity: .7; transform: none; }
+      .live-primary.is-loading:disabled { border-color: rgba(109,180,255,.45); background: linear-gradient(120deg, #315f9e, #594c9c); color: #fff; cursor: progress; opacity: .85; }
+      .purchase-live::after { content: ""; }
+      .purchase-live:hover:not(:disabled)::after { content: " \2192"; }
+      .risk-components { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 9px; margin-top: 14px; }
+      .risk-component { padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-soft); }
+      .risk-component span { display: block; min-height: 26px; color: var(--ink-faint); font: 8px/1.35 var(--mono); text-transform: uppercase; letter-spacing: .05em; }
+      .risk-component b { color: var(--ink); font: 750 22px/1 var(--mono); }
       .weather-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; margin-top: 14px; }
       .weather-card { padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-soft); }
       .weather-card h4 { margin: 0 0 8px; font-size: 11px; }
@@ -491,8 +510,20 @@
       .archive-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; color: var(--ink-faint); font: 10px var(--mono); }
       .archive-actions { display: flex; gap: 8px; align-items: center; }
       .empty-archive { padding: 38px; text-align: center; color: var(--ink-dim); }
+      .provider-vault { margin-top: 16px; padding: 20px; }
+      .provider-vault-grid { display: grid; grid-template-columns: minmax(300px,.85fr) minmax(0,1.15fr); gap: 16px; margin-top: 16px; }
+      .provider-vault-panel { border: 1px solid var(--line); border-radius: 10px; padding: 15px; background: var(--surface-2); }
+      .provider-flags { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+      .provider-flags label { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink-dim); font-size: 11px; }
+      .provider-flags input { width: auto; }
+      .provider-evidence-list, .provider-signal-list { display: grid; gap: 9px; margin-top: 12px; }
+      .provider-record, .provider-signal { padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(8,12,18,.32); }
+      .provider-record-head { display: flex; justify-content: space-between; gap: 12px; }
+      .provider-hash { font: 10px/1.5 var(--mono); color: var(--purple); overflow-wrap: anywhere; }
+      .privacy-model { margin-top: 14px; padding: 14px; border: 1px solid rgba(142,107,255,.35); border-radius: 10px; background: rgba(142,107,255,.06); }
       @media (max-width: 1080px) {
         .gov-card, .gov-card.third { grid-column: 1 / -1; }
+        .provider-vault-grid { grid-template-columns: 1fr; }
         .wrap { padding-inline: 18px; }
         .cols { grid-template-columns: 300px minmax(0, 1fr); gap: 14px; }
         .hero-grid { grid-template-columns: 1fr; gap: 16px; }
@@ -500,6 +531,7 @@
         .timeline-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
         .setup-grid { grid-template-columns: 1fr; }
         .live-route-grid, .weather-grid { grid-template-columns: 1fr; }
+        .risk-components { grid-template-columns: repeat(2, minmax(0,1fr)); }
         .hero-facts { justify-content: flex-start; }
         .gate, .proof { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .process-preview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -632,6 +664,11 @@
             </div>
             <div class="catalog-note">One fixed-price SKU · one allowlisted vendor · server-resolved terms</div>
             <div id="catalog" class="muted">loading…</div>
+            <article class="product-card" aria-label="Premium RouteRisk API product">
+              <h3>Premium RouteRisk Analysis</h3>
+              <div class="product-facts"><span><b>Vendor</b>Route Risk Labs</span><span><b>SKU</b>premium-route-risk-v1</span><span><b>Price</b>0.05 HBAR</span><span><b>Access</b>Single-use API entitlement</span><span><b>Delivery</b>Machine-readable premium report</span></div>
+              <details><summary>How the purchase works</summary><ol><li>The agent proposes access.</li><li>Policy validates vendor, SKU, price, budget, and approval.</li><li>Payment is simulated or executed on Hedera testnet.</li><li>A single-use entitlement unlocks the API.</li><li>The premium report is delivered.</li><li>Verification and audit evidence are recorded.</li></ol></details>
+            </article>
           </section>
         </aside>
 
@@ -663,13 +700,54 @@
 
       <section class="tab-view setup-view" id="intelligenceView" role="tabpanel" aria-labelledby="intelligenceTab" hidden>
         <div class="live-intel-head">
-          <div><div class="section-kicker">Phase 1 · current weather evidence</div><h2>Live Route Intelligence</h2><p class="muted">Select an allowlisted freight corridor to retrieve server-side weather observations and apply RouteGuard's deterministic demonstration policy. This workspace cannot authorize payment.</p></div>
+          <div><div class="section-kicker">Current weather evidence · payment-gated premium API</div><h2>Live Route Intelligence</h2><p class="muted">Select an allowlisted freight corridor for a free deterministic assessment. When deeper analysis is justified, the existing policy-controlled flow can purchase one single-use Premium RouteRisk API entitlement.</p></div>
           <a class="weather-attribution" href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a>
         </div>
         <div class="live-route-grid" id="liveRouteCards"><div class="card setup-panel muted">Loading allowlisted freight routes…</div></div>
         <section class="card live-route-result" id="liveRouteResult" aria-live="polite">
           <div class="section-kicker">Awaiting route selection</div>
-          <p class="muted">No live weather has been requested. Choose one of the three corridors above to begin a server-side assessment.</p>
+          <p class="muted">No live weather has been requested. Choose one of the four corridors above to begin a server-side assessment.</p>
+        </section>
+        <section class="card provider-vault" aria-labelledby="providerEvidenceHeading">
+          <div class="section-head"><div><div class="section-kicker">Private tenant evidence · off-chain</div><h2 id="providerEvidenceHeading">Private Provider Evidence</h2></div><span class="pill p-none">IN-MEMORY MVP</span></div>
+          <p class="rationale"><b>Customer-specific · not shared across customers</b></p>
+          <p class="muted">RouteGuard uses private tenant evidence only for this customer’s risk assessment. The in-memory vault resets when the server restarts.</p>
+          <div class="provider-vault-grid">
+            <div class="provider-vault-panel">
+              <h3>Add demo evidence</h3>
+              <form id="providerEvidenceForm" class="gov-form">
+                <label>Provider alias<input id="providerAlias" name="providerAlias" value="PRV-001" pattern="PRV-[0-9]{3,6}" maxlength="10" required /></label>
+                <label>Report target<select id="providerTarget" name="shipmentReference" required></select></label>
+                <label class="wide">Route / lane<input id="providerLane" name="lane" maxlength="120" required /></label>
+                <label>Transport mode<select id="providerMode" name="transportMode"><option value="road">Road</option><option value="ocean">Ocean</option><option value="air">Air</option><option value="rail">Rail</option></select></label>
+                <label>Delay minutes<input id="providerDelay" name="delayMinutes" type="number" min="0" max="10080" step="1" value="0" required /></label>
+                <label>Promised delivery<input id="providerPromisedAt" name="promisedDeliveryAt" type="datetime-local" /></label>
+                <label>Actual delivery<input id="providerActualAt" name="actualDeliveryAt" type="datetime-local" /></label>
+                <label>Tracking completeness %<input id="providerTracking" name="trackingCompletenessPercent" type="number" min="0" max="100" step="1" value="90" required /></label>
+                <label>Evidence confidence<input id="providerConfidence" name="confidence" type="number" min="0" max="1" step="0.01" value="0.80" required /></label>
+                <div class="wide provider-flags">
+                  <label><input id="providerOnTime" type="checkbox" checked /> Delivered on time</label>
+                  <label><input id="providerIssue" type="checkbox" /> Cancellation / issue</label>
+                  <label><input id="providerTemperature" type="checkbox" /> Temperature excursion</label>
+                  <label><input id="providerDocumentIssue" type="checkbox" /> Document issue</label>
+                  <label><input id="providerDamage" type="checkbox" /> Damage claim</label>
+                </div>
+                <label>Document type<input id="providerDocumentType" name="documentType" maxlength="40" placeholder="e.g. delivery-note" /></label>
+                <label class="wide">Short document summary or excerpt<textarea id="providerDocumentSummary" name="documentSummary" maxlength="1000" placeholder="Optional · converted to sanitized fact codes; raw text is discarded."></textarea></label>
+                <div class="wide gov-actions"><button type="submit">Add private evidence</button></div>
+              </form>
+              <div id="providerEvidenceStatus" class="gov-status" role="status" aria-live="polite"></div>
+            </div>
+            <div class="provider-vault-panel">
+              <h3>Private Provider Reliability Signal</h3>
+              <p class="muted">Private customer-specific provider score · Customer-specific evidence only · Not shared across customers · Not a public carrier rating</p>
+              <div id="providerReliabilitySignals" class="provider-signal-list"><div class="muted">No private evidence recorded.</div></div>
+              <h3>Evidence records</h3>
+              <div id="providerEvidenceList" class="provider-evidence-list"><div class="muted">No private evidence recorded.</div></div>
+            </div>
+          </div>
+          <div class="privacy-model"><h3>Privacy-preserving Hedera audit model</h3><p>Private provider evidence stays off-chain. Raw documents, provider records, complaints, and carrier names are not written to Hedera. Only hashes, report hashes, policy versions, and non-sensitive audit-event metadata should be anchored. HCS provides event ordering and consensus timestamps; hash-only anchoring can prove integrity without exposing confidential records.</p><p><b>Simulation evidence · not written to Hedera</b></p></div>
+          <div class="simulation-notice">Raw provider records are not written to Hedera. · Production use requires privacy, contract, retention, and data-governance controls. · Decision-support only · not insurance, legal, safety, compliance, or public carrier-rating advice.</div>
         </section>
       </section>
 
@@ -772,6 +850,7 @@
       let ACTIVE_RISK_POLICY = null;
       let GOVERNANCE_CONFIG = null;
       let LIVE_ROUTE_CATALOG = null;
+      let LAST_LIVE_ROUTE_RESULT = null;
       let ACTIVE_FILTER = "all";
       let ARCHIVE_FILTER = "all";
       let SELECTED_SCENARIO = null;
@@ -897,6 +976,8 @@
         renderScenarios();
         renderArchive();
         await Promise.all([refreshGovernance(), loadLiveRoutes()]);
+        setupProviderEvidence();
+        await refreshProviderEvidence();
       }
       async function fetchFeedback() {
         // feedback URL is embedded server-side; fall back to the kit issues page
@@ -936,6 +1017,115 @@
         globalThis.activateRouteGuardTab = activate;
       }
 
+      function setupProviderEvidence() {
+        const options = [];
+        SHIPMENTS.forEach((shipment) => options.push(`<option value="${esc(shipment.id)}">${esc(shipment.id)} · ${esc(shipment.origin.city)} → ${esc(shipment.destination.city)}</option>`));
+        (LIVE_ROUTE_CATALOG?.routes || []).forEach((route) => options.push(`<option value="${esc(route.id)}">${esc(route.id)} · ${esc(route.origin)} → ${esc(route.destination)}</option>`));
+        $("#providerTarget").innerHTML = options.join("");
+        $("#providerTarget").onchange = syncProviderTarget;
+        $("#providerEvidenceForm").onsubmit = submitProviderEvidence;
+        syncProviderTarget();
+      }
+
+      function syncProviderTarget() {
+        const targetId = $("#providerTarget").value;
+        const shipment = SHIPMENTS.get(targetId);
+        const route = (LIVE_ROUTE_CATALOG?.routes || []).find((item) => item.id === targetId);
+        if (shipment) {
+          $("#providerLane").value = `${shipment.origin.city} → ${shipment.destination.city}`;
+          $("#providerMode").value = shipment.mode;
+          $("#providerPromisedAt").value = shipment.promisedDeliveryAt.slice(0, 16);
+        } else if (route) {
+          $("#providerLane").value = `${route.origin} → ${route.destination}`;
+          $("#providerMode").value = "road";
+          $("#providerPromisedAt").value = "";
+        }
+      }
+
+      function optionalIso(input) {
+        return input.value ? new Date(input.value).toISOString() : undefined;
+      }
+
+      function providerEvidenceInput() {
+        const input = {
+          providerAlias: $("#providerAlias").value.trim().toUpperCase(),
+          lane: $("#providerLane").value.trim(),
+          transportMode: $("#providerMode").value,
+          shipmentReference: $("#providerTarget").value,
+          delayMinutes: Number($("#providerDelay").value),
+          deliveredOnTime: $("#providerOnTime").checked,
+          trackingCompletenessPercent: Number($("#providerTracking").value),
+          cancellationOrIssue: $("#providerIssue").checked,
+          temperatureExcursion: $("#providerTemperature").checked,
+          documentIssue: $("#providerDocumentIssue").checked,
+          damageClaim: $("#providerDamage").checked,
+          confidence: Number($("#providerConfidence").value),
+        };
+        const promisedDeliveryAt = optionalIso($("#providerPromisedAt"));
+        const actualDeliveryAt = optionalIso($("#providerActualAt"));
+        const documentType = $("#providerDocumentType").value.trim();
+        const documentSummary = $("#providerDocumentSummary").value.trim();
+        if (promisedDeliveryAt) input.promisedDeliveryAt = promisedDeliveryAt;
+        if (actualDeliveryAt) input.actualDeliveryAt = actualDeliveryAt;
+        if (documentType) input.documentType = documentType;
+        if (documentSummary) input.documentSummary = documentSummary;
+        return input;
+      }
+
+      async function submitProviderEvidence(event) {
+        event.preventDefault();
+        $("#providerEvidenceStatus").textContent = "Sanitizing and hashing private evidence…";
+        try {
+          await apiJson("/api/provider-evidence", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(providerEvidenceInput()),
+          });
+          $("#providerDocumentSummary").value = "";
+          $("#providerEvidenceStatus").textContent = "Private evidence stored in memory. Raw document text was discarded after fact extraction.";
+          await refreshProviderEvidence();
+        } catch (error) {
+          $("#providerEvidenceStatus").textContent = String(error);
+        }
+      }
+
+      async function refreshProviderEvidence() {
+        try {
+          const data = await apiJson("/api/provider-evidence");
+          renderProviderReliabilitySignals(data.reliabilitySignals);
+          renderProviderEvidenceList(data.evidence);
+        } catch (error) {
+          $("#providerEvidenceStatus").textContent = String(error);
+        }
+      }
+
+      function renderProviderReliabilitySignals(signals) {
+        if (!signals.length) {
+          $("#providerReliabilitySignals").innerHTML = `<div class="muted">No private evidence recorded.</div>`;
+          return;
+        }
+        $("#providerReliabilitySignals").innerHTML = signals.map((signal) => `<article class="provider-signal"><div class="provider-record-head"><b class="mono">${esc(signal.providerAlias)}</b><span class="pill p-none">${esc(signal.reliabilityBand)}</span></div><div class="policy-facts"><div><span>sample / confidence</span><b>${signal.sampleSize} · ${signal.confidence}</b></div><div><span>on-time / average delay</span><b>${signal.onTimeRate}% · ${signal.averageDelayMinutes} min</b></div><div><span>tracking / issue rate</span><b>${signal.trackingCompletenessPercent}% · ${signal.issueRate}%</b></div><div><span>temperature / document / damage</span><b>${signal.temperatureExcursionRate}% · ${signal.documentIssueRate}% · ${signal.damageClaimRate}%</b></div></div><p class="muted">${signal.reasonCodes.map(esc).join(" · ")}</p><p><b>Customer-specific evidence only · Not shared across customers · Not a public carrier rating</b></p></article>`).join("");
+      }
+
+      function renderProviderEvidenceList(records) {
+        if (!records.length) {
+          $("#providerEvidenceList").innerHTML = `<div class="muted">No private evidence recorded.</div>`;
+          return;
+        }
+        $("#providerEvidenceList").innerHTML = records.map((record) => `<article class="provider-record"><div class="provider-record-head"><div><b class="mono">${esc(record.providerAlias)}</b><div class="muted">${esc(record.lane)} · ${esc(record.transportMode)} · ${record.delayMinutes} min delay</div></div><button type="button" class="ghost copy-provider-hash" data-copy="${esc(record.evidenceHash)}">Copy full hash</button></div><div class="provider-hash">${esc(record.evidenceHash.slice(0, 16))}…</div><div class="muted">tracking ${record.trackingCompletenessPercent}% · created ${esc(formatTimestamp(record.createdAt))} · facts ${record.extractedFacts.map(esc).join(", ") || "none"}</div><button type="button" class="ghost recalculate-provider" data-evidence-id="${esc(record.evidenceId)}">Recalculate signal</button></article>`).join("");
+        document.querySelectorAll(".copy-provider-hash").forEach((button) => button.onclick = () => navigator.clipboard?.writeText(button.dataset.copy));
+        document.querySelectorAll(".recalculate-provider").forEach((button) => button.onclick = async () => {
+          button.disabled = true;
+          try {
+            await apiJson(`/api/provider-evidence/${button.dataset.evidenceId}/recalculate`, { method: "POST" });
+            await refreshProviderEvidence();
+          } catch (error) {
+            $("#providerEvidenceStatus").textContent = String(error);
+            button.disabled = false;
+          }
+        });
+      }
+
       async function apiJson(url, options) {
         const response = await fetch(url, options);
         const body = await response.json();
@@ -956,7 +1146,7 @@
 
       function routeTrack(route) {
         const checkpoints = route.checkpoints.map((checkpoint) => routePoint(checkpoint)).join("");
-        return `<div class="route-track" aria-label="Route checkpoints">${checkpoints}</div>`;
+        return `<div class="route-track" style="--checkpoint-count:${route.checkpoints.length}" aria-label="Route checkpoints">${checkpoints}</div>`;
       }
 
       function routePoint(checkpoint) {
@@ -965,7 +1155,8 @@
 
       function liveRouteCard(route) {
         const temperatureRange = `${route.temperatureToleranceC.minimum}–${route.temperatureToleranceC.maximum}°C`;
-        return `<article class="live-route-card"><div><div class="route-id">${esc(route.id)}</div><h3>${esc(route.origin)} → ${esc(route.destination)}</h3><div class="cargo">${esc(route.cargo)} · tolerance ${temperatureRange}</div></div>${routeTrack(route)}<button type="button" class="assess-live-route" data-route-id="${esc(route.id)}">Assess current weather risk</button></article>`;
+        const routeFacts = `${route.transportMode.replaceAll("_", " ")} · ${route.approximateDistanceKm.toLocaleString()} km · ${route.borderCount} border${route.borderCount === 1 ? "" : "s"} · ${route.checkpoints.length} points · ${route.estimatedTransitHours}h`;
+        return `<article class="live-route-card"><div><div class="route-id">${esc(route.id)}</div><h3>${esc(route.origin)} → ${esc(route.destination)}</h3><div class="cargo">${esc(route.cargo)} · tolerance ${temperatureRange}</div><div class="muted mono">${esc(routeFacts)}</div></div>${routeTrack(route)}<button type="button" class="assess-live-route live-primary" data-route-id="${esc(route.id)}">Assess live route risk</button></article>`;
       }
 
       function renderLiveRouteCards(routes) {
@@ -974,7 +1165,13 @@
       }
 
       async function assessLiveRoute(routeId) {
-        document.querySelectorAll(".assess-live-route").forEach((button) => button.disabled = true);
+        const buttons = [...document.querySelectorAll(".assess-live-route")];
+        const activeButton = buttons.find((button) => button.dataset.routeId === routeId);
+        buttons.forEach((button) => button.disabled = true);
+        if (activeButton) {
+          activeButton.classList.add("is-loading");
+          activeButton.textContent = "Retrieving live weather…";
+        }
         $("#liveRouteResult").innerHTML = `<div class="row"><span class="spinner"></span><span class="muted">Retrieving and validating Open-Meteo evidence for ${esc(routeId)}…</span></div>`;
         try {
           const result = await apiJson("/api/live-route-risk", {
@@ -984,9 +1181,13 @@
           });
           renderLiveRouteRisk(result);
         } catch (error) {
-          $("#liveRouteResult").innerHTML = `<div class="manual-review"><b>WEATHER DATA UNAVAILABLE · MANUAL REVIEW</b><p>RouteGuard could not retrieve complete, validated weather evidence. No low-risk assumption was made and no payment action is available.</p><span class="mono">${esc(String(error))}</span></div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
+          $("#liveRouteResult").innerHTML = `<div class="manual-review"><b>WEATHER DATA UNAVAILABLE · MANUAL REVIEW</b><p>RouteGuard could not retrieve complete, validated weather evidence. Live weather exposure is unavailable, data uncertainty is unresolved, and no low-risk assumption was made. No payment action is available.</p><span class="mono">${esc(String(error))}</span></div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
         } finally {
-          document.querySelectorAll(".assess-live-route").forEach((button) => button.disabled = false);
+          buttons.forEach((button) => button.disabled = false);
+          if (activeButton) {
+            activeButton.classList.remove("is-loading");
+            activeButton.textContent = "Refresh route assessment";
+          }
         }
       }
 
@@ -1023,7 +1224,19 @@
         return `<details><summary>Weather-risk demonstration thresholds</summary><p class="muted">Wind ≥${thresholds.severeWindKph} km/h · gusts ≥${thresholds.severeGustKph} km/h · precipitation ≥${thresholds.heavyPrecipitationMm} mm · visibility &lt;${thresholds.poorVisibilityM} m · freezing ≤${thresholds.freezingC}°C · thunderstorms ${thunderstormCodes} · stale after ${thresholds.staleAfterMinutes} minutes. Missing or invalid evidence returns WEATHER_DATA_UNAVAILABLE for manual review.</p></details>`;
       }
 
+      function renderRiskContributions(contributions) {
+        const items = [
+          ["Structural route complexity", contributions.structuralComplexity],
+          ["Live weather exposure", contributions.liveWeatherExposure],
+          ["Cargo sensitivity", contributions.cargoSensitivity],
+          ["Data uncertainty", contributions.dataUncertainty],
+        ];
+        const components = items.map(([label, value]) => `<div class="risk-component"><span>${esc(label)}</span><b>${value}</b></div>`).join("");
+        return `<div class="risk-components" aria-label="Risk score contributions">${components}</div><p class="muted mono">Contribution total ${contributions.total} / 100</p>`;
+      }
+
       function renderLiveRouteRisk(result) {
+        LAST_LIVE_ROUTE_RESULT = result;
         const bandClass = { low: "p-pass", moderate: "p-appr", high: "p-appr", critical: "p-block" }[result.riskBand] || "p-none";
         const thresholds = LIVE_ROUTE_CATALOG?.policy?.thresholds;
         const evidence = result.checkpointEvidence.map((checkpoint) => renderCheckpointWeather(checkpoint)).join("");
@@ -1034,9 +1247,80 @@
         const reportRecommendation = result.premiumReportRecommended ? "recommended" : "not indicated";
         const confidence = Math.round(result.confidence * 100);
         const resultHeader = `<div class="live-result-head"><div><div class="section-kicker">${esc(result.route.id)} · deterministic assessment</div><h3>${esc(result.route.origin)} → ${esc(result.route.destination)}</h3><div class="live-score"><span class="n">${result.score}</span><span>/ 100</span><span class="pill ${bandClass}">${esc(result.riskBand.toUpperCase())}</span></div></div><div><span class="source-badge">${esc(result.dataSource)}</span><div class="muted mono" style="margin-top:8px">confidence ${confidence}%</div></div></div>`;
-        const policyFacts = `<div class="policy-facts"><div><span>source timestamp</span><b>${esc(formatTimestamp(result.sourceTimestamp))}</b></div><div><span>retrieved</span><b>${esc(formatTimestamp(result.retrievedAt))}</b></div><div><span>weather policy</span><b>v${esc(result.policyVersion)} · ${esc(result.policyHash)}</b></div><div><span>premium report</span><b>${reportRecommendation} · simulation only</b></div></div>`;
+        const riskContributions = renderRiskContributions(result.riskContributions);
+        const structuralFactors = result.structuralFactors;
+        const policyFacts = `<div class="policy-facts"><div><span>source timestamp</span><b>${esc(formatTimestamp(result.sourceTimestamp))}</b></div><div><span>retrieved</span><b>${esc(formatTimestamp(result.retrievedAt))}</b></div><div><span>data freshness</span><b>${esc(result.dataFreshness.status)} · max ${result.dataFreshness.maximumAgeMinutes} minutes</b></div><div><span>structural factors</span><b>distance ${structuralFactors.distance} · borders ${structuralFactors.borders} · checkpoints ${structuralFactors.checkpoints} · schedule ${structuralFactors.schedule}</b></div><div><span>weather policy</span><b>v${esc(result.policyVersion)} · ${esc(result.policyHash)}</b></div><div><span>premium report</span><b>${reportRecommendation}</b></div></div>`;
         const triggeredRules = `<div class="blk"><div class="lbl">Triggered demonstration rules</div><div class="rule-list">${rules}</div></div>`;
-        $("#liveRouteResult").innerHTML = `${resultHeader}${policyFacts}<div class="weather-grid">${evidence}</div>${triggeredRules}${policyDetails}<div class="simulation-notice">${esc(result.disclaimer)} Purchase mode: ${esc(result.purchaseMode)}.</div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
+        const purchaseAction = result.premiumReportRecommended
+          ? `<div class="product-card"><h3>Premium RouteRisk Analysis is recommended</h3><p class="muted">Expected value: deeper structural, cargo, checkpoint, mitigation, and operational analysis. Vendor Route Risk Labs · premium-route-risk-v1 · fixed price 0.05 HBAR.</p><button type="button" id="purchaseLivePremium" class="live-primary purchase-live">Purchase single-use premium API access</button></div>`
+          : `<div class="simulation-notice">The free assessment is sufficient. No purchase, payment, or entitlement is proposed.</div>`;
+        $("#liveRouteResult").innerHTML = `${resultHeader}${riskContributions}${policyFacts}<div class="weather-grid">${evidence}</div>${triggeredRules}${policyDetails}${purchaseAction}<div class="simulation-notice">${esc(result.disclaimer)}</div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
+        const purchaseButton = $("#purchaseLivePremium");
+        if (purchaseButton) {
+          purchaseButton.onclick = () => purchaseLiveRoute(result.route.id);
+        }
+      }
+
+      async function purchaseLiveRoute(routeId) {
+        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
+        const purchaseButton = $("#purchaseLivePremium");
+        if (purchaseButton) {
+          purchaseButton.disabled = true;
+          purchaseButton.classList.add("is-loading");
+          purchaseButton.textContent = "Processing premium purchase…";
+        }
+        $("#liveRouteResult").innerHTML = `<div class="row"><span class="spinner"></span><span class="muted">Running the policy-controlled premium purchase for ${esc(routeId)}…</span></div>`;
+        try {
+          const result = await apiJson("/api/agent/live-route/run", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ routeId, executionMode: mode }),
+          });
+          renderLivePurchaseResult(result);
+        } catch (error) {
+          $("#liveRouteResult").innerHTML = `<div class="manual-review"><b>PREMIUM API UNAVAILABLE</b><p>No entitlement or report was fabricated.</p><span class="mono">${esc(String(error))}</span></div>`;
+        }
+      }
+
+      function renderLivePurchaseResult(data) {
+        const free = data.freeAssessment || LAST_LIVE_ROUTE_RESULT;
+        let html = `<div class="section-kicker">${esc(data.routeId || free?.route?.id || "Live route")} · premium purchase lifecycle</div>`;
+        if (data.kind === "NO_PURCHASE") {
+          html += `<div class="simulation-notice">${esc(data.explanation)} No payment was made and no entitlement was issued.</div>`;
+        } else if (data.kind === "BLOCKED") {
+          html += `<div class="manual-review"><b>PURCHASE BLOCKED</b><p>No payment was made, no entitlement was issued, and the premium API remains unavailable.</p></div>${renderGate(data.decision)}`;
+        } else if (data.kind === "APPROVAL_REQUIRED") {
+          html += renderApprovalPanel(data);
+        } else if (data.kind === "REJECTED") {
+          html += `<div class="manual-review"><b>PURCHASE REJECTED</b><p>No payment was made, no entitlement was issued, and the premium API remains unavailable.</p></div>${renderApprovalReceipt(data.approval)}`;
+        } else if (data.kind === "COMPLETED") {
+          html += renderEntitlement(data.entitlement);
+          html += renderReport(data.report, data.payment?.mode);
+        } else if (data.kind === "FAILED") {
+          html += `<div class="manual-review"><b>${esc(data.errorCode)}</b><p>${esc(data.message)}</p></div>`;
+        }
+        html += renderDecisionTimeline(data);
+        if (data.verification) {
+          html += renderVerification(data);
+        }
+        $("#liveRouteResult").innerHTML = html;
+        if (data.kind === "APPROVAL_REQUIRED") {
+          $("#approveBtn").onclick = () => approveLive(data.proposalId);
+          $("#rejectBtn").onclick = () => rejectLive(data.proposalId);
+        }
+        bindCopy();
+      }
+
+      async function approveLive(proposalId) {
+        setApprovalBusy("Recording approval and executing premium API purchase…");
+        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
+        renderLivePurchaseResult(await apiJson("/api/approvals/" + proposalId, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ executionMode: mode }) }));
+      }
+
+      async function rejectLive(proposalId) {
+        setApprovalBusy("Recording rejection…");
+        const mode = executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled);
+        renderLivePurchaseResult(await apiJson("/api/approvals/" + proposalId + "/reject", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ executionMode: mode }) }));
       }
 
       async function refreshGovernance() {
@@ -1346,6 +1630,7 @@
         const riskSummary = score ? `${score.riskScore} · ${score.riskBand}` : "Not recorded";
         const riskPolicyVersion = score?.policyVersion ? `v${score.policyVersion}` : "Not recorded";
         const paymentPolicyVersion = data?.decision?.policyVersion ? `v${data.decision.policyVersion}` : "v1.0";
+        const premiumRecommendation = scenario?.id === "no-purchase" ? "Free assessment sufficient" : "Premium analysis justified";
         return `<div class="case-summary" aria-label="Shipment case summary">
           ${summaryItem("Shipment ID", shipment.id, true)}
           ${summaryItem("Route", `${shipment.origin.city}, ${shipment.origin.countryCode} → ${shipment.destination.city}, ${shipment.destination.countryCode}`)}
@@ -1358,6 +1643,7 @@
           ${summaryItem("Risk score / band", riskSummary, true)}
           ${summaryItem("Risk policy version", riskPolicyVersion, true)}
           ${summaryItem("Payment policy version", paymentPolicyVersion, true)}
+          ${summaryItem("Premium recommendation", premiumRecommendation)}
           ${summaryItem("Case reason", CASE_PRESENTATION[scenario?.id]?.reason || data?.message || "Policy evaluation pending")}
         </div>`;
       }
@@ -1421,13 +1707,16 @@
         const approval = approvalTimelineState(kind, data?.approval);
         const fulfillment = fulfillmentTimelineState(kind);
         const audit = auditTimelineState(verification.key);
+        const proposed = kind === "NO_PURCHASE" ? "Skipped" : recommendationTimelineState(kind, data?.proposalId);
+        const entitlement = kind === "COMPLETED" ? "Completed" : kind === "APPROVAL_REQUIRED" ? "Pending" : kind === "FAILED" ? "Failed" : "Skipped";
         return [
-          ["Shipment assessed", "Completed"],
-          ["Agent recommendation created", recommendationTimelineState(kind, data?.proposalId)],
+          ["Premium analysis proposed", proposed],
           ["Policy evaluated", policyTimelineState(kind, data?.decision)],
-          ["Approval requested or skipped", approval],
-          ["Payment executed, simulated, or blocked", fulfillment],
-          ["Report delivered", fulfillment],
+          ["Approval completed or skipped", approval],
+          ["Payment completed or simulated", fulfillment],
+          ["API entitlement issued", entitlement],
+          ["Premium API accessed", entitlement],
+          ["Premium report delivered", fulfillment],
           ["Verification & Audit recorded", audit],
         ];
       }
@@ -1504,6 +1793,7 @@
           ]),
           evidenceGroup("Mirror Node Record", [evidenceRow("Confirmation", verification?.mirrorNodeConfirmation), evidenceRow("Consensus timestamp", verification?.consensusTimestamp)]),
           evidenceGroup("HCS Audit Trail", [evidenceRow("HCS configured", hcsConfigured), evidenceRow("Anchoring status", verification?.hcsAnchoringStatus), evidenceRow("HCS topic", verification?.hcsTopicId, true), evidenceRow("Sequence numbers", sequenceNumbers), evidenceRow("Lifecycle records", lifecycleRecords)]),
+          evidenceGroup("Premium API Entitlement", [evidenceRow("Entitlement ID", data?.entitlement?.entitlementId, true), evidenceRow("Status", data?.entitlement?.status), evidenceRow("SKU", data?.entitlement?.sku), evidenceRow("Issued", data?.entitlement?.issuedAt), evidenceRow("Redeemed", data?.entitlement?.redeemedAt), evidenceRow("Token", data?.entitlement ? "Not exposed · server-side redemption" : null)]),
           evidenceGroup("Report Integrity", [evidenceRow("Report hash", verification?.reportHash, true), evidenceRow("Policy hash", verification?.policyHash || decision?.canonicalHash, true), evidenceRow("Policy version", verification?.policyVersion || decision?.policyVersion), evidenceRow("Failure code", verification?.failureCode), evidenceRow("Failure reason", verification?.failureReason)]),
         ];
         const copyLines = copy.map((line) => `<span>${esc(line)}</span>`).join("");
@@ -1530,7 +1820,7 @@
         renderCaseFilters();
         renderScenarios();
         renderArchive();
-        await refreshGovernance();
+        await Promise.all([refreshGovernance(), refreshProviderEvidence()]);
       }
 
       async function run(scn) {
@@ -1650,12 +1940,17 @@
         const warning = simulated
           ? "Demo approval · no identity verification · no real HBAR transfer"
           : "Live approval requires a verified, allowlisted approver identity. This public demo has no login surface.";
-        const route = shipment ? `${shipment.origin.city} → ${shipment.destination.city}` : "Not recorded";
+        const liveRoute = LAST_LIVE_ROUTE_RESULT?.route?.id === a.shipmentId ? LAST_LIVE_ROUTE_RESULT.route : null;
+        const route = shipment
+          ? `${shipment.origin.city} → ${shipment.destination.city}`
+          : liveRoute
+            ? `${liveRoute.origin} → ${liveRoute.destination}`
+            : "Not recorded";
         return `<section class="approve-card" aria-labelledby="approvalTitle">
           <div class="approval-head"><div><div class="ttl" id="approvalTitle">Procurement approval pending</div><div class="ds">${esc(a.reason)}</div></div><span class="validity">${expired ? "EXPIRED" : "VALID · SINGLE USE"}</span></div>
-          <div class="approval-warning">${esc(warning)}</div>
+          <div class="approval-warning">${esc(warning)} No entitlement is issued until approval and payment complete.</div>
           <div class="approval-grid">
-            ${approvalField("shipment", a.shipmentId)}
+            ${approvalField("analysis target", a.shipmentId)}
             ${approvalField("route", route, true)}
             ${approvalField("vendor", a.vendorId)}
             ${approvalField("vendor account", a.vendorAccountId, false, true)}
@@ -1692,7 +1987,36 @@
         </section>`;
       }
 
-      function renderReport(report) {
+      function renderEntitlement(entitlement) {
+        if (!entitlement) {
+          return "";
+        }
+        const simulation = entitlement.executionMode === "SIMULATION";
+        const purchaseLabel = simulation ? "Simulated purchase" : "Testnet HBAR payment";
+        const accessLabel = simulation ? "Premium API redeemed in simulation" : "Premium API redeemed";
+        const transferLabel = simulation ? "No real HBAR transfer" : "Payment confirmed";
+        return `<section class="entitlement-card" aria-label="Premium API entitlement"><h4>${simulation ? "Simulation entitlement issued" : "API entitlement issued"}</h4><div class="policy-facts"><div><span>access</span><b>Single-use API entitlement · ${esc(entitlement.status)}</b></div><div><span>purchase</span><b>${purchaseLabel}</b></div><div><span>payment evidence</span><b>${transferLabel}</b></div><div><span>redemption</span><b>${accessLabel}</b></div><div><span>entitlement ID</span><b>${esc(entitlement.entitlementId)}</b></div><div><span>expires</span><b>${esc(formatTimestamp(entitlement.expiresAt))}</b></div></div><p class="muted">The opaque token was redeemed server-side and is not exposed in this interface. In-memory entitlement state resets when the service restarts.</p></section>`;
+      }
+
+      function renderPrivateProviderSignal(signal) {
+        if (!signal) {
+          return `<section class="provider-signal"><h3>Private Provider Reliability Signal</h3><p class="muted">No matching customer-specific provider evidence was available for this report target.</p><p><b>Customer-specific · not shared across customers · Not a public carrier rating</b></p></section>`;
+        }
+        const hashes = signal.evidenceHashes.map((hash) => `<span class="provider-hash">${esc(hash.slice(0, 16))}… <button type="button" class="copy" data-copy="${esc(hash)}">copy full hash</button></span>`).join("<br>");
+        return `<section class="provider-signal"><div class="provider-record-head"><h3>Private Provider Reliability Signal</h3><span class="pill p-none">${esc(signal.reliabilityBand)}</span></div><div class="policy-facts"><div><span>provider alias / sample</span><b>${esc(signal.providerAlias)} · ${signal.sampleSize}</b></div><div><span>on-time / average delay</span><b>${signal.onTimeRate}% · ${signal.averageDelayMinutes} min</b></div><div><span>tracking / issue rate</span><b>${signal.trackingCompletenessPercent}% · ${signal.issueRate}%</b></div><div><span>confidence</span><b>${signal.confidence}</b></div></div><p class="muted">reason codes · ${signal.reasonCodes.map(esc).join(" · ")}</p><div>${hashes}</div><p><b>${esc(signal.scopeLabel)} · ${esc(signal.ratingLabel)}</b></p></section>`;
+      }
+
+      function renderPremiumEvidenceSections(report, executionMode) {
+        const eta = report.etaReliabilityRisk;
+        const insurance = report.insuranceSupportEvidence;
+        const mitigation = report.alternativeRouteOrMitigationRecommendation;
+        const chainNotice = executionMode === "SIMULATION"
+          ? "Simulation evidence · not written to Hedera"
+          : "Raw provider records are not written to Hedera; the report hash may bind evidence hashes without exposing records.";
+        return `${renderPrivateProviderSignal(report.privateProviderReliabilitySignal)}<div class="governance-grid"><section class="gov-card third"><h3>ETA Reliability Risk</h3><p><span class="pill p-none">${esc(eta.onTimeRiskBand)}</span></p><p>${esc(eta.explanation)}</p><ul class="controls-list">${eta.contributingFactors.map((factor) => `<li>${esc(factor)}</li>`).join("")}</ul></section><section class="gov-card third"><h3>Insurance-support evidence</h3><p>${esc(insurance.route)} · ${esc(insurance.cargo)}</p><p class="muted">policy v${esc(insurance.policyVersion)} · evaluated ${esc(formatTimestamp(insurance.evaluatedAt))}</p><p><b>${esc(insurance.disclaimer)}</b></p></section><section class="gov-card third"><h3>Alternative route / mitigation recommendation</h3><p>${esc(mitigation.recommendation)}</p><p class="muted">${mitigation.basis.map(esc).join(" · ")} · no exact travel time estimated</p></section></div><div class="privacy-model"><h3>Privacy-preserving Hedera audit model</h3><p>Private provider evidence and raw records stay off-chain. Only hashes, report hashes, policy versions, and non-sensitive audit metadata should be anchored.</p><p><b>${esc(chainNotice)}</b></p></div>`;
+      }
+
+      function renderReport(report, executionMode = "SIMULATION") {
         const bandColor = { low: "p-pass", moderate: "p-appr", high: "p-appr", critical: "p-block" }[report.riskBand] || "p-none";
         const maxC = Math.max(...report.factors.map((f) => f.contribution), 1);
         const factors = report.factors
@@ -1701,11 +2025,19 @@
           )
           .join("");
         const controls = report.recommendedControls.map((c) => `<li>${esc(c)}</li>`).join("");
+        const mitigations = report.mitigationRecommendations.map((item) => `<li>${esc(item)}</li>`).join("");
+        const operations = report.operationalRecommendations.map((item) => `<li>${esc(item)}</li>`).join("");
+        const targetDetails = report.reportType === "LIVE_ROUTE"
+          ? `<div class="policy-facts"><div><span>route</span><b>${esc(report.routeId)} · ${esc(report.origin)} → ${esc(report.destination)}</b></div><div><span>weather evidence</span><b>${esc(report.weatherDataSource)} · ${esc(formatTimestamp(report.weatherSourceTimestamp))}</b></div><div><span>route structure</span><b>${report.structuralRouteComplexity.approximateDistanceKm.toLocaleString()} km · ${report.structuralRouteComplexity.borderCount} borders · ${report.structuralRouteComplexity.checkpointCount} checkpoints</b></div><div><span>data freshness</span><b>${esc(report.dataFreshness.status)} · max ${report.dataFreshness.maximumAgeMinutes} minutes</b></div><div><span>cargo sensitivity</span><b>${esc(report.cargoSensitivity)}</b></div></div>${renderRiskContributions(report.riskContributions)}`
+          : `<div class="policy-facts"><div><span>shipment</span><b>${esc(report.shipmentId)}</b></div><div><span>route</span><b>${esc(report.route.origin)} → ${esc(report.route.destination)}</b></div><div><span>cargo / value</span><b>${esc(report.cargoType)} · €${esc(report.declaredCargoValueEur.toLocaleString("en-US"))}</b></div><div><span>mode / free comparison</span><b>${esc(report.transportMode)} · ${esc(report.freeAssessmentComparison.riskBand)}</b></div></div>`;
         return `<div class="blk"><div class="lbl">Premium RouteRisk report</div>
           <div class="score"><span class="n">${report.riskScore}</span><span class="muted">/ 100</span><span class="pill ${bandColor}">${esc(report.riskBand.toUpperCase())}</span></div>
           <div class="muted mono">policy v${esc(report.policyVersion)} · ${esc(report.policyHash)} · evaluated ${esc(report.evaluatedAt)} · total before cap ${report.totalBeforeCap}</div>
+          ${targetDetails}
           <div class="factors">${factors}</div>
-          <ul class="controls-list">${controls}</ul>
+          ${renderPremiumEvidenceSections(report, executionMode)}
+          <div class="governance-grid"><div class="gov-card third"><h3>Recommended controls</h3><ul class="controls-list">${controls}</ul></div><div class="gov-card third"><h3>Mitigations</h3><ul class="controls-list">${mitigations}</ul></div><div class="gov-card third"><h3>Operational actions</h3><ul class="controls-list">${operations}</ul></div></div>
+          <div class="muted mono">report hash ${esc(report.reportHash)} · generated ${esc(formatTimestamp(report.generatedAt))}</div>
         </div>`;
       }
 
@@ -1724,7 +2056,10 @@
           html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.rationale)}</div></div>`;
         }
         if (data.kind === "NO_PURCHASE") {
-          html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.explanation)}</div><div class="muted" style="margin-top:8px">recommendation source: ${esc(data.intentSource)}</div></div>`;
+          html += `<div class="blk"><div class="lbl">Agent Recommendation</div><div class="rationale">${esc(data.explanation)}</div><div class="muted" style="margin-top:8px">recommendation source: ${esc(data.intentSource)}</div><div class="simulation-notice">Free assessment sufficient · no payment · no entitlement issued.</div></div>`;
+        }
+        if (data.kind === "BLOCKED") {
+          html += `<div class="manual-review"><b>PURCHASE BLOCKED</b><p>No payment was made, no entitlement was issued, and the premium API is unavailable.</p></div>`;
         }
 
         if (data.kind === "APPROVAL_REQUIRED") {
@@ -1739,7 +2074,8 @@
 
         if (data.kind === "COMPLETED") {
           html += renderApprovalReceipt(data.approval);
-          html += renderReport(data.report);
+          html += renderEntitlement(data.entitlement);
+          html += renderReport(data.report, data.payment?.mode);
         }
 
         if (data.kind === "FAILED") {

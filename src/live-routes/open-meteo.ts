@@ -28,7 +28,7 @@ const LocationWeatherSchema = z.object({
   }),
 });
 
-const MultiLocationWeatherSchema = z.array(LocationWeatherSchema).length(3);
+const MultiLocationWeatherSchema = z.array(LocationWeatherSchema).min(3).max(6);
 
 export class WeatherDataUnavailableError extends Error {
   readonly code = "WEATHER_DATA_UNAVAILABLE";
@@ -140,7 +140,7 @@ export async function retrieveRouteWeather(
         `Weather provider returned HTTP ${response.status}.`,
       );
     const parsed = MultiLocationWeatherSchema.safeParse(await response.json());
-    if (!parsed.success)
+    if (!parsed.success || parsed.data.length !== route.checkpoints.length)
       throw new WeatherDataUnavailableError("Weather provider response failed validation.");
 
     const checkpointEvidence = parsed.data.map((location, index) => {

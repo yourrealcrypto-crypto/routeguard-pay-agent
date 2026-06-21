@@ -3,10 +3,12 @@ import {
   type Shipment,
   type BasicReport,
   type PremiumReport,
+  type ProviderReliabilitySignal,
   type RiskBand,
   sha256,
 } from "../domain/index.js";
 import { getActiveRiskPolicy, type RiskPolicy } from "./policy.js";
+import { providerEvidenceReportSections } from "./provider-evidence-report.js";
 
 /**
  * Scoring contributions are deterministic for an explicit policy, shipment,
@@ -41,6 +43,7 @@ function routeComplexity(s: Shipment, policy: RiskPolicy): number {
 export interface RiskEvaluationOptions {
   policy?: RiskPolicy;
   evaluatedAt?: string;
+  providerReliabilitySignal?: ProviderReliabilitySignal | null;
 }
 
 export function generateBasicReport(
@@ -83,6 +86,8 @@ export function generatePremiumReport(
 ): PremiumReport {
   const policy = options.policy ?? getActiveRiskPolicy();
   const evaluatedAt = options.evaluatedAt ?? new Date().toISOString();
+  const generatedAt = new Date().toISOString();
+  const basic = generateBasicReport(shipment, { policy, evaluatedAt });
   const contributions = [
     {
       code: "MODE",
@@ -163,7 +168,22 @@ export function generatePremiumReport(
 
   const base = {
     reportId: randomUUID(),
+    reportType: "SHIPMENT" as const,
     shipmentId: shipment.id,
+    route: {
+      origin: `${shipment.origin.city}, ${shipment.origin.countryCode}`,
+      destination: `${shipment.destination.city}, ${shipment.destination.countryCode}`,
+    },
+    cargoType: shipment.cargoType,
+    declaredCargoValueEur: shipment.cargoValueEur,
+    transportMode: shipment.mode,
+    riskSignals: [...shipment.riskSignals],
+    freeAssessmentComparison: {
+      riskBand: basic.riskBand,
+      confidence: basic.confidence,
+      policyVersion: basic.policyVersion,
+      policyHash: basic.policyHash,
+    },
     riskScore,
     riskBand: band,
     confidence: policy.confidence.premiumValue,
@@ -171,11 +191,44 @@ export function generatePremiumReport(
     totalBeforeCap,
     evaluatedAt,
     recommendedControls: controls,
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     algorithmVersion: "route-risk-1.0" as const,
     policyVersion: policy.policyVersion,
     policyHash: policy.policyHash,
     paymentTransactionId,
+    triggeredReasonCodes: contributions
+      .filter((factor) => factor.contribution > 0)
+      .map((factor) => factor.code),
+    mitigationRecommendations: [...controls],
+    operationalRecommendations: controls.map((control) =>
+      control.startsWith("Add continuous temperature")
+        ? "Increase temperature monitoring before departure and at hand-offs."
+        : control,
+    ),
+    ...providerEvidenceReportSections(
+      options.providerReliabilitySignal ?? null,
+      {
+        route: `${shipment.origin.city}, ${shipment.origin.countryCode} → ${shipment.destination.city}, ${shipment.destination.countryCode}`,
+        cargo: `${shipment.cargoType} · EUR ${shipment.cargoValueEur}`,
+        eta: shipment.promisedDeliveryAt,
+        policyVersion: policy.policyVersion,
+        evaluatedAt,
+        generatedAt,
+        schedulePressurePoints: schedulePressure(shipment, policy, evaluatedAt),
+        routeFactors: [
+          shipment.origin.countryCode !== shipment.destination.countryCode
+            ? "Cross-border route"
+            : "Domestic route",
+          `${shipment.mode} transport mode`,
+        ],
+        weatherFactors: [],
+        temperatureSensitive:
+          shipment.cargoType === "temperature_controlled",
+        borderExposure:
+          shipment.origin.countryCode !== shipment.destination.countryCode ||
+          shipment.riskSignals.includes("border-crossing"),
+      },
+    ),
     disclaimer: DISCLAIMER,
   };
   // Hash everything except the hash field itself.

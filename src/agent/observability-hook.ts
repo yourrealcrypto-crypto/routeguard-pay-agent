@@ -25,6 +25,7 @@ export class RouteGuardObservabilityHook extends AbstractHook {
   description = "Records redacted BaseTool lifecycle events for audit/debugging.";
   relevantTools = [
     "propose_route_risk_purchase",
+    "propose_live_route_risk_purchase",
     "execute_route_risk_purchase",
   ];
 

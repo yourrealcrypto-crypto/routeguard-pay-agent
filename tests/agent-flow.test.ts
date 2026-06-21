@@ -33,8 +33,14 @@ describe("agent flow — scenarios", () => {
     if (r.kind === "COMPLETED") {
       expect(r.payment.amountTinybars).toBe(5_000_000);
       expect(r.report.reportHash).toMatch(/^[0-9a-f]{64}$/);
+      expect(r.entitlement.status).toBe("REDEEMED");
+      expect(r.entitlement.executionMode).toBe("SIMULATION");
+      expect(store.entitlements.size).toBe(1);
       expect(r.payment.memo.startsWith("RG:")).toBe(true);
       expect(r.auditTrail.length).toBeGreaterThanOrEqual(2);
+      expect(r.auditTrail.map((event) => event.eventType)).toEqual(
+        expect.arrayContaining(["API_ACCESS_GRANTED", "REPORT_DELIVERED"]),
+      );
       expect(r.verification.status).toBe("SIMULATION_EVIDENCE");
       expect(r.verification.transactionSubmitted).toBe(false);
       expect(r.verification.mirrorNodeConfirmation).toBe("NOT_APPLICABLE");
@@ -51,6 +57,7 @@ describe("agent flow — scenarios", () => {
     });
     expect(r.kind).toBe("BLOCKED");
     expect(store.purchases.size).toBe(0);
+    expect(store.entitlements.size).toBe(0);
   });
 
   it("no-purchase scenario declines to spend", async () => {
@@ -61,6 +68,7 @@ describe("agent flow — scenarios", () => {
     });
     expect(r.kind).toBe("NO_PURCHASE");
     expect(store.purchases.size).toBe(0);
+    expect(store.entitlements.size).toBe(0);
   });
 
   it("prompt-injection note does not change the payment target or amount", async () => {
@@ -91,6 +99,7 @@ describe("approval flow", () => {
     if (r.kind === "APPROVAL_REQUIRED") {
       // cannot have paid yet
       expect(store.purchases.get(r.proposalId)?.payment).toBeUndefined();
+      expect(store.entitlements.size).toBe(0);
       const after = await s.approveAndExecute(r.proposalId, "SIMULATION");
       expect(after.kind).toBe("COMPLETED");
       if (after.kind === "COMPLETED") {
@@ -212,6 +221,7 @@ describe("approval flow", () => {
       expect(after.approval.status).toBe("REJECTED");
     }
     expect(store.purchases.has(r.proposalId)).toBe(false);
+    expect(store.entitlements.size).toBe(0);
   });
 });
 
