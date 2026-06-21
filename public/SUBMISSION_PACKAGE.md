@@ -10,6 +10,16 @@
 
 ---
 
+## Judge quick start
+
+1. Open the app → **Active Cases** → **Auto-approved purchase** — fastest end-to-end path.
+2. Click **Human approval required** → Approve the purchase → see entitlement + premium report.
+3. Open **Live Route Intelligence** → **LIVE-MUC-IST** (PRIMARY DEMO, Pharma policy) → Assess live route risk.
+4. Review **Verification & Audit** at the bottom of each result.
+5. Open **Policy & Governance** for the executive cockpit and locked payment safety.
+
+---
+
 ## What the agent does
 
 RouteGuard is a policy-gated procurement agent for logistics risk. It assesses shipment or live-route context, proposes a single fixed-price premium RouteRisk report SKU, and executes only when deterministic policies approve vendor, SKU, price, budget, approval, and transaction integrity.

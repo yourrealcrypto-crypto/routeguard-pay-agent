@@ -8,6 +8,22 @@ Built for the **Hedera Week 5 Policy Agent** bounty.
 
 ---
 
+## Judge quick start
+
+```
+npm install && npm run dev        # starts at http://localhost:3000
+```
+
+1. Open **Active Cases** → click **Auto-approved purchase** — fastest end-to-end path showing policy gate, simulated HBAR payment, single-use entitlement, and premium report with audit evidence.
+2. Click **Human approval required** to see the human-in-the-loop escalation gate.
+3. Open **Live Route Intelligence** → click **LIVE-MUC-IST** (PRIMARY DEMO, Pharma policy) → Assess live route risk.
+4. Check **Verification & Audit** at the bottom of each result for transaction/simulation evidence.
+5. Review **Policy & Governance** for the executive cockpit and locked payment safety.
+
+> Everything works with **no credentials** in simulation mode. Testnet execution requires explicit configuration (see `.env.example`).
+
+---
+
 ## Bounty fit
 
 | Requirement | How RouteGuard demonstrates it |

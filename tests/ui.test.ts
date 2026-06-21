@@ -381,9 +381,13 @@ describe("RouteGuard interface model", () => {
     expect(html).toContain('class="route-checkpoint"');
   });
 
-  it("renders three metric cards in hero with execution-mode as the interactive card", () => {
-    expect(html).toContain('<div class="fact"><b>Fixed price</b>');
-    expect(html).toContain('<div class="fact"><b>Decision authority</b>');
+  it("renders a compact proof strip with execution mode in the operational panel", () => {
+    expect(html).toContain('class="ops-panel" aria-label="Execution posture"');
+    expect(html).toContain('class="proof-strip" role="list"');
+    expect(html).toContain('Fixed price <b>0.05 HBAR</b>');
+    expect(html).toContain('Policy authority <b>deterministic</b>');
+    expect(html).toContain('Audit <b>local / HCS when configured</b>');
+    expect(html).toContain('Premium API <b>entitlement gated</b>');
     expect(html).toContain('class="hero-mode hero-mode-anchor" id="heroModeSelector"');
     expect(html).toContain('data-mode="SIMULATION"');
     expect(html).toContain('Live locked');
