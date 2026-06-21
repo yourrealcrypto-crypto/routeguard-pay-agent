@@ -34,6 +34,27 @@ type UiModel = {
   hasReportExportActions: (data: Record<string, unknown>) => boolean;
   renderReportActions: (data: Record<string, unknown>) => string;
   renderGate: (decision: Record<string, unknown>, scenarioId?: string, reportHash?: string) => string;
+  renderTechnicalEvidenceBlock: (
+    checks: Array<Record<string, unknown>>,
+    decision: Record<string, unknown>,
+    reportHash?: string | null,
+    extras?: Record<string, unknown>,
+  ) => string;
+  buildReportTechnicalAppendix: (model: Record<string, any>) => string;
+  isCaseArchivable: (scenarioId: string, data: Record<string, unknown> | null | undefined, archivedIds?: string[]) => boolean;
+  findArchivableCases: (
+    caseResults: Map<string, Record<string, unknown>> | Record<string, Record<string, unknown>>,
+    scenarios: Array<{ id: string }>,
+    archivedIds?: string[],
+  ) => Array<{ id: string }>;
+  archiveCompletedCases: (
+    caseResults: Map<string, Record<string, unknown>> | Record<string, Record<string, unknown>>,
+    scenarios: Array<{ id: string; shipmentId: string }>,
+    archivedIds: string[],
+    selectedMode: string,
+    enabled: boolean,
+  ) => Array<{ scenarioId: string; record: Record<string, unknown> }>;
+  resolveRoutePolicy: (route: Record<string, unknown>) => { name: string; source: string; meta?: Record<string, unknown> };
 };
 
 const html = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
@@ -165,7 +186,7 @@ describe("RouteGuard interface model", () => {
       "Technical policy condition: unknown_code",
     );
     const gate = ui.renderGate(completedReport.decision);
-    const prominent = gate.slice(0, gate.indexOf('<details class="technical-evidence">'));
+    const prominent = gate.slice(0, gate.indexOf('<details class="technical-evidence compact">'));
     expect(prominent).toContain(
       "Declared cargo value exceeds the premium-analysis threshold.",
     );
@@ -173,14 +194,19 @@ describe("RouteGuard interface model", () => {
     expect(gate).toContain("cargo_value&gt;=50000");
   });
 
-  it("retains raw policy evidence only in collapsed technical sections", () => {
-    expect(html).toContain('<details class="technical-evidence">');
-    expect(html).toContain("View raw policy evidence");
+  it("retains raw policy evidence only in collapsed compact technical sections", () => {
+    expect(html).toContain('<details class="technical-evidence compact">');
+    expect(html).toContain("Technical evidence ·");
+    expect(html).not.toContain("View raw policy evidence");
     expect(html).not.toContain('class="ev"');
+    const gate = ui.renderGate(completedReport.decision);
+    const prominent = gate.slice(0, gate.indexOf('<details class="technical-evidence compact">'));
+    expect(prominent).not.toContain("cargo_value&gt;=50000");
     const model = ui.buildReportExportModel(completedReport, { vendorId: "route-risk-labs", sku: "premium-route-risk-v1" })!;
     const downloaded = ui.buildStandaloneReportHtml(model);
     expect(downloaded).toContain("Technical evidence appendix");
     expect(downloaded).toContain("cargo_value&gt;=50000");
+    expect(downloaded).toContain('<details class="report-technical-appendix');
   });
 
   it("shows export actions only when a premium report exists", () => {
@@ -479,8 +505,8 @@ describe("RouteGuard interface model", () => {
   });
 
   it("technical formula/weights/hash are hidden behind collapsed details by default", () => {
-    expect(html).toContain('<details class="technical-evidence"');
-    expect(html).toContain('View scoring details');
+    expect(html).toContain('<details class="technical-evidence compact"');
+    expect(html).toContain('Technical evidence · scoring details');
   });
 
   it("route policy assignments section exists", () => {
@@ -546,17 +572,17 @@ describe("RouteGuard interface model", () => {
   });
 
   it("Policy & Governance first view does not show policy hash prominently", () => {
-    expect(html).toContain('<details><summary>View policy hash</summary>');
+    expect(html).toContain('Policy evidence · hash');
     expect(html).toContain('Policy Cockpit');
   });
 
   it("Policy hash is available behind a collapsed disclosure", () => {
-    expect(html).toContain('View policy hash');
+    expect(html).toContain('Policy evidence · hash');
   });
 
   it("Scoring formula/weights are hidden behind collapsed details by default", () => {
-    expect(html).toContain('View scoring details');
-    expect(html).toContain('<details class="technical-evidence"');
+    expect(html).toContain('Technical evidence · scoring details');
+    expect(html).toContain('<details class="technical-evidence compact"');
   });
 
   it("Payment safety policy remains visibly locked globally", () => {
@@ -568,5 +594,150 @@ describe("RouteGuard interface model", () => {
     // covered by overall suite; specific strings preserved
     expect(html).toContain('Premium RouteRisk Analysis');
     expect(html).toContain('Live Route Intelligence');
+  });
+
+  it("raw evidence disclosures use compact muted secondary styling", () => {
+    expect(html).toContain(".technical-evidence.compact");
+    expect(html).toContain("Technical evidence ·");
+    expect(html).toContain("color: var(--ink-faint)");
+    const block = ui.renderTechnicalEvidenceBlock(
+      completedReport.decision.checks as Array<Record<string, unknown>>,
+      completedReport.decision,
+      completedReport.report.reportHash,
+    );
+    expect(block).toContain("Technical evidence ·");
+    expect(block).toContain('<summary>');
+    expect(block).not.toContain("View raw policy evidence");
+  });
+
+  it("technical evidence appendix is collapsed and compact in exported reports", () => {
+    const model = ui.buildReportExportModel(completedReport, { vendorId: "route-risk-labs", sku: "premium-route-risk-v1" })!;
+    const appendix = ui.buildReportTechnicalAppendix(model);
+    expect(appendix).toContain("Technical evidence appendix ·");
+    expect(appendix).toContain("<details");
+    expect(appendix).toContain("technical-evidence-table");
+    expect(appendix).toContain("raw evidence");
+  });
+
+  it("exposes Archive completed cases bulk action", () => {
+    expect(html).toContain('id="archiveCompletedBtn"');
+    expect(html).toContain("Archive completed cases");
+    expect(html).toContain('id="archiveBulkStatus"');
+  });
+
+  it("does not bulk-archive pending approval cases", () => {
+    expect(ui.isCaseArchivable("approval-required", { kind: "APPROVAL_REQUIRED" })).toBe(false);
+    const results: Record<string, Record<string, unknown>> = {
+      "approval-required": { kind: "APPROVAL_REQUIRED" },
+      "auto-approved": completedReport as unknown as Record<string, unknown>,
+    };
+    expect(ui.findArchivableCases(results, cases, []).map((item) => item.id)).toEqual(["auto-approved"]);
+  });
+
+  it("does not bulk-archive blocked cases by default", () => {
+    expect(ui.isCaseArchivable("vendor-blocked", { kind: "BLOCKED" })).toBe(false);
+    expect(ui.isCaseArchivable("budget-exceeded", { kind: "BLOCKED" })).toBe(false);
+    const results: Record<string, Record<string, unknown>> = {
+      "vendor-blocked": { kind: "BLOCKED" },
+      "auto-approved": completedReport as unknown as Record<string, unknown>,
+    };
+    expect(ui.findArchivableCases(results, cases, []).map((item) => item.id)).toEqual(["auto-approved"]);
+  });
+
+  it("bulk-archives no-purchase final cases when results exist", () => {
+    const noPurchase = { kind: "NO_PURCHASE", explanation: "Free assessment sufficient." };
+    expect(ui.isCaseArchivable("no-purchase", noPurchase)).toBe(true);
+    const results: Record<string, Record<string, unknown>> = { "no-purchase": noPurchase };
+    const archived = ui.archiveCompletedCases(results, cases, [], "SIMULATION", false);
+    expect(archived).toHaveLength(1);
+    expect(archived[0]?.scenarioId).toBe("no-purchase");
+  });
+
+  it("workspace panels do not use modal or focus-trap roles", () => {
+    expect(html).not.toContain('role="dialog"');
+    expect(html).not.toContain("focus-trap");
+    expect(html).toContain('workspace-panel" id="stage"');
+    expect(html).toContain(".workspace-panel { overflow: visible; }");
+    expect(html).toContain('role="tablist"');
+    expect(html).toContain('role="tab"');
+    expect(html).toContain('role="tabpanel"');
+  });
+
+  it("resolves LIVE-MUC-IST to Pharma Temperature-Controlled Policy", () => {
+    const route = {
+      id: "LIVE-MUC-IST",
+      cargo: "Temperature-controlled pharmaceuticals",
+      cargoProfile: "TEMPERATURE_CONTROLLED",
+      transportMode: "ROAD_FREIGHT",
+    };
+    const resolved = ui.resolveRoutePolicy(route);
+    expect(resolved.name).toBe("Pharma Temperature-Controlled Policy");
+    expect(resolved.source).toBe("explicit assignment");
+  });
+
+  it("shows assigned route policy in live route intelligence markup paths", () => {
+    expect(html).toContain("resolveRoutePolicy");
+    expect(html).toContain("Pharma Temperature-Controlled Policy");
+    expect(html).toContain("routePolicyExplanation");
+  });
+
+  it("includes assigned route policy in premium report export model", () => {
+    const liveReport = {
+      ...completedReport,
+      report: {
+        ...completedReport.report,
+        reportType: "LIVE_ROUTE",
+        routeId: "LIVE-MUC-IST",
+        origin: "Munich",
+        destination: "Istanbul",
+        cargoSensitivity: "TEMPERATURE_CONTROLLED",
+      },
+    };
+    const model = ui.buildReportExportModel(liveReport, { vendorId: "route-risk-labs", sku: "premium-route-risk-v1" })!;
+    expect(model.assignedRoutePolicy?.name).toBe("Pharma Temperature-Controlled Policy");
+    const downloaded = ui.buildStandaloneReportHtml(model);
+    expect(downloaded).toContain("Assigned route policy");
+    expect(downloaded).toContain("Pharma Temperature-Controlled Policy");
+    expect(downloaded).toContain("temperature deviation");
+  });
+
+  it("keeps payment safety visibly locked and separate from route policy", () => {
+    expect(html).toContain("Locked globally: vendor, SKU, price, caps");
+    expect(html).toContain("Payment safety");
+    expect(html).not.toMatch(/route policy.*vendor account/i);
+  });
+
+  it("README includes thesis, bounty fit, safety, run instructions, and placeholders", () => {
+    const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
+    expect(readme).toContain("The LLM proposes. Policy decides. Hedera proves.");
+    expect(readme).toContain("Bounty fit");
+    expect(readme).toContain("npm run build");
+    expect(readme).toContain("npm run typecheck");
+    expect(readme).toContain("npm test");
+    expect(readme).toContain("npm run dev");
+    expect(readme).toContain("TODO_LIVE_DEMO_URL");
+    expect(readme).toContain("TODO_GITHUB_REPO_URL");
+    expect(readme).toContain("TODO_FEEDBACK_ISSUE_URL");
+    expect(readme).toContain("testnet only");
+    expect(readme).toContain("not affiliated with");
+  });
+
+  it("feedback issue placeholder and draft exist", () => {
+    const draft = readFileSync(new URL("../public/FEEDBACK_ISSUE_DRAFT.md", import.meta.url), "utf8");
+    expect(draft).toContain("Hedera Agent Kit");
+    expect(draft).toContain("TODO_GITHUB_REPO_URL");
+    const status = readFileSync(new URL("../public/PROJECT_STATUS.md", import.meta.url), "utf8");
+    expect(status).toContain("TODO_FEEDBACK_ISSUE_URL");
+  });
+
+  it("submission package exists with required bounty fields", () => {
+    const submission = readFileSync(new URL("../public/SUBMISSION_PACKAGE.md", import.meta.url), "utf8");
+    expect(submission).toContain("RouteGuard Pay Agent");
+    expect(submission).toContain("Hedera Policy Agent / Week 5");
+    expect(submission).toContain("The LLM proposes. Policy decides. Hedera proves.");
+    expect(submission).toContain("TODO_LIVE_DEMO_URL");
+    expect(submission).toContain("TODO_GITHUB_REPO_URL");
+    expect(submission).toContain("TODO_FEEDBACK_ISSUE_URL");
+    expect(submission).toContain("independent demo");
   });
 });

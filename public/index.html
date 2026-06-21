@@ -185,7 +185,7 @@
 
       /* Layout */
       .cols { display: grid; grid-template-columns: minmax(300px, 350px) minmax(0, 1fr); gap: 20px; align-items: start; }
-      .sidebar { display: grid; gap: 14px; position: sticky; top: 16px; }
+      .sidebar { display: grid; gap: 14px; position: static; }
       .card {
         border: 1px solid var(--line);
         border-radius: var(--radius-lg);
@@ -272,11 +272,11 @@
       .catalog-grid .pf:nth-child(3) { grid-column: 1 / -1; }
 
       /* Execution stage */
-      .stage { min-height: 620px; padding: 20px; }
+      .stage { min-height: 0; padding: 20px; overflow: visible; }
       .stage-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
       .stage-status { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-faint); font: 10px/1.2 var(--mono); }
       .stage-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px rgba(94,227,154,.55); }
-      .empty { display: grid; place-items: center; min-height: 510px; padding: 30px 16px; text-align: center; }
+      .empty { display: grid; place-items: center; min-height: 280px; padding: 30px 16px; text-align: center; }
       .empty-inner { width: min(720px, 100%); }
       .empty-symbol { display: grid; place-items: center; width: 54px; height: 54px; margin: 0 auto 16px; border: 1px solid rgba(148,135,255,.4); border-radius: 16px; color: var(--purple); background: var(--purple-soft); font: 750 17px/1 var(--mono); }
       .empty h3 { margin: 0; font-size: 19px; letter-spacing: -.025em; }
@@ -551,11 +551,42 @@
       .report-action:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
       .report-action:disabled { cursor: not-allowed; opacity: .45; }
       .report-export-empty { margin: 12px 0; padding: 12px; border: 1px dashed var(--line-strong); border-radius: 9px; color: var(--ink-dim); }
-      .technical-evidence { margin-top: 12px; border: 1px solid var(--line); border-radius: 9px; background: rgba(8,12,18,.28); }
-      .technical-evidence summary { cursor: pointer; padding: 11px 13px; color: var(--blue); font-weight: 700; }
-      .technical-evidence-body { padding: 0 13px 13px; }
-      .technical-record { padding: 9px 0; border-top: 1px solid var(--line); }
-      .technical-record code, .technical-evidence pre { font: 10px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+      .tab-view, .cols, .sidebar, #stage, #result { overflow: visible; max-height: none; }
+      .workspace-panel { overflow: visible; }
+      .archive-bulk-status { display: block; min-height: 16px; margin-top: 6px; color: var(--ink-faint); font: 9.5px/1.4 var(--mono); }
+      .technical-evidence { margin-top: 6px; border: none; border-radius: 0; background: transparent; }
+      .technical-evidence.compact { display: inline-block; width: 100%; }
+      .technical-evidence summary {
+        cursor: pointer;
+        display: inline-block;
+        padding: 0;
+        color: var(--ink-faint);
+        font: 500 9.5px/1.4 var(--mono);
+        letter-spacing: .02em;
+        list-style: none;
+      }
+      .technical-evidence summary::-webkit-details-marker { display: none; }
+      .technical-evidence summary::before { content: "▸ "; color: var(--ink-faint); }
+      .technical-evidence[open] summary::before { content: "▾ "; }
+      .technical-evidence summary:hover { color: var(--ink-dim); }
+      .technical-evidence-body {
+        margin-top: 6px;
+        padding: 8px 10px;
+        border: 1px solid rgba(40,51,68,.55);
+        border-radius: 6px;
+        background: rgba(8,12,18,.22);
+      }
+      .technical-evidence-table { width: 100%; border-collapse: collapse; font: 9px/1.45 var(--mono); }
+      .technical-evidence-table th, .technical-evidence-table td { padding: 4px 6px; border-bottom: 1px solid rgba(40,51,68,.45); text-align: left; vertical-align: top; }
+      .technical-evidence-table th { color: var(--ink-faint); font-weight: 600; width: 34%; }
+      .technical-evidence-table td { color: var(--ink-dim); overflow-wrap: anywhere; }
+      .technical-record { padding: 6px 0; border-top: 1px solid rgba(40,51,68,.4); }
+      .technical-record:first-child { border-top: 0; padding-top: 0; }
+      .technical-record b { color: var(--ink-faint); font: 600 8.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .05em; }
+      .technical-record code, .technical-evidence pre { font: 9px/1.45 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink-dim); }
+      .report-technical-appendix details { margin-top: 8px; }
+      .report-technical-appendix summary { color: #5a6573; font-size: 12px; }
+      .report-technical-appendix table { font-size: 11px; }
       .readable-reasons { margin: 10px 0; padding-left: 19px; color: var(--ink-dim); }
       .print-report { display: none; }
       @media (max-width: 1080px) {
@@ -687,6 +718,10 @@
         <div>
           <div class="section-kicker">Open operations queue</div>
           <div class="filter-group" id="caseFilters" aria-label="Filter active cases"></div>
+          <div class="case-actions" style="margin-top:10px">
+            <button class="ghost archive-btn" id="archiveCompletedBtn" type="button">Archive completed cases</button>
+            <output class="archive-bulk-status" id="archiveBulkStatus" aria-live="polite"></output>
+          </div>
         </div>
         <label class="sort-control" for="caseSort">Sort cases
           <select id="caseSort">
@@ -739,7 +774,7 @@
         </aside>
 
         <!-- stage -->
-        <main class="card stage" id="stage">
+        <main class="card stage workspace-panel" id="stage">
           <div class="stage-head">
             <div><div class="section-kicker">Policy Decision Workspace</div><h2>Case decision, approval &amp; audit</h2></div>
             <div class="case-actions"><span class="stage-status">system ready</span><button class="ghost archive-btn is-hidden" id="archiveCaseBtn" type="button">Archive case</button></div>
@@ -961,6 +996,41 @@
         "High-Value Cargo Policy",
         "Intermodal Policy",
       ];
+      const ROUTE_POLICY_CATALOG = {
+        "Standard RouteRisk Policy": {
+          policyId: "standard-route-risk",
+          policyVersion: "1.0.0",
+          policyHash: "standard-route-risk-v1-demo",
+          why: "Ordinary freight route without special cargo or mode constraints.",
+          effect: "Balanced weighting across structural complexity, weather exposure, cargo sensitivity, and schedule pressure.",
+          dimensions: ["structural complexity", "weather exposure", "cargo sensitivity", "data uncertainty"],
+        },
+        "Pharma Temperature-Controlled Policy": {
+          policyId: "pharma-temperature-controlled",
+          policyVersion: "1.0.0",
+          policyHash: "pharma-temperature-controlled-v1-demo",
+          why: "Route carries temperature-controlled pharmaceuticals and crosses multiple checkpoints.",
+          effect: "Higher sensitivity to temperature deviation, checkpoint freshness, ETA buffer, and border exposure.",
+          dimensions: ["temperature tolerance", "checkpoint freshness", "ETA buffer", "border exposure", "cargo sensitivity"],
+        },
+        "High-Value Cargo Policy": {
+          policyId: "high-value-cargo",
+          policyVersion: "1.0.0",
+          policyHash: "high-value-cargo-v1-demo",
+          why: "Cargo profile or declared value indicates elevated theft, handling, and delay exposure.",
+          effect: "Higher sensitivity to delay exposure, border handling, checkpoint reliability, and schedule pressure.",
+          dimensions: ["cargo value", "delay exposure", "border handling", "checkpoint reliability"],
+        },
+        "Intermodal Policy": {
+          policyId: "intermodal",
+          policyVersion: "1.0.0",
+          policyHash: "intermodal-v1-demo",
+          why: "Route or mode involves intermodal handoffs and connection risk.",
+          effect: "Higher sensitivity to handoffs, terminal risk, missed connections, and tracking completeness.",
+          dimensions: ["handoffs", "terminal risk", "missed connections", "tracking completeness"],
+        },
+      };
+      const CASE_RESULTS = new Map();
       let ACTIVE_FILTER = "all";
       let ARCHIVE_FILTER = "all";
       let SELECTED_SCENARIO = null;
@@ -1053,6 +1123,130 @@
         const state = syncExecutionModeControls(requestedMode);
         if (LAST && SELECTED_SCENARIO) render(LAST, SELECTED_SCENARIO);
         return state.mode;
+      }
+
+      function resolveRoutePolicy(route) {
+        if (!route) {
+          return { name: "Standard RouteRisk Policy", source: "default", meta: ROUTE_POLICY_CATALOG["Standard RouteRisk Policy"] };
+        }
+        const explicit = ROUTE_POLICY_ASSIGNMENTS[route.id];
+        if (explicit) {
+          return { name: explicit, source: "explicit assignment", meta: ROUTE_POLICY_CATALOG[explicit] || ROUTE_POLICY_CATALOG["Standard RouteRisk Policy"] };
+        }
+        if (route.cargoProfile === "TEMPERATURE_CONTROLLED" || /pharma|temperature/i.test(route.cargo || "")) {
+          const name = "Pharma Temperature-Controlled Policy";
+          return { name, source: "cargo profile", meta: ROUTE_POLICY_CATALOG[name] };
+        }
+        if (route.cargoProfile === "FRAGILE_HIGH_VALUE" || /high.?value|fragile/i.test(route.cargo || "")) {
+          const name = "High-Value Cargo Policy";
+          return { name, source: "cargo profile", meta: ROUTE_POLICY_CATALOG[name] };
+        }
+        if (route.transportMode === "INTERMODAL" || /intermodal/i.test(route.transportMode || "")) {
+          const name = "Intermodal Policy";
+          return { name, source: "transport mode", meta: ROUTE_POLICY_CATALOG[name] };
+        }
+        const name = "Standard RouteRisk Policy";
+        return { name, source: "default", meta: ROUTE_POLICY_CATALOG[name] };
+      }
+
+      function routePolicyExplanation(route, policyAssignment) {
+        const meta = policyAssignment.meta || ROUTE_POLICY_CATALOG[policyAssignment.name];
+        const emphasis = (meta?.dimensions || []).slice(0, 4).join(", ");
+        return `${meta?.effect || "Route policy applied to explanation and reporting."} Emphasis: ${emphasis}.`;
+      }
+
+      function countTechnicalEvidenceFields(checks, decision, reportHash, extras = {}) {
+        let count = Object.keys(extras).length;
+        (checks || []).forEach((check) => {
+          count += Object.keys(check.evidence || {}).length + 3;
+        });
+        if (decision?.policyVersion) count += 1;
+        if (decision?.canonicalHash) count += 1;
+        if (reportHash) count += 1;
+        return count;
+      }
+
+      function buildTechnicalEvidenceRows(checks, decision, reportHash, extras = {}) {
+        const rows = [];
+        Object.entries(extras).forEach(([label, value]) => {
+          if (value != null && value !== "") rows.push([label, value]);
+        });
+        (checks || []).forEach((check) => {
+          rows.push([`${check.name} · reason code`, check.reasonCode]);
+          rows.push([`${check.name} · policy ID`, check.policyId]);
+          rows.push([`${check.name} · raw evidence`, JSON.stringify(check.evidence || {}, null, 2)]);
+        });
+        if (decision?.policyVersion) rows.push(["policy version", decision.policyVersion]);
+        if (decision?.canonicalHash) rows.push(["policy hash", decision.canonicalHash]);
+        if (reportHash) rows.push(["report hash", reportHash]);
+        return rows;
+      }
+
+      function renderTechnicalEvidenceTable(rows) {
+        if (!rows.length) return `<p class="muted">No technical evidence recorded.</p>`;
+        return `<table class="technical-evidence-table"><tbody>${rows.map(([label, value]) => `<tr><th>${esc(label)}</th><td>${typeof value === "string" && value.includes("\n") ? `<pre>${esc(value)}</pre>` : `<code>${esc(value)}</code>`}</td></tr>`).join("")}</tbody></table>`;
+      }
+
+      function renderTechnicalEvidenceBlock(checks, decision, reportHash, extras = {}) {
+        const fieldCount = countTechnicalEvidenceFields(checks, decision, reportHash, extras);
+        const tableRows = buildTechnicalEvidenceRows(checks, decision, reportHash, extras);
+        return `<details class="technical-evidence compact"><summary>Technical evidence · ${fieldCount} fields</summary><div class="technical-evidence-body">${renderTechnicalEvidenceTable(tableRows)}</div></details>`;
+      }
+
+      function buildReportTechnicalAppendix(model) {
+        const checks = (model.technicalEvidence || []).map((item) => ({
+          name: item.name,
+          policyId: item.policyId,
+          reasonCode: item.reasonCode,
+          evidence: item.evidence,
+        }));
+        const extras = {
+          "assigned policy": model.assignedRoutePolicy?.name || "Not recorded",
+          "assignment source": model.assignedRoutePolicy?.source || "Not recorded",
+          "route policy ID": model.assignedRoutePolicy?.policyId || "Not recorded",
+          "route policy version": model.assignedRoutePolicy?.policyVersion || "Not recorded",
+          "route policy hash": model.assignedRoutePolicy?.policyHash || "Not recorded",
+          "route ID": model.targetType === "LIVE_ROUTE" ? model.targetId : "Not applicable",
+          "payment mode": model.payment?.mode || "Not recorded",
+          "transaction ID": model.payment?.transactionId || "Not recorded",
+          "entitlement ID": model.entitlement?.entitlementId || "Not recorded",
+          "HCS sequence numbers": (model.verification?.hcsSequenceNumbers || []).join(", ") || "Not recorded",
+        };
+        const rows = buildTechnicalEvidenceRows(checks, { policyVersion: model.policyVersion, canonicalHash: model.policyHash }, model.reportHash, extras);
+        const fieldCount = rows.length;
+        return `<details class="report-technical-appendix technical-evidence compact"><summary>Technical evidence appendix · ${fieldCount} fields</summary><div class="technical-evidence-body">${renderTechnicalEvidenceTable(rows)}</div></details>`;
+      }
+
+      function isCaseArchivable(scenarioId, data, archivedIds = []) {
+        if (!scenarioId || !data || new Set(archivedIds).has(scenarioId)) return false;
+        if (data.kind === "BLOCKED" || data.kind === "REJECTED") return false;
+        if (data.kind === "APPROVAL_REQUIRED") return false;
+        if (data.kind === "FAILED") return false;
+        if (data.kind === "NO_PURCHASE") return true;
+        if (data.kind === "COMPLETED") return Boolean(data.report);
+        return false;
+      }
+
+      function findArchivableCases(caseResults, scenarios, archivedIds = []) {
+        return scenarios.filter((scenario) => {
+          const data = caseResults instanceof Map ? caseResults.get(scenario.id) : caseResults?.[scenario.id];
+          return isCaseArchivable(scenario.id, data, archivedIds);
+        });
+      }
+
+      function archiveCompletedCases(caseResults, scenarios, archivedIds, selectedMode, livePaymentsEnabled) {
+        const archived = new Set(archivedIds);
+        const archivedOut = [];
+        scenarios.forEach((scenario) => {
+          const data = caseResults instanceof Map ? caseResults.get(scenario.id) : caseResults?.[scenario.id];
+          if (!isCaseArchivable(scenario.id, data, [...archived])) return;
+          archived.add(scenario.id);
+          archivedOut.push({
+            scenarioId: scenario.id,
+            record: createArchiveRecord(scenario, data, new Date().toISOString(), selectedMode, livePaymentsEnabled),
+          });
+        });
+        return archivedOut;
       }
 
       function filterCases(cases, filter, archivedIds = []) {
@@ -1175,7 +1369,7 @@
           }
         };
         tabs.forEach((tab, index) => {
-          tab.onclick = () => activate(tab.dataset.tab);
+          tab.onclick = () => activate(tab.dataset.tab, false);
           tab.onkeydown = (event) => {
             if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
               return;
@@ -1331,8 +1525,8 @@
       function liveRouteCard(route) {
         const temperatureRange = `${route.temperatureToleranceC.minimum}–${route.temperatureToleranceC.maximum}°C`;
         const routeFacts = `${route.transportMode.replaceAll("_", " ")} · ${route.approximateDistanceKm.toLocaleString()} km · ${route.borderCount} border${route.borderCount === 1 ? "" : "s"} · ${route.checkpoints.length} points · ${route.estimatedTransitHours}h`;
-        const assigned = ROUTE_POLICY_ASSIGNMENTS[route.id] || "Standard RouteRisk Policy";
-        return `<article class="live-route-card"><div><div class="route-id">${esc(route.id)}</div><h3>${esc(route.origin)} → ${esc(route.destination)}</h3><div class="cargo">${esc(route.cargo)} · tolerance ${temperatureRange}</div><div class="muted mono">${esc(routeFacts)}</div><div class="source-badge">Policy: ${esc(assigned)}</div></div>${routeTrack(route)}<button type="button" class="assess-live-route live-primary" data-route-id="${esc(route.id)}">Assess live route risk</button></article>`;
+        const policyAssignment = resolveRoutePolicy(route);
+        return `<article class="live-route-card"><div><div class="route-id">${esc(route.id)}</div><h3>${esc(route.origin)} → ${esc(route.destination)}</h3><div class="cargo">${esc(route.cargo)} · tolerance ${temperatureRange}</div><div class="muted mono">${esc(routeFacts)}</div><div class="source-badge">Policy: ${esc(policyAssignment.name)}</div></div>${routeTrack(route)}<button type="button" class="assess-live-route live-primary" data-route-id="${esc(route.id)}">Assess live route risk</button></article>`;
       }
 
       function renderLiveRouteCards(routes) {
@@ -1371,24 +1565,37 @@
         return `<div class="weather-metric">${esc(label)}<b>${esc(value)}</b></div>`;
       }
 
-      function deriveCheckpointRisk(checkpoint, route) {
+      function deriveCheckpointRisk(checkpoint, route, policyAssignment) {
         if (typeof checkpoint.temperatureC !== 'number' || !route || !route.temperatureToleranceC) {
           return { band: 'uncertain', reasons: ['live weather evidence unavailable'] };
         }
         const tol = route.temperatureToleranceC;
         const t = checkpoint.temperatureC;
         const triggered = checkpoint.triggeredReasonCodes || [];
+        const policyName = policyAssignment?.name || "Standard RouteRisk Policy";
+        const reasons = [];
         if (triggered.includes('TEMPERATURE_EXPOSURE_OUTSIDE_TOLERANCE') || t < tol.minimum || t > tol.maximum) {
-          return { band: 'high', reasons: [`temperature ${t}°C outside cargo tolerance ${tol.minimum}–${tol.maximum}°C`] };
+          reasons.push(`temperature ${t}°C outside cargo tolerance ${tol.minimum}–${tol.maximum}°C`);
+          if (policyName === "Pharma Temperature-Controlled Policy") {
+            reasons.push("pharma policy elevates temperature deviation sensitivity");
+          }
+          return { band: 'high', reasons };
         }
         if (triggered.length) {
-          return { band: 'elevated', reasons: triggered.map(c => c.replace(/_/g,' ').toLowerCase()) };
+          const mapped = triggered.map((c) => c.replace(/_/g, " ").toLowerCase());
+          if (policyName === "Pharma Temperature-Controlled Policy" && mapped.some((r) => r.includes("precipitation") || r.includes("wind"))) {
+            mapped.push("checkpoint freshness and border exposure monitored under pharma policy");
+          }
+          return { band: 'elevated', reasons: mapped };
+        }
+        if (policyName === "Pharma Temperature-Controlled Policy" && route.borderCount >= 3) {
+          return { band: 'moderate', reasons: ['within tolerances', 'border exposure noted under pharma temperature policy'] };
         }
         return { band: 'low', reasons: ['within tolerances and thresholds'] };
       }
 
-      function renderCheckpointWeather(checkpoint, route) {
-        const risk = deriveCheckpointRisk(checkpoint, route);
+      function renderCheckpointWeather(checkpoint, route, policyAssignment) {
+        const risk = deriveCheckpointRisk(checkpoint, route, policyAssignment);
         const bandClass = { low: 'p-pass', moderate: 'p-appr', elevated: 'p-appr', high: 'p-appr', critical: 'p-block', uncertain: 'p-none' }[risk.band] || 'p-none';
         const reasons = risk.reasons.join('; ');
         const rawMetrics = [
@@ -1430,8 +1637,8 @@
         LAST_LIVE_ROUTE_RESULT = result;
         const bandClass = { low: "p-pass", moderate: "p-appr", high: "p-appr", critical: "p-block" }[result.riskBand] || "p-none";
         const thresholds = LIVE_ROUTE_CATALOG?.policy?.thresholds;
-        const assignedPolicy = (typeof ROUTE_POLICY_ASSIGNMENTS !== 'undefined' && ROUTE_POLICY_ASSIGNMENTS[result.route.id]) || 'Standard RouteRisk Policy';
-        const evidence = result.checkpointEvidence.map((checkpoint) => renderCheckpointWeather(checkpoint, result.route)).join("");
+        const policyAssignment = resolveRoutePolicy(result.route);
+        const evidence = result.checkpointEvidence.map((checkpoint) => renderCheckpointWeather(checkpoint, result.route, policyAssignment)).join("");
         const rules = result.triggeredRules.length
           ? result.triggeredRules.map((rule) => renderTriggeredRule(rule)).join("")
           : `<div class="muted">No weather demonstration threshold was triggered. This is evidence-based low risk, not an approval for procurement.</div>`;
@@ -1440,20 +1647,32 @@
         const confidence = Math.round(result.confidence * 100);
         // Decision-focused first view
         const cpSummary = result.checkpointEvidence.map(cp => {
-          const r = deriveCheckpointRisk(cp, result.route);
+          const r = deriveCheckpointRisk(cp, result.route, policyAssignment);
           const bc = {low:'p-pass',moderate:'p-appr',elevated:'p-appr',high:'p-appr',critical:'p-block',uncertain:'p-none'}[r.band]||'p-none';
           return `<span class="pill ${bc}">${esc(cp.name)}:${esc(r.band)}</span>`;
         }).join(' ');
+        const policyDrivers = (policyAssignment.meta?.dimensions || []).slice(0, 2).map((d) => `${d} sensitivity`);
         const topDrivers = (result.triggeredReasonCodes || []).slice(0,3).map(c=>c.replace(/_/g,' ').toLowerCase()).concat(
           result.riskContributions ? [`structural ${result.riskContributions.structuralComplexity}`, `weather ${result.riskContributions.liveWeatherExposure}`] : []
-        ).slice(0,3).join('; ') || 'low exposure across factors';
-        const resultHeader = `<div class="live-result-head"><div><div class="section-kicker">${esc(result.route.id)} · ${esc(assignedPolicy)}</div><h3>${esc(result.route.origin)} → ${esc(result.route.destination)} · ${esc(result.route.cargo)}</h3><div class="live-score"><span class="n">${result.score}</span><span>/ 100</span><span class="pill ${bandClass}">${esc(result.riskBand.toUpperCase())}</span></div><div class="muted">Premium: ${reportRecommendation} · freshness ${esc(result.dataFreshness.status)}</div></div></div>`;
+        ).concat(policyDrivers).slice(0,3).join('; ') || 'low exposure across factors';
+        const policyEffect = routePolicyExplanation(result.route, policyAssignment);
+        const resultHeader = `<div class="live-result-head"><div><div class="section-kicker">${esc(result.route.id)} · ${esc(policyAssignment.name)}</div><h3>${esc(result.route.origin)} → ${esc(result.route.destination)} · ${esc(result.route.cargo)}</h3><div class="live-score"><span class="n">${result.score}</span><span>/ 100</span><span class="pill ${bandClass}">${esc(result.riskBand.toUpperCase())}</span></div><div class="muted">Premium: ${reportRecommendation} · freshness ${esc(result.dataFreshness.status)}</div><p class="muted">${esc(policyEffect)}</p></div></div>`;
         const riskContributions = renderRiskContributions(result.riskContributions);
         const cpRiskSummary = `<div class="blk"><div class="lbl">Checkpoint risk summary</div><p>${cpSummary}</p><p class="muted">Top drivers: ${esc(topDrivers)}</p></div>`;
-        const policyFacts = `<details><summary>View policy hash and data freshness</summary><div class="policy-facts"><div><span>source</span><b>${esc(formatTimestamp(result.sourceTimestamp))}</b></div><div><span>retrieved</span><b>${esc(formatTimestamp(result.retrievedAt))}</b></div><div><span>data freshness</span><b>${esc(result.dataFreshness.status)} · max ${result.dataFreshness.maximumAgeMinutes} minutes</b></div><div><span>weather policy</span><b>v${esc(result.policyVersion)} · ${esc(result.policyHash)}</b></div></div></details>`;
+        const policyExtras = {
+          "assigned policy": policyAssignment.name,
+          "assignment source": policyAssignment.source,
+          "route policy ID": policyAssignment.meta?.policyId,
+          "route policy version": policyAssignment.meta?.policyVersion,
+          "route policy hash": policyAssignment.meta?.policyHash,
+          "route ID": result.route.id,
+          "weather policy version": result.policyVersion,
+          "weather policy hash": result.policyHash,
+        };
+        const policyFacts = renderTechnicalEvidenceBlock([], { policyVersion: result.policyVersion, canonicalHash: result.policyHash }, null, policyExtras);
         const triggeredRules = `<div class="blk"><div class="lbl">Triggered demonstration rules</div><div class="rule-list">${rules}</div></div>`;
         const purchaseAction = result.premiumReportRecommended
-          ? `<div class="product-card"><h3>Premium RouteRisk Analysis is recommended</h3><p class="muted">Expected value: deeper structural, cargo, checkpoint, mitigation, and operational analysis. Vendor Route Risk Labs · premium-route-risk-v1 · fixed price 0.05 HBAR.</p><button type="button" id="purchaseLivePremium" class="live-primary purchase-live">Purchase single-use premium API access</button></div>`
+          ? `<div class="product-card"><h3>Premium RouteRisk Analysis is recommended</h3><p class="muted">Under ${esc(policyAssignment.name)}, recommendation weighs ${esc((policyAssignment.meta?.dimensions || []).slice(0, 3).join(", ") || "route evidence")}. Vendor Route Risk Labs · premium-route-risk-v1 · fixed price 0.05 HBAR.</p><button type="button" id="purchaseLivePremium" class="live-primary purchase-live">Purchase single-use premium API access</button></div>`
           : `<div class="simulation-notice">The free assessment is sufficient. No purchase, payment, or entitlement is proposed.</div>`;
         $("#liveRouteResult").innerHTML = `${resultHeader}${cpRiskSummary}${riskContributions}${policyFacts}<div class="weather-grid">${evidence}</div>${triggeredRules}${policyDetails}${purchaseAction}<div class="simulation-notice">${esc(result.disclaimer)}</div><p class="muted"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo ↗</a></p>`;
         const purchaseButton = $("#purchaseLivePremium");
@@ -1563,8 +1782,8 @@
             <div><span>effective</span><b>${esc(policy.effectiveDate)}</b></div>
             <div><span>policy ID</span><b>${esc(policy.policyId)}</b></div>
           </div>
-          <details><summary>View policy hash</summary><div class="muted mono">${esc(policy.policyHash)}</div></details>
-          <details class="technical-evidence"><summary>View scoring details (weights, thresholds, bands)</summary>
+          <details class="technical-evidence compact"><summary>Policy evidence · hash</summary><div class="technical-evidence-body"><code>${esc(policy.policyHash)}</code></div></details>
+          <details class="technical-evidence compact"><summary>Technical evidence · scoring details</summary>
             <div class="simulation-notice">score = min(${policy.score.maximum}, MODE + CARGO + VALUE + ROUTE + SCHEDULE + SIGNALS)</div>
             <div class="governance-grid">
               <div class="gov-card third"><h3>Weights</h3><table class="policy-table"><tbody>${rows}</tbody></table></div>
@@ -1774,6 +1993,33 @@
         syncExecutionModeControls();
         $("#resetBtn").onclick = resetDemo;
         $("#archiveCaseBtn").onclick = archiveSelectedCase;
+        $("#archiveCompletedBtn").onclick = archiveAllCompletedCases;
+      }
+
+      function archiveAllCompletedCases() {
+        const results = archiveCompletedCases(
+          CASE_RESULTS,
+          SCENARIOS,
+          [...ARCHIVED.keys()],
+          executionModeFor($("#executionMode").value, HEALTH.livePaymentsEnabled),
+          HEALTH.livePaymentsEnabled,
+        );
+        if (!results.length) {
+          $("#archiveBulkStatus").textContent = "No completed cases available to archive.";
+          return;
+        }
+        results.forEach(({ scenarioId, record }) => ARCHIVED.set(scenarioId, record));
+        if (SELECTED_SCENARIO && ARCHIVED.has(SELECTED_SCENARIO.id)) {
+          LAST = null;
+          SELECTED_SCENARIO = null;
+          $("#result").classList.add("is-hidden");
+          $("#emptyState").classList.remove("is-hidden");
+          $("#archiveCaseBtn").classList.add("is-hidden");
+        }
+        renderCaseFilters();
+        renderScenarios();
+        renderArchive();
+        $("#archiveBulkStatus").textContent = `Archived ${results.length} completed case${results.length === 1 ? "" : "s"}.`;
       }
 
       function renderCaseFilters() {
@@ -2030,6 +2276,7 @@
       async function resetDemo() {
         await fetch("/api/sandbox/reset", { method: "POST" });
         ARCHIVED.clear();
+        CASE_RESULTS.clear();
         LAST = null;
         SELECTED_SCENARIO = null;
         $("#result").classList.add("is-hidden");
@@ -2061,7 +2308,9 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ shipmentId: scn.shipmentId, scenarioId: scn.id, executionMode: mode }),
           });
-          render(await res.json(), scn);
+          const data = await res.json();
+          CASE_RESULTS.set(scn.id, data);
+          render(data, scn);
         } catch (e) {
           renderError(String(e));
         }
@@ -2196,8 +2445,7 @@
       }
 
       function renderTechnicalCheck(check, decision, reportHash) {
-        const raw = JSON.stringify(check.evidence || {}, null, 2);
-        return `<details class="technical-evidence"><summary>View raw policy evidence</summary><div class="technical-evidence-body"><div class="technical-record"><b>reason code</b><br><code>${esc(check.reasonCode)}</code></div><div class="technical-record"><b>raw evidence</b><pre>${esc(raw)}</pre></div><div class="technical-record"><b>policy ID</b><br><code>${esc(check.policyId)}</code></div><div class="technical-record"><b>policy version</b><br><code>${esc(decision.policyVersion)}</code></div><div class="technical-record"><b>policy hash</b><br><code>${esc(decision.canonicalHash)}</code></div>${reportHash ? `<div class="technical-record"><b>report hash</b><br><code>${esc(reportHash)}</code></div>` : ""}</div></details>`;
+        return renderTechnicalEvidenceBlock([check], decision, reportHash);
       }
 
       function safeProviderSignal(signal) {
@@ -2227,6 +2475,10 @@
         const report = data.report;
         const verification = data.verification || {};
         const decision = data.decision || {};
+        const routeForPolicy = report.reportType === "LIVE_ROUTE"
+          ? (LIVE_ROUTE_CATALOG?.routes || []).find((route) => route.id === report.routeId) || { id: report.routeId, cargo: report.cargoSensitivity, cargoProfile: report.cargoSensitivity }
+          : null;
+        const policyAssignment = routeForPolicy ? resolveRoutePolicy(routeForPolicy) : null;
         return {
           title: "Premium RouteRisk Analysis",
           product: "RouteGuard Pay Agent",
@@ -2258,6 +2510,16 @@
           policyVersion: report.policyVersion,
           policyHash: report.policyHash,
           reportHash: report.reportHash,
+          assignedRoutePolicy: policyAssignment ? {
+            name: policyAssignment.name,
+            source: policyAssignment.source,
+            why: policyAssignment.meta?.why,
+            effect: policyAssignment.meta?.effect,
+            dimensions: [...(policyAssignment.meta?.dimensions || [])],
+            policyId: policyAssignment.meta?.policyId,
+            policyVersion: policyAssignment.meta?.policyVersion,
+            policyHash: policyAssignment.meta?.policyHash,
+          } : null,
           technicalEvidence: (decision.checks || []).map((check) => ({ policyId: check.policyId, name: check.name, outcome: check.outcome, reasonCode: check.reasonCode, evidence: check.evidence })),
           disclaimers: [report.disclaimer, "Decision-support only · not insurance, legal, safety, or compliance advice.", "Customer-specific provider evidence only · not shared across customers · not a public carrier rating.", "Raw provider records are not written to Hedera."].filter(Boolean),
         };
@@ -2291,7 +2553,10 @@
         const insurance = model.insuranceSupportEvidence ? `${reportTable([["Route", model.insuranceSupportEvidence.route], ["Cargo", model.insuranceSupportEvidence.cargo], ["ETA", model.insuranceSupportEvidence.eta], ["Provider alias", model.insuranceSupportEvidence.providerAlias], ["Policy version", model.insuranceSupportEvidence.policyVersion], ["Evidence hashes", model.insuranceSupportEvidence.evidenceHashes.join(", ") || "Not recorded"], ["Evaluated", model.insuranceSupportEvidence.evaluatedAt], ["Generated", model.insuranceSupportEvidence.generatedAt]])}<p>${esc(model.insuranceSupportEvidence.disclaimer)}</p>` : "<p>Not available.</p>";
         const alternative = model.alternativeRouteOrMitigationRecommendation ? `<p>${esc(model.alternativeRouteOrMitigationRecommendation.recommendation)}</p><ul>${model.alternativeRouteOrMitigationRecommendation.basis.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : "<p>Not available.</p>";
         const policy = model.policyEvaluationSummary.map((check) => `<tr><td>${esc(check.name)}</td><td>${esc(check.outcome)}</td><td>${check.explanation.map((item) => esc(item)).join(" ")}</td></tr>`).join("");
-        return `<header><h1>RouteGuard</h1><p><b>${esc(model.title)}</b></p></header><section><h2>Executive summary</h2>${reportTable([["Case or route ID", model.targetId], ["Vendor", model.vendor], ["SKU", model.sku], ["Generated", model.generatedAt], ["Decision", model.decision], ["Risk score", `${model.riskScore}/100`], ["Risk band", model.riskBand], ["Confidence", model.confidence]])}</section><section><h2>Route or shipment context</h2>${reportTable(Object.entries(model.context))}</section><section><h2>Premium analysis result</h2><ul>${recommendations}</ul><table><thead><tr><th>Code</th><th>Factor</th><th>Contribution</th><th>Explanation</th></tr></thead><tbody>${factors}</tbody></table></section><section><h2>Why premium analysis was justified</h2><ul>${why}</ul></section><section><h2>Policy evaluation summary</h2><table><thead><tr><th>Policy</th><th>Outcome</th><th>Readable explanation</th></tr></thead><tbody>${policy}</tbody></table></section><section><h2>Private Provider Reliability Signal</h2>${provider}</section><section><h2>ETA Reliability Risk</h2>${eta}</section><section><h2>Insurance-support evidence</h2>${insurance}</section><section><h2>Alternative route / mitigation recommendations</h2>${alternative}</section><section><h2>Verification &amp; Audit</h2>${reportTable([["Payment mode", model.payment.mode], ["Transaction ID", model.payment.transactionId], ["Verification state", model.verification.status], ["Mirror confirmation", model.verification.mirrorNodeConfirmation], ["HCS anchoring", model.verification.hcsAnchoringStatus], ["HCS sequence numbers", model.verification.hcsSequenceNumbers.join(", ") || "Not recorded"], ["Entitlement ID", model.entitlement?.entitlementId], ["Policy version", model.policyVersion], ["Policy hash", model.policyHash], ["Report hash", model.reportHash]])}</section><section><h2>Technical evidence appendix</h2><pre>${esc(JSON.stringify(model.technicalEvidence, null, 2))}</pre></section><section><h2>Disclaimers</h2><ul>${model.disclaimers.map((item) => `<li>${esc(item)}</li>`).join("")}</ul></section>`;
+        const assignedPolicy = model.assignedRoutePolicy
+          ? `<section><h2>Assigned route policy</h2>${reportTable([["Assigned policy", model.assignedRoutePolicy.name], ["Why", model.assignedRoutePolicy.why], ["Risk dimensions emphasized", (model.assignedRoutePolicy.dimensions || []).join(", ")], ["Effect on recommendation", model.assignedRoutePolicy.effect], ["Assignment source", model.assignedRoutePolicy.source]])}</section>`
+          : "";
+        return `<header><h1>RouteGuard</h1><p><b>${esc(model.title)}</b></p></header><section><h2>Executive summary</h2>${reportTable([["Case or route ID", model.targetId], ["Vendor", model.vendor], ["SKU", model.sku], ["Generated", model.generatedAt], ["Decision", model.decision], ["Risk score", `${model.riskScore}/100`], ["Risk band", model.riskBand], ["Confidence", model.confidence]])}</section>${assignedPolicy}<section><h2>Route or shipment context</h2>${reportTable(Object.entries(model.context))}</section><section><h2>Premium analysis result</h2><ul>${recommendations}</ul><table><thead><tr><th>Code</th><th>Factor</th><th>Contribution</th><th>Explanation</th></tr></thead><tbody>${factors}</tbody></table></section><section><h2>Why premium analysis was justified</h2><ul>${why}</ul></section><section><h2>Policy evaluation summary</h2><table><thead><tr><th>Policy</th><th>Outcome</th><th>Readable explanation</th></tr></thead><tbody>${policy}</tbody></table></section><section><h2>Private Provider Reliability Signal</h2>${provider}</section><section><h2>ETA Reliability Risk</h2>${eta}</section><section><h2>Insurance-support evidence</h2>${insurance}</section><section><h2>Alternative route / mitigation recommendations</h2>${alternative}</section><section><h2>Verification &amp; Audit</h2>${reportTable([["Payment mode", model.payment.mode], ["Transaction ID", model.payment.transactionId], ["Verification state", model.verification.status], ["Mirror confirmation", model.verification.mirrorNodeConfirmation], ["HCS anchoring", model.verification.hcsAnchoringStatus], ["HCS sequence numbers", model.verification.hcsSequenceNumbers.join(", ") || "Not recorded"], ["Entitlement ID", model.entitlement?.entitlementId], ["Policy version", model.policyVersion], ["Policy hash", model.policyHash], ["Report hash", model.reportHash]])}</section><section><h2>Technical evidence appendix</h2>${buildReportTechnicalAppendix(model)}</section><section><h2>Disclaimers</h2><ul>${model.disclaimers.map((item) => `<li>${esc(item)}</li>`).join("")}</ul></section>`;
       }
 
       function buildStandaloneReportHtml(model) {
@@ -2356,13 +2621,13 @@
             return `<div class="chk">
               <div class="chk-top"><span class="chk-name">${esc(c.name)}</span>${pill(c.outcome)}</div>
               <ul class="readable-reasons">${readable}</ul>
-              ${renderTechnicalCheck(c, decision, reportHash)}
             </div>`;
           })
           .join("");
         const scenarioLabel = statusForScenario(scenarioId);
         const decisionLabel = policyDecisionLabel(scenarioLabel, decision.decision);
-        return `<div class="blk"><div class="lbl">Policy Evaluation · ${decisionLabel} · v${decision.policyVersion} · hash ${esc(decision.canonicalHash.slice(0, 16))}…</div><div class="gate">${checks}</div></div>`;
+        const technical = renderTechnicalEvidenceBlock(decision.checks, decision, reportHash);
+        return `<div class="blk"><div class="lbl">Policy Evaluation · ${decisionLabel} · v${decision.policyVersion}</div><div class="gate">${checks}</div>${technical}</div>`;
       }
 
       function pf(k, v, copy) {
@@ -2493,12 +2758,37 @@
         const whyReasons = data ? readableResultReasons(data) : [];
         const why = whyReasons.length ? whyReasons.map((reason) => `<li>${esc(reason)}</li>`).join("") : `<li>Premium analysis was delivered through the policy-gated entitlement workflow.</li>`;
         const policySummary = (data?.decision?.checks || []).map((check) => `<li><b>${esc(check.name)}</b> · ${esc(check.outcome)} · ${esc(readableCheckReasons(check).join(" "))}</li>`).join("") || `<li>Policy summary is available in the verification evidence.</li>`;
-        const technicalAppendix = (data?.decision?.checks || []).map((check) => renderTechnicalCheck(check, data.decision, report.reportHash)).join("") || `<p class="muted">No raw policy checks were supplied with this report.</p>`;
+        const routeForPolicy = report.reportType === "LIVE_ROUTE"
+          ? (LIVE_ROUTE_CATALOG?.routes || []).find((route) => route.id === report.routeId) || { id: report.routeId, cargo: report.cargoSensitivity, cargoProfile: report.cargoSensitivity }
+          : null;
+        const policyAssignment = routeForPolicy ? resolveRoutePolicy(routeForPolicy) : null;
+        const assignedPolicySection = policyAssignment
+          ? `<section><h3>Assigned route policy</h3><p><b>${esc(policyAssignment.name)}</b></p><p class="muted"><b>Why:</b> ${esc(policyAssignment.meta?.why)}</p><p class="muted"><b>Emphasis:</b> ${esc((policyAssignment.meta?.dimensions || []).join(", "))}</p><p class="muted"><b>Effect:</b> ${esc(policyAssignment.meta?.effect)}</p></section>`
+          : "";
+        const technicalExtras = policyAssignment ? {
+          "assigned policy": policyAssignment.name,
+          "assignment source": policyAssignment.source,
+          "route policy ID": policyAssignment.meta?.policyId,
+          "route policy version": policyAssignment.meta?.policyVersion,
+          "route policy hash": policyAssignment.meta?.policyHash,
+          "route ID": report.routeId || "Not applicable",
+          "entitlement ID": data?.entitlement?.entitlementId,
+          "HCS sequence numbers": data?.verification?.hcsSequenceNumbers?.join(", "),
+          "transaction ID": data?.payment?.transactionId,
+        } : {
+          "entitlement ID": data?.entitlement?.entitlementId,
+          "HCS sequence numbers": data?.verification?.hcsSequenceNumbers?.join(", "),
+          "transaction ID": data?.payment?.transactionId,
+        };
+        const technicalAppendix = (data?.decision?.checks || []).length
+          ? renderTechnicalEvidenceBlock(data.decision.checks, data.decision, report.reportHash, technicalExtras)
+          : `<p class="muted">No raw policy checks were supplied with this report.</p>`;
         const verificationSummary = data ? `<div class="policy-facts"><div><span>verification state</span><b>${esc(data.verification?.status || "Not recorded")}</b></div><div><span>payment mode / transaction</span><b>${esc(data.payment?.mode || "Not recorded")} · ${esc(data.payment?.transactionId || "Not recorded")}</b></div><div><span>HCS sequence numbers</span><b>${esc(data.verification?.hcsSequenceNumbers?.join(", ") || "Not recorded")}</b></div><div><span>entitlement ID</span><b>${esc(data.entitlement?.entitlementId || "Not recorded")}</b></div></div>` : "";
         return `<div class="blk"><div class="lbl">Premium RouteRisk report</div>
           <section><h3>Executive summary</h3>
           <div class="score"><span class="n">${report.riskScore}</span><span class="muted">/ 100</span><span class="pill ${bandColor}">${esc(report.riskBand.toUpperCase())}</span></div>
-          <div class="muted mono">policy v${esc(report.policyVersion)} · ${esc(report.policyHash)} · evaluated ${esc(report.evaluatedAt)} · total before cap ${report.totalBeforeCap}</div></section>
+          <div class="muted">Evaluated ${esc(report.evaluatedAt)} · total before cap ${report.totalBeforeCap}</div></section>
+          ${assignedPolicySection}
           <section><h3>Route or shipment context</h3>${targetDetails}</section>
           <section><h3>Premium analysis result</h3>
           <div class="factors">${factors}</div>
@@ -2508,7 +2798,7 @@
           ${renderPremiumEvidenceSections(report, executionMode)}
           <div class="governance-grid"><div class="gov-card third"><h3>Recommended controls</h3><ul class="controls-list">${controls}</ul></div><div class="gov-card third"><h3>Mitigations</h3><ul class="controls-list">${mitigations}</ul></div><div class="gov-card third"><h3>Operational actions</h3><ul class="controls-list">${operations}</ul></div></div>
           <section><h3>Verification &amp; Audit</h3>${verificationSummary}</section>
-          <section><h3>Technical evidence appendix</h3>${technicalAppendix}</section>
+          <section><h3>Technical evidence appendix</h3><div class="report-technical-appendix">${technicalAppendix}</div></section>
           <section><h3>Disclaimers</h3><p>${esc(report.disclaimer)}</p><p>Decision-support only · not insurance, legal, safety, or compliance advice. Customer-specific provider evidence only · not shared across customers · not a public carrier rating. Raw provider records are not written to Hedera.</p></section>
           <div class="muted mono">report hash ${esc(report.reportHash)} · generated ${esc(formatTimestamp(report.generatedAt))}</div>
         </div>`;
@@ -2518,6 +2808,9 @@
       function render(data, scn) {
         LAST = data;
         SELECTED_SCENARIO = SCENARIOS.find((scenario) => scenario.id === scn?.id) || SELECTED_SCENARIO || scn;
+        if (SELECTED_SCENARIO?.id && data) {
+          CASE_RESULTS.set(SELECTED_SCENARIO.id, data);
+        }
         const r = $("#result");
         r.classList.remove("is-hidden");
         $("#emptyState").classList.add("is-hidden");
@@ -2728,6 +3021,12 @@
         hasReportExportActions,
         renderReportActions,
         renderGate,
+        renderTechnicalEvidenceBlock,
+        buildReportTechnicalAppendix,
+        isCaseArchivable,
+        findArchivableCases,
+        archiveCompletedCases,
+        resolveRoutePolicy,
       };
       if (typeof document !== "undefined") {
         boot();
