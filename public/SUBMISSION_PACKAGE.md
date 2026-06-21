@@ -6,7 +6,7 @@
 
 **Live demo:** TODO_LIVE_DEMO_URL  
 **GitHub repo:** TODO_GITHUB_REPO_URL  
-**Feedback issue:** TODO_FEEDBACK_ISSUE_URL
+**Feedback issue:** https://github.com/hashgraph/hedera-agent-kit-js/issues/955
 
 ---
 

@@ -721,7 +721,7 @@ describe("RouteGuard interface model", () => {
     expect(readme).toContain("npm run dev");
     expect(readme).toContain("TODO_LIVE_DEMO_URL");
     expect(readme).toContain("TODO_GITHUB_REPO_URL");
-    expect(readme).toContain("TODO_FEEDBACK_ISSUE_URL");
+    expect(readme).toContain("https://github.com/hashgraph/hedera-agent-kit-js/issues/955");
     expect(readme).toContain("testnet only");
     expect(readme).toContain("not affiliated with");
   });
@@ -731,7 +731,7 @@ describe("RouteGuard interface model", () => {
     expect(draft).toContain("Hedera Agent Kit");
     expect(draft).toContain("TODO_GITHUB_REPO_URL");
     const status = readFileSync(new URL("../public/PROJECT_STATUS.md", import.meta.url), "utf8");
-    expect(status).toContain("TODO_FEEDBACK_ISSUE_URL");
+    expect(status).toContain("https://github.com/hashgraph/hedera-agent-kit-js/issues/955");
   });
 
   it("submission package exists with required bounty fields", () => {
@@ -741,7 +741,7 @@ describe("RouteGuard interface model", () => {
     expect(submission).toContain("The LLM proposes. Policy decides. Hedera proves.");
     expect(submission).toContain("TODO_LIVE_DEMO_URL");
     expect(submission).toContain("TODO_GITHUB_REPO_URL");
-    expect(submission).toContain("TODO_FEEDBACK_ISSUE_URL");
+    expect(submission).toContain("https://github.com/hashgraph/hedera-agent-kit-js/issues/955");
     expect(submission).toContain("independent demo");
   });
 });

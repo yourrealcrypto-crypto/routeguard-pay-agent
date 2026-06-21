@@ -143,7 +143,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/POLICY_MODEL.md](docs
 |---|---|
 | Live demo | TODO_LIVE_DEMO_URL |
 | GitHub repo | TODO_GITHUB_REPO_URL |
-| Feedback issue | TODO_FEEDBACK_ISSUE_URL |
+| Feedback issue | https://github.com/hashgraph/hedera-agent-kit-js/issues/955 |
 
 Copy-ready submission notes: [public/SUBMISSION_PACKAGE.md](public/SUBMISSION_PACKAGE.md)
 Feedback issue draft: [public/FEEDBACK_ISSUE_DRAFT.md](public/FEEDBACK_ISSUE_DRAFT.md)
@@ -151,7 +151,7 @@ Project status: [public/PROJECT_STATUS.md](public/PROJECT_STATUS.md)
 
 ### Feedback submitted to Hedera Agent Kit
 
-TODO_FEEDBACK_ISSUE_URL
+https://github.com/hashgraph/hedera-agent-kit-js/issues/955
 
 ---
 
